@@ -36,20 +36,19 @@ jobs:
     - name: checkout
       uses: actions/checkout@v3
 
-    - if: runner.os == 'Linux'
-      name: versioning            
-      id: versioning
-      uses: codacy/git-version@2.7.1
-      with:
-        dev-branch: develop
-        release-branch: production
+    # - if: runner.os == 'Linux'
+    #   name: versioning            
+    #   id: versioning
+    #   uses: codacy/git-version@2.7.1
+    #   with:
+    #     release-branch: main
 
-    - if: runner.os == 'Linux'
-      name: tag commit
-      uses: rickstaa/action-create-tag@v1
-      with:
-        tag: ${{steps.versioning.outputs.version}}
-        force_push_tag: true
+    # - if: runner.os == 'Linux'
+    #   name: tag commit
+    #   uses: rickstaa/action-create-tag@v1
+    #   with:
+    #     tag: ${{steps.versioning.outputs.version}}
+    #     force_push_tag: true
 
     - name: dart module
       uses: dart-lang/setup-dart@v1
@@ -62,7 +61,8 @@ jobs:
     - name: create output directory
       run: mkdir -p bin/${{ matrix.os-version }}/
 
-    - run: ls
+    - name: script permission
+      run: chmod +x build
       working-directory: dart/run
 
     - name: run build script
