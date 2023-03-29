@@ -1,0 +1,10 @@
+#include: package:lints/recommended.yaml
+
+analyzer:
+  exclude: [build/**,challengerApp/**]
+  language:
+    strict-inference: true
+
+linter:
+  rules:
+    - cancel_subscriptions

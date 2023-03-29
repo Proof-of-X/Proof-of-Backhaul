@@ -1,0 +1,28 @@
+name:
+ PoB 
+
+environment:
+  sdk: '>=2.19.0 <3.0.0'
+
+dependencies:
+ http: any
+ solana: '>=0.29.0 <=0.29.0'
+ stream_channel: any
+ web_socket_channel: any
+ enough_ascii_art: ^1.1.0
+ bit_array: any
+ typed_data: any
+ web3dart: ^2.6.1
+ crypto: ^3.0.2
+ eth_sig_util: ^0.0.9
+ cryptography: 2.1.1
+ dart_ping: any
+ ecdsa: ^0.0.4
+ async: any
+
+dev_dependencies: 
+ test: ^1.22.2
+ #lints: ^2.0.1
+ #build_runner: ^2.3.3
+ #build_web_compilers: ^3.2.7
+
