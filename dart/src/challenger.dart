@@ -1,5 +1,4 @@
 import "dart:io";
-import "dart:math" as math;
 import "dart:convert";
 
 import "dart:typed_data";
@@ -16,8 +15,6 @@ import "utils.dart";
 import "pob.dart" as pob;
 
 import "crypto_factory.dart"                                    as cryptoFactory;
-
-final RNG = math.Random.secure();
 
 class Client extends pob.Client
 {
@@ -82,7 +79,7 @@ class Client extends pob.Client
         final now               = DateTime
                                         .now()
                                         .toUtc()
-                                        .millisecondsSinceEpoch
+                                        .millisecondsSinceEpoch;
 
         final timeout_in_milliseconds = challenge_timeout - now;
 

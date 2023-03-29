@@ -73,7 +73,7 @@ class Client extends pob.Client
                                             .toUtc()
                                             .millisecondsSinceEpoch;
 
-        final now                       = DateTime
+        var now                       = DateTime
                                             .now()
                                             .toUtc()
                                             .millisecondsSinceEpoch;
@@ -100,10 +100,10 @@ class Client extends pob.Client
                                         .toUtc()
                                         .millisecondsSinceEpoch;
 
-        final now               = DateTime
+        now               = DateTime
                                         .now()
                                         .toUtc()
-                                        .millisecondsSinceEpoch
+                                        .millisecondsSinceEpoch;
 
         final timeout_in_milliseconds = challenge_timeout - now;
 

@@ -1,9 +1,4 @@
-import "dart:io";
-import "dart:math";
 import "dart:typed_data";
-
-final RNG                       = Random.secure();
-final Map<String, String> ENV   = Platform.environment;
 
 enum MessageType
 {

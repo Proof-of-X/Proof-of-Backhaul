@@ -181,6 +181,17 @@ class Client
             catch (e) {}
         }
 
+        crypto.walletPublicKey = ENV["WALLET_PUBLIC_KEY"] ?? crypto.walletPublicKey;
+
+        try
+        {
+            bandwidth_claimed = double.parse (ENV["BANDWIDTH_CLAIMED"] ?? bandwidth_claimed.toString());
+        }
+        catch (e)
+        {
+            log.error("`BANDWIDTH_CLAIMED` environment variable is invalid");
+        }
+
         if (bandwidth_claimed < 0.001)
             throw Exception("Invalid bandwidth_claimed");
 

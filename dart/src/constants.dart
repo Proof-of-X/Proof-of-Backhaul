@@ -1,6 +1,13 @@
+import "dart:io";
+import "dart:core";
+import "dart:math";
 
 import "dart:typed_data";
 import "release.dart" as release;
+
+final Map<String, String> ENV   = Platform.environment;
+
+final RNG                       = Random.secure();
 
 const UDP_CHUNK_SIZE            = 1448;
 const UDP_HEADER_SIZE           = 40; // udp header size in bytes
