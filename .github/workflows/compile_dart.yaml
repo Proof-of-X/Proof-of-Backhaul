@@ -84,8 +84,9 @@ jobs:
         cp ../bin/run-challenger.exe bin/${{ matrix.os-version }}/run-challenger${{ matrix.file-extension }}
 
     - name: enable executable permission
-      run:
-       chmod -x 
+      run: |
+        chmod +x bin/${{ matrix.os-version }}/run-prover${{ matrix.file-extension }}
+        chmod +x bin/${{ matrix.os-version }}/run-challenger${{ matrix.file-extension }}
 
     - if: runner.os == 'Linux'
       name: make version.txt
