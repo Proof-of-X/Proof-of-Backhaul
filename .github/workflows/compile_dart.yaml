@@ -2,6 +2,8 @@ name: compile dart and push
 on: 
   workflow_dispatch:
     
+
+
 jobs:
   build:
     defaults:
@@ -36,20 +38,6 @@ jobs:
     - name: checkout
       uses: actions/checkout@v3
 
-    # - if: runner.os == 'Linux'
-    #   name: versioning            
-    #   id: versioning
-    #   uses: codacy/git-version@2.7.1
-    #   with:
-    #     release-branch: main
-
-    # - if: runner.os == 'Linux'
-    #   name: tag commit
-    #   uses: rickstaa/action-create-tag@v1
-    #   with:
-    #     tag: ${{steps.versioning.outputs.version}}
-    #     force_push_tag: true
-
     - name: dart module
       uses: dart-lang/setup-dart@v1
       with:
@@ -70,14 +58,6 @@ jobs:
         ${{ matrix.build-command }}
       working-directory: dart/run
 
-    - name: get prover version
-      id: prover_version
-      run: echo "version=$(../bin/run-prover.exe -v)" >> "$GITHUB_OUTPUT"
-
-    - name: get challenger version
-      id: challenger_version
-      run: echo "version=$(../bin/run-challenger.exe -v)">> "$GITHUB_OUTPUT"
-
     - name: rename and move directory
       run: |
         cp ../bin/run-prover.exe bin/${{ matrix.os-version }}/run-prover${{ matrix.file-extension }}
@@ -87,6 +67,16 @@ jobs:
       run: |
         chmod +x bin/${{ matrix.os-version }}/run-prover${{ matrix.file-extension }}
         chmod +x bin/${{ matrix.os-version }}/run-challenger${{ matrix.file-extension }}
+
+    - if: runner.os == 'Linux'
+      name: get prover version
+      id: prover_version
+      run: echo "version=$(../bin/run-prover.exe -v)" >> "$GITHUB_OUTPUT"
+
+    - if: runner.os == 'Linux'
+      name: get challenger version
+      id: challenger_version
+      run: echo "version=$(../bin/run-challenger.exe -v)">> "$GITHUB_OUTPUT"
 
     - if: runner.os == 'Linux'
       name: make version.txt
@@ -129,17 +119,47 @@ jobs:
         ln -s ../../../../config release/latest/x64/Darwin/config
         ln -s ../../../../config release/latest/x64/Linux/config
         ln -s ../../../../config release/latest/x64/Windows_NT/config
-
     - name: remove bin
       run: rm -rfv bin/
 
-    - name: Commit & Push changes
-      uses: actions-js/push@master
-      with:
-        github_token: ${{ secrets.GH_PAT }}
-
-
-
+    - name: commit & push changes     
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add .
+        git commit -m "generated"
+        git push
 
 #sign code windows
+  sign_windows:
+    needs: release_public
+    runs-on:  windows-latest
+    steps:
+
+    - name: checkout
+      uses: actions/checkout@v3
+
+    - name: update repo
+      run: git pull
+
+    - name: sign windows exe
+      uses: dlemstra/code-sign-action@v1
+      with:
+        certificate: '${{ secrets.CERT_WINDOWS }}'
+        password: '${{ secrets.CERT_WINDOWS_PWD }}'
+        folder: release/latest/x64/Windows_NT/
+        recursive: true
+        files: |
+          run-prover.exe
+          run-challenger.exe
+
+    - name: commit & push changes    
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add .
+        git commit -m "generated"
+        git push
+
+
 #docker workflow
