@@ -73,7 +73,7 @@ class Client extends pob.Client
                                             .toUtc()
                                             .millisecondsSinceEpoch;
 
-        var now                       = DateTime
+        final now                       = DateTime
                                             .now()
                                             .toUtc()
                                             .millisecondsSinceEpoch;
@@ -100,12 +100,12 @@ class Client extends pob.Client
                                         .toUtc()
                                         .millisecondsSinceEpoch;
 
-        now               = DateTime
+        final current_time      = DateTime
                                         .now()
                                         .toUtc()
                                         .millisecondsSinceEpoch;
 
-        final timeout_in_milliseconds = challenge_timeout - now;
+        final timeout_in_milliseconds = challenge_timeout - current_time;
 
         log.important('Timeout : $timeout_in_milliseconds ms');
 
@@ -297,12 +297,12 @@ class ChallengeHandler extends pob.ChallengeHandler
         int curTime                     = new DateTime.now().toUtc().microsecondsSinceEpoch;
         int nextTime                    = curTime;
         int max_packets_per_challenger  = challenge_info["max_packets_per_challenger"];
-        var s                           = StringBuffer();
+        final s                         = StringBuffer();
         s.write('0' * (UDP_CHUNK_SIZE - 'message'.length));
         final message                   = {'message': s.toString()};
         while (max_packets_per_challenger > 0) {
             nextTime += pktTxTime;
-            for (var c in challengers) {
+            for (final c in challengers) {
                 send_message(c, "uplink_packets", message);
             }
             max_packets_per_challenger--;

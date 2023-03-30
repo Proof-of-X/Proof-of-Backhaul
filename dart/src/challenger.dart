@@ -76,12 +76,12 @@ class Client extends pob.Client
                                         .toUtc()
                                         .millisecondsSinceEpoch;
 
-        final now               = DateTime
+        final current_time      = DateTime
                                         .now()
                                         .toUtc()
                                         .millisecondsSinceEpoch;
 
-        final timeout_in_milliseconds = challenge_timeout - now;
+        final timeout_in_milliseconds = challenge_timeout - current_time;
 
         log.important('Timeout : $timeout_in_milliseconds ms');
 

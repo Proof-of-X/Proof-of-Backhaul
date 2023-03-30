@@ -1,0 +1,12 @@
+#!/bin/sh
+
+dir=`dirname $0`
+
+cd $dir/../src
+
+for f in `ls *.dart`
+do
+    dart analyze $f
+    echo ==========
+    echo
+done

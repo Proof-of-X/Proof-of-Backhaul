@@ -94,10 +94,10 @@ class Crypto extends pob.Crypto
 
                     /*
                     
-                    var ec_function             = getSecp256k1();
+                    final ec_function             = getSecp256k1();
                     keyPair                     = ec_function.generatePrivateKey();
                     */
-                    var rng = Random.secure();
+                    final rng = Random.secure();
                     keyPair = EthPrivateKey.createRandom(rng);     
                     print("Pivate key is ${keyPair.privateKey}");
                     
