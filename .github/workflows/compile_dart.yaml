@@ -1,8 +1,9 @@
 name: compile dart and push
 on: 
   workflow_dispatch:
-    
-
+  push: 
+    branches:
+      - 'update-workflow'
 
 jobs:
   build:
