@@ -61,23 +61,23 @@ jobs:
 
     - name: rename and move directory
       run: |
-        cp ../bin/run-prover.exe bin/${{ matrix.os-version }}/run-prover${{ matrix.file-extension }}
-        cp ../bin/run-challenger.exe bin/${{ matrix.os-version }}/run-challenger${{ matrix.file-extension }}
+        cp ../bin/run-pob-prover.exe bin/${{ matrix.os-version }}/run-pob-prover${{ matrix.file-extension }}
+        cp ../bin/run-pob-challenger.exe bin/${{ matrix.os-version }}/run-pob-challenger${{ matrix.file-extension }}
 
     - name: enable executable permission
       run: |
-        chmod +x bin/${{ matrix.os-version }}/run-prover${{ matrix.file-extension }}
-        chmod +x bin/${{ matrix.os-version }}/run-challenger${{ matrix.file-extension }}
+        chmod +x bin/${{ matrix.os-version }}/run-pob-prover${{ matrix.file-extension }}
+        chmod +x bin/${{ matrix.os-version }}/run-pob-challenger${{ matrix.file-extension }}
 
     - if: runner.os == 'Linux'
       name: get prover version
       id: prover_version
-      run: echo "version=$(../bin/run-prover.exe -v)" >> "$GITHUB_OUTPUT"
+      run: echo "version=$(../bin/run-pob-prover.exe -v)" >> "$GITHUB_OUTPUT"
 
     - if: runner.os == 'Linux'
       name: get challenger version
       id: challenger_version
-      run: echo "version=$(../bin/run-challenger.exe -v)">> "$GITHUB_OUTPUT"
+      run: echo "version=$(../bin/run-pob-challenger.exe -v)">> "$GITHUB_OUTPUT"
 
     - if: runner.os == 'Linux'
       name: make version.txt
@@ -151,8 +151,8 @@ jobs:
         folder: release/latest/x64/Windows_NT/
         recursive: true
         files: |
-          run-prover.exe
-          run-challenger.exe
+          run-pob-prover.exe
+          run-pob-challenger.exe
 
     - name: commit & push changes    
       run: |
