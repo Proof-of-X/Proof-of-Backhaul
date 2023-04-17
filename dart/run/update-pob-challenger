@@ -1,0 +1,54 @@
+#!/bin/sh
+
+dir=`dirname $0`
+
+cd $dir/../bin
+
+VERSION=`./run-challenger.exe -v`
+
+if [ "$VERSION" = "INVALID" ]
+then
+	echo "Please use the official builds"
+	exit
+fi
+
+LATEST_VERSION=`wget https://raw.githubusercontent.com/Proof-of-X/Proof-of-Backhaul/main/release/latest/version.txt 2>/dev/null | grep pob_challenger_client | cut -f2 -d\"`
+
+if [ "$LATEST_VERSION" != "" ] && [ "$VERSION" != "$LATEST_VERSION" ]
+then
+	echo "Download the latest version? [y/n]"
+	read response
+
+	if [ $response = "y" ] || [ $response = "Y" ]
+	then
+		ARCHITECTURE=`arch`
+
+		if [ "$ARCHITECTURE" = "x86_64" ]
+		then
+			ARCHITECTURE="x64"
+		fi		
+
+		IS_x64=`uname -a | grep x86_64 | wc -l`
+
+		if [ "$IS_x64" != "0" ]
+		then
+			ARCHITECTURE="x64"
+		fi
+
+        	OS=`uname`
+        	URL="https://github.com/Proof-of-X/Proof-of-Backhaul/raw/main/release/latest/$ARCHITECTURE/$OS/run-prover.exe"
+
+        	RESPONSE="`wget -O latest-run-prover.exe $URL`"
+        	echo "Checking if 'run-prover.exe' can be updated"    # if latest-run-prover.exe is empty, do nothing; otherwise, update
+
+		if [ -s latest-run-challenger.exe ]
+		then
+			echo "Updating..."
+			mv latest-run-challenger.exe run-challenger.exe
+		else
+			echo "Already at latest version"
+		fi
+	fi
+fi
+
+
