@@ -1,15 +1,17 @@
 import "dart:io";
-import "dart:math" as math;
+import "dart:math"                          as math;
 import 'dart:async';
 import "dart:convert";
 import "dart:typed_data";
 
 import "package:bit_array/bit_array.dart";
 
-import "log.dart";
-import "utils.dart";
+import "../common/log.dart";
+import "../common/utils.dart";
+import "../common/abc.dart"                 as abc;
+
 import "constants.dart";
-import "pob.dart" as pob;
+import "pob.dart"                           as pob;
 
 final RNG = math.Random.secure();
 
@@ -26,7 +28,7 @@ class Client extends pob.Client
     Future<bool> init () async
     {
         init_done   = await super.init();
-        log         = LOG("Prover.Client", set_pob_client : this);
+        log         = LOG("Prover.Client", set_client : this);
 
         return init_done;
     }
@@ -61,62 +63,59 @@ class Client extends pob.Client
         assert(ci["challenge_timeout"]               is String);
         assert(ci["total_num_packets_for_challenge"] is int);
 
-        assert(m["message_type"]                     == "challenge_for_prover");
+        assert(m["message_type"]                     == "pob_challenge_for_prover");
 
         assert(ci["challengers"]                     is List);
         assert(ci["max_packets_per_challenger"]      is int);
 
         log.info("Number of challengers : ${ci['challengers'].length}");
 
+        challenge_handler = ChallengeHandler (ci, crypto, this);
+        await challenge_handler.init();
+
         final challenge_start_time      = DateTime
                                             .parse(ci["challenge_start_time"])
                                             .toUtc()
-                                            .millisecondsSinceEpoch;
+                                            .microsecondsSinceEpoch;
 
-        final now                       = DateTime
-                                            .now()
-                                            .toUtc()
-                                            .millisecondsSinceEpoch;
+        final now                       = Now(ntp_offset)
+                                            .microsecondsSinceEpoch;
 
         if (challenge_start_time > now)
         {
             final int diff          = challenge_start_time - now;
-            final int wait_time     = (diff / 1000).ceil();
+            final int wait_time     = (diff / 1000000).ceil();
 
             final wait = Duration (seconds : wait_time - 10);
 
             if (wait.inSeconds > 0)
             {
                 log.info("Waiting for ${wait_time-10} seconds");
-                sleep (wait);
-                log.success("Ready for challenge");
+                await Future<void>.delayed(wait);
             }
-        }
 
-        challenge_handler = ChallengeHandler (ci, crypto, this);
+            log.success("Ready for challenge");
+        }
 
         final challenge_timeout = DateTime
                                         .parse(ci["challenge_timeout"])
                                         .toUtc()
-                                        .millisecondsSinceEpoch;
+                                        .microsecondsSinceEpoch;
 
-        final current_time      = DateTime
-                                        .now()
-                                        .toUtc()
-                                        .millisecondsSinceEpoch;
+        final current_time      = Now(ntp_offset)
+                                            .microsecondsSinceEpoch;
 
-        final timeout_in_milliseconds = challenge_timeout - current_time;
+        final timeout_in_microseconds = challenge_timeout - current_time;
 
-        log.important('Timeout : $timeout_in_milliseconds ms');
+        log.important('Timeout : ${timeout_in_microseconds ~/ 1000} ms');
 
-        Future.delayed(Duration(milliseconds : timeout_in_milliseconds), () async {
-            await challenge_handler?.cleanup("Timeout");
+        Future.delayed(Duration(microseconds : timeout_in_microseconds), () async {
+            await challenge_handler.cleanup("Timeout");
         });
 
-        await challenge_handler?.init();
-        await challenge_handler?.run();
+        await challenge_handler.run();
 
-        return challenge_handler?.challenge_result ?? {};
+        return challenge_handler.challenge_result;
     }
 }
 
@@ -135,11 +134,13 @@ class ChallengeHandler extends pob.ChallengeHandler
 
     late LOG log;
 
+    int num_challengers_with_private_IPs = 0;
+
     ChallengeHandler
     (
         final Map           _challenge_info,
-        final pob.Crypto    _crypto,
-        final Client        _pob_client,
+        final abc.Crypto    _crypto,
+        final pob.Client    _client,
         {
             InternetAddress?    setSourceAddress4   = null,
             InternetAddress?    setSourceAddress6   = null,
@@ -155,7 +156,7 @@ class ChallengeHandler extends pob.ChallengeHandler
             setSourcePort       : setSourcePort,
     )
     {
-        pob_client  = _pob_client;
+        client      = _client;
         log         = LOG("Prover.ChallengeHandler");
         challengers = challenge_info["challengers"];
 
@@ -165,6 +166,9 @@ class ChallengeHandler extends pob.ChallengeHandler
             got_udp_pong [cpk]  = false;
 
             final IPv6          = challengers[i]["IPv6"];
+
+            if (challengers[i]["has_public_IP"] == false)
+                ++num_challengers_with_private_IPs;
 
             if (IPv6 != null)
             {
@@ -189,8 +193,28 @@ class ChallengeHandler extends pob.ChallengeHandler
     @override
     Future<bool> init () async
     {
-        source_port = 1025 + RNG.nextInt(50000);
-        init_done   = await super.init();
+        init_done = await super.init();
+
+        if (challenge_info["has_public_IP"] == true && num_challengers_with_private_IPs > 0)
+        {
+                await start_websocket_server();
+        }
+        else
+        {
+                final List awaits = [];
+
+                for (final Map c in challengers)
+                {
+                    awaits.add (
+                        start_websocket_client (c["ip"].address, c["publicKey"])
+                    );
+                }
+
+                for (final a in awaits)
+                {
+                    await a;
+                }
+        }
 
         return init_done;
     }
@@ -294,7 +318,7 @@ class ChallengeHandler extends pob.ChallengeHandler
     bool sent_all_packets_for_challenge_uplink() {
         int pktTxTime                   = (((UDP_CHUNK_SIZE + UDP_HEADER_SIZE) * 8) / uplink_rate).round() *
                                             challengers.length;
-        int curTime                     = new DateTime.now().toUtc().microsecondsSinceEpoch;
+        int curTime                     = Now(ntp_offset).microsecondsSinceEpoch;
         int nextTime                    = curTime;
         int max_packets_per_challenger  = challenge_info["max_packets_per_challenger"];
         final s                         = StringBuffer();
@@ -306,15 +330,11 @@ class ChallengeHandler extends pob.ChallengeHandler
                 send_message(c, "uplink_packets", message);
             }
             max_packets_per_challenger--;
-            curTime = new DateTime
-                            .now()
-                            .toUtc()
+            curTime = Now(ntp_offset)
                             .microsecondsSinceEpoch;
+
             while (curTime < nextTime) {
-                curTime = new DateTime
-                                .now()
-                                .toUtc()
-                                .microsecondsSinceEpoch;
+                curTime = Now(ntp_offset).microsecondsSinceEpoch;
             }
         }
 
@@ -386,11 +406,40 @@ class ChallengeHandler extends pob.ChallengeHandler
 
     Future<bool> send_udp_ping () async
     {
+        /// wait for `udp_connect` from challengers with private IP
+
+        final Map got_udp_connect = {};
+
+        for (int i = 1; i <= num_challengers_with_private_IPs; ++i)
+        {
+            final Map udp_connect = await get_UDP_message (
+                            ["udp_connect"],
+                            timeout_in_milliseconds : 1000,
+                            only_IPv6               : is_IPv6_challenge
+            );
+
+            final cpk = udp_connect["publicKey"];
+
+            if (cpk != null && udp_connect["SOURCE_PORT"] != null)
+            {
+                got_udp_connect[cpk] = true;
+
+                for (int i = 0; i < challengers.length; ++i)
+                {
+                    if (challengers[i]["publicKey"] == cpk)
+                    {
+                        challengers[i]["udp_port"] = udp_connect["SOURCE_PORT"];
+                        break;
+                    }
+                }
+            }
+        }
+
         final udp_ping = jsonEncode ({
             "type" : "udp_ping",
             "data" : {
                 "challenge_id"      : challenge_info ["challenge_id"],
-                "timestamp"         : DateTime.now().toString(),
+                "timestamp"         : Now(ntp_offset).toString(),
                 "source_port"       : source_port,
             }
         });
@@ -404,6 +453,13 @@ class ChallengeHandler extends pob.ChallengeHandler
 
         for (final Map c in challengers)
         {
+            // ignore challengers with public ip and who did not send udp_connect
+
+            final cpk = c["publicKey"];
+
+            if (c["has_public_IP"] == false && got_udp_connect[cpk] == false)
+                continue;
+
             await send_UDP_message (c, "udp_ping", signed_udp_ping);
         }
 
@@ -412,9 +468,11 @@ class ChallengeHandler extends pob.ChallengeHandler
 
     Future<bool> receive_udp_pong() async
     {
+        /// wait for `udp_pong` from all challengers
+
         int num_udp_pongs_received = 0;
 
-        final timeout = DateTime.now().add (
+        final timeout = Now(ntp_offset).add (
                 Duration (milliseconds : 10000) // 10 seconds
         ).millisecondsSinceEpoch;
 
@@ -445,7 +503,7 @@ class ChallengeHandler extends pob.ChallengeHandler
                 }
             }
 
-            final now = DateTime.now().millisecondsSinceEpoch;
+            final now = Now(ntp_offset).millisecondsSinceEpoch;
 
             if (now > timeout)
                 break;
@@ -465,7 +523,7 @@ class ChallengeHandler extends pob.ChallengeHandler
             "data" : {
                 "challenge_id"      : challenge_info ["challenge_id"],
                 "challenge_port"    : source_port,
-                "timestamp"         : DateTime.now().toString()
+                "timestamp"         : Now(ntp_offset).toString()
             }
         });
 
@@ -548,7 +606,7 @@ class ChallengeHandler extends pob.ChallengeHandler
                 "type"  : message_type,
                 "data"  : {
                     "challenge_id"      : challenge_info["challenge_id"],
-                    "timestamp"         : DateTime.now().toString(),
+                    "timestamp"         : Now(ntp_offset).toString(),
                     "hash"              : challenger_hash[cpk]?.toUnsigned (HASH_SIZE_IN_BITS),
                     "hash_of_hashes"    : unsigned_hash_of_hashes,
                     "num_packets"       : packet_bitmap[cpk]?.cardinality,
@@ -589,7 +647,7 @@ class ChallengeHandler extends pob.ChallengeHandler
             "type"  : message_type,
             "data"  : {
                 "challenge_id"  : challenge_info["challenge_id"],
-                "timestamp"     : DateTime.now().toString(),
+                "timestamp"     : Now(ntp_offset).toString(),
                 "all_hashes"    : challenger_hash.values.toList(),
             }
         });
@@ -644,7 +702,7 @@ class ChallengeHandler extends pob.ChallengeHandler
                 "type"  : message_type,
                 "data"  : {
                     "challenge_id"  : challenge_info["challenge_id"],
-                    "timestamp"     : DateTime.now().toString(),
+                    "timestamp"     : Now(ntp_offset).toString(),
                     "packet_bitmap" : compressed_bitmap
                 }
             });
@@ -678,7 +736,7 @@ class ChallengeHandler extends pob.ChallengeHandler
                 "type"  : message_type,
                 "data"  : {
                     "challenge_id"  : challenge_info["challenge_id"],
-                    "timestamp"     : DateTime.now().toString()
+                    "timestamp"     : Now(ntp_offset).toString()
                 }
         });
 
@@ -715,6 +773,52 @@ class ChallengeHandler extends pob.ChallengeHandler
         for (final ch in challenger_hash.values)
         {
             hash_of_hashes ^= ch;
+        }
+    }
+
+    @override
+    Future<void> handle_challenge_message (final String string_signed_message, final InternetAddress ip, final WebSocket ws) async
+    {
+        if (string_signed_message == "ok")
+        {
+            return;
+        }
+        else if (string_signed_message[0] == "{") // looks like a JSON map
+        {
+            try
+            {
+                final sender_address    = ip.address;
+                final clean_address     = process_ip (sender_address);
+
+                String ip_version = is_IPv6_challenge ? "IPv6" : "IPv4";
+
+                if (ip_version == "IPv6" && sender_address != clean_address)
+                {
+                    ip_version = "IPv4";
+                }
+
+                final sender_ip = (ip_version == "IPv6") ?
+                                                    Uri.parseIPv6Address(clean_address):
+                                                    Uri.parseIPv4Address(clean_address);
+
+                final Map message = await process_message_as_json (
+                    string_signed_message,
+                    sender_ip,
+                    ip_version,
+                    0,
+                );
+
+                final cpk = message["publicKey"];
+
+                if (cpk == null)
+                    return ws.close();
+
+                challenge_websocket [cpk] = ws;
+            }
+            catch (e)
+            {
+                // invalid JSON
+            }
         }
     }
 

@@ -3,18 +3,18 @@ import "dart:convert";
 
 import "dart:typed_data";
 
-import "package:http/http.dart"                                 as http;
 import 'package:dart_ping/dart_ping.dart';
 
 import 'package:enough_ascii_art/enough_ascii_art.dart'         as art;
-import "font.dart"                                              as font;
 
-import "log.dart";
+import "../common/font.dart"                                    as font;
+import "../common/log.dart";
+import "../common/utils.dart";
+import "../common/abc.dart"                                     as abc;
+import "../common/crypto-factory.dart"                          as cryptoFactory;
+
 import "constants.dart";
-import "utils.dart";
-import "pob.dart" as pob;
-
-import "crypto_factory.dart"                                    as cryptoFactory;
+import "pob.dart"                                               as pob;
 
 class Client extends pob.Client
 {
@@ -29,7 +29,7 @@ class Client extends pob.Client
     Future<bool> init () async
     {
         init_done   = await super.init();
-        log         = LOG("Challenger.Client", set_pob_client : this);
+        log         = LOG("Challenger.Client", set_client : this);
 
         return init_done;
     }
@@ -64,45 +64,68 @@ class Client extends pob.Client
         assert(ci["challenge_timeout"]               is String);
         assert(ci["total_num_packets_for_challenge"] is int);
 
-        assert(m["message_type"]                     == "challenge_for_challenger");
+        assert(m["message_type"]                     == "pob_challenge_for_challenger");
 
         assert(ci["prover"]                          is Map);
         assert(ci["max_packets_per_challenger"]      is int);
 
-        challenge_handler = ChallengeHandler (ci, crypto, this);
+        challenge_handler = ChallengersChallengeHandler (ci, crypto, this);
+        await challenge_handler.init();
 
         final challenge_timeout = DateTime
                                         .parse(ci["challenge_timeout"])
                                         .toUtc()
-                                        .millisecondsSinceEpoch;
+                                        .microsecondsSinceEpoch;
 
-        final current_time      = DateTime
-                                        .now()
-                                        .toUtc()
-                                        .millisecondsSinceEpoch;
+        final current_time      = Now(ntp_offset)
+                                        .microsecondsSinceEpoch;
 
-        final timeout_in_milliseconds = challenge_timeout - current_time;
+        final timeout_in_microseconds = challenge_timeout - current_time;
 
-        log.important('Timeout : $timeout_in_milliseconds ms');
+        log.important('Timeout : ${timeout_in_microseconds ~/ 1000} ms');
 
-        Future.delayed(Duration(milliseconds : timeout_in_milliseconds), () async {
-            await challenge_handler?.cleanup("Timeout");
+        Future.delayed(Duration(microseconds : timeout_in_microseconds), () async {
+            await challenge_handler.cleanup("Timeout");
+            await report_challenge_results(challenge_handler);
         });
 
-        await challenge_handler?.init();
-        await challenge_handler?.run();
+        final challenge_start_time      = DateTime
+                                            .parse(ci["challenge_start_time"])
+                                            .toUtc()
+                                            .microsecondsSinceEpoch;
 
-        return challenge_handler?.challenge_result ?? {};
+        final now                       = Now(ntp_offset)
+                                            .microsecondsSinceEpoch;
+
+        if (challenge_start_time > now)
+        {
+            final int diff          = challenge_start_time - now;
+            final int wait_time     = (diff / 1000000).ceil();
+
+            final wait = Duration(seconds : wait_time - 10);
+
+            if (wait.inSeconds > 0)
+            {
+                log.info("Waiting for ${wait_time-10} seconds");
+                await Future<void>.delayed(wait);
+            }
+
+            log.success("Ready for challenge");
+        }
+
+        await challenge_handler.run();
+
+        return challenge_handler.challenge_result;
     }
 
     @override
-    Future<void> report_challenge_results (final pob.ChallengeHandler ch) async
+    Future<void> report_challenge_results (final abc.ChallengeHandler ch) async
     {
         final message = jsonEncode ({
             "type"  : "challenge_result",
             "data"  : {
                 "challenge_id"  : ch.challenge_info["challenge_id"],
-                "timestamp"     : DateTime.now().toString(),
+                "timestamp"     : Now(ntp_offset).toString(),
                 "result"        : ch.challenge_result
             }
         });
@@ -114,53 +137,60 @@ class Client extends pob.Client
             (final String signature) async
             {
                 final signed_message = {
-                        "message"     : message,
-                        "keyType"     : crypto.keyType,
-                        "publicKey"   : crypto.publicKey,
-                        "signature"   : signature,
+                    "message"     : message,
+                    "keyType"     : crypto.keyType,
+                    "publicKey"   : crypto.publicKey,
+                    "signature"   : signature,
                 };
 
                 log.important("Latency : ${ch.challenge_result['latency']}");
 
                 Map r = await do_post (CHALLENGE_RESULT_URL,signed_message);
 
-                if (r["result"]["success"] == true)
-                    log.success("Sent Results");
-                else
+                if (r["result"] == null)
                     log.error("Could not sent Results");
+                else
+                {
+                    if (r["result"]["success"] == true)
+                        log.success("Sent Results");
+                }
             }
         );
     }
 }
 
-class ChallengeHandler extends pob.ChallengeHandler
+class ChallengersChallengeHandler extends pob.ChallengeHandler
 {
-    final Map sent_random_number                = {};
+    final Map sent_random_number                    = {};
 
-    List received_all_hashes                    = [];
+    List received_all_hashes                        = [];
 
-    int? received_hash                          = null;
-    int? received_hash_of_hashes                = null;
-    String? received_packet_bitmap              = null;
+    int? received_hash                              = null;
+    int? received_hash_of_hashes                    = null;
+    String? received_packet_bitmap                  = null;
 
-    bool init_done                              = false;
+    bool init_done                                  = false;
 
     late Map prover;
-    late HttpServer http_server;
+    int  http_server_port                           = CHALLENGER_PORT;
 
-    bool can_send_challenge_packets             = true;
-
-    final Map<int,List<int>> challenge_packets  = {};
+    final Map<int,List<int>> challenge_packets      = {};
 
     late LOG log;
 
-    bool bandwidth_calculated                   = false;
+    bool bandwidth_calculated                       = false;
 
-    ChallengeHandler
+    final Map<String,String> allowed_message_types  = new Map.from(ALL_VALID_CHALLENGE_STATES_FOR_CHALLENGER);
+    String challenge_state                          = "";
+
+    bool all_hashes_received    = false;
+    bool packet_bitmap_received = false;
+
+    ChallengersChallengeHandler
     (
         final Map           _challenge_info,
-        final pob.Crypto    _crypto,
-        final Client        _pob_client,
+        final abc.Crypto    _crypto,
+        final Client        _client,
         {
             InternetAddress?    setSourceAddress4   = null,
             InternetAddress?    setSourceAddress6   = null,
@@ -176,11 +206,11 @@ class ChallengeHandler extends pob.ChallengeHandler
             setSourcePort       : setSourcePort
     )
     {
-        pob_client                      = _pob_client;
+        client                          = _client;
         log                             = LOG("Challenger.ChallengeHandler");
 
         prover                          = challenge_info["prover"];
-        prover["port"]                  = 0;            // to be set later
+        prover["udp_port"]              = PROVER_PORT;
 
         final IPv6                      = prover["IPv6"];
 
@@ -217,7 +247,18 @@ class ChallengeHandler extends pob.ChallengeHandler
 
             await calculate_median_latency();
             await generate_challenge_packets();
-            await start_HTTP_server();
+
+            if (challenge_info["has_public_IP"] == true && challenge_info["prover"]["has_public_IP"] == false)
+            {
+                await start_websocket_server();
+            }
+            else
+            {
+                await start_websocket_client (
+                    prover["ip"].address,
+                    prover["publicKey"]
+                );
+            }
 
             init_done = true;
         }
@@ -229,7 +270,7 @@ class ChallengeHandler extends pob.ChallengeHandler
     {
         if (data["SOURCE_PORT"] is int && data["SOURCE_PORT"] > 0)
         {
-            prover["port"] = data["SOURCE_PORT"];
+            prover["udp_port"] = data["SOURCE_PORT"];
             await send_udp_pong();
         }
         else
@@ -244,7 +285,7 @@ class ChallengeHandler extends pob.ChallengeHandler
             "type" : "udp_pong",
             "data" : {
                 "challenge_id"      : challenge_info ["challenge_id"],
-                "timestamp"         : DateTime.now().toString(),
+                "timestamp"         : Now(ntp_offset).toString(),
                 "source_port"       : source_port,
             }
         });
@@ -264,15 +305,35 @@ class ChallengeHandler extends pob.ChallengeHandler
     @override
     Future<bool> run () async
     {
+        if (challenge_info["has_public_IP"] == false)
+        {
+            final udp_connect = jsonEncode ({
+                "type" : "udp_connect",
+                "data" : {
+                    "challenge_id"      : challenge_info ["challenge_id"],
+                    "timestamp"         : Now(ntp_offset).toString()
+                }
+            });
+
+            final signed_udp_connect = {
+                "message"     : udp_connect,
+                "keyType"     : crypto.keyType,
+                "publicKey"   : crypto.publicKey,
+                "signature"   : await crypto.sign(udp_connect)
+            };
+
+            send_UDP_message (prover, "udp_connect", signed_udp_connect);
+        }
+
+        log.important("waiting for udp ping");
+
         final Map udp_ping = await get_UDP_message (
                             ["udp_ping"],
                             only_IPv6 : is_IPv6_challenge
         );
 
-        // if (udp_ping.isNotEmpty)
-            process_udp_ping (udp_ping);
+        process_udp_ping (udp_ping);
 
-        // return udp_ping.isNotEmpty;
         return true;
     }
 
@@ -282,7 +343,7 @@ class ChallengeHandler extends pob.ChallengeHandler
 
         if (bandwidth_calculated == false && startTime != -1 && endTime != -1)
         {
-            final time_in_seconds   = (endTime - startTime) / 1000.0;
+            final time_in_seconds   = (endTime - startTime) / 1000000.0;
 
             final num_bits          = challenge_info["total_num_packets_for_challenge"]
                                             *
@@ -292,7 +353,10 @@ class ChallengeHandler extends pob.ChallengeHandler
 
             log.important("Bandwidth : $num_bits/$time_in_seconds = ${bandwidth}");
 
-            challenge_result["bandwidth"] = bandwidth;
+            challenge_result["bandwidth"]   = bandwidth;
+            challenge_result["startTime"]   = startTime;
+            challenge_result["endTime"]     = endTime;
+            challenge_result["timeTaken"]   = time_in_seconds;
 
             bandwidth_calculated = true;
         }
@@ -329,19 +393,14 @@ class ChallengeHandler extends pob.ChallengeHandler
                     return {}; // received smaller than expected size packet
                 }
                 if (first) {
-                    start_time = new DateTime
-                                        .now()
-                                        .toUtc()
-                                        .millisecondsSinceEpoch;
+                    start_time = Now(ntp_offset).millisecondsSinceEpoch;
                     first = false;
                 }
                 num_packets_to_rx--;
             }
         }
-        int end_time    = new DateTime
-                                .now()
-                                .toUtc()
-                                .millisecondsSinceEpoch;
+        int end_time    = Now(ntp_offset).millisecondsSinceEpoch;
+
         double BW       = (challenge_info["num_packets"] *
                             (UDP_CHUNK_SIZE + UDP_HEADER_SIZE) * 8) /
                             ((end_time - start_time) * 1000); // BW in Mbps;
@@ -480,18 +539,16 @@ class ChallengeHandler extends pob.ChallengeHandler
         final challenge_start_time      = DateTime
                                             .parse(challenge_info["challenge_start_time"])
                                             .toUtc()
-                                            .millisecondsSinceEpoch;
+                                            .microsecondsSinceEpoch;
 
-        final now                       = DateTime
-                                            .now()
-                                            .toUtc()
-                                            .millisecondsSinceEpoch;
+        final now                       = Now(ntp_offset)
+                                            .microsecondsSinceEpoch;
 
-        final int wait_ms = ((challenge_start_time - challenge_result["latency"]/2.0) - now).toInt();
+        final int wait_microseconds = ((challenge_start_time - challenge_result["latency"]/2.0) - now).toInt();
 
-        final wait = Duration (milliseconds : wait_ms);
+        final wait = Duration (microseconds : wait_microseconds);
 
-        if (wait_ms > 0)
+        if (wait_microseconds > 0)
             sleep(wait);
 
         send_challenge_packets();
@@ -524,10 +581,14 @@ class ChallengeHandler extends pob.ChallengeHandler
 
             final double n = challenge_result["latency"] ?? 0.0;
 
-            startTime = DateTime.now().toUtc().millisecondsSinceEpoch + (n ~/ 2.0);
-            nextTime  = DateTime.now().toUtc().microsecondsSinceEpoch + wait_duration;
+            final now = Now(ntp_offset).microsecondsSinceEpoch;
 
-            log.important('Sent first packet @ ${DateTime.now()}');
+            startTime = now + (n ~/ 2.0);
+            nextTime  = now + wait_duration;
+
+            challenge_result["startTime"] = startTime;
+
+            log.important('Sent first packet @ ${Now(ntp_offset)}');
         }
 
         bool got_hash_packet = false;
@@ -535,8 +596,8 @@ class ChallengeHandler extends pob.ChallengeHandler
         // 0th packet has already been sent
         for (int i = 1; i < max_packets_per_challenger; ++i)
         {
-            //print("==> Start ${DateTime.now()}");
-            final now = DateTime.now().toUtc().microsecondsSinceEpoch;
+            //print("==> Start ${Now(ntp_offset)}");
+            final now = Now(ntp_offset).microsecondsSinceEpoch;
 
             final int sleep_time = ((nextTime - now) > 0) ? (nextTime - now) : 0;
 
@@ -547,7 +608,7 @@ class ChallengeHandler extends pob.ChallengeHandler
 
             send_UDP_message_bytes (prover, message_type, challenge_packets[i] ?? EMPTY_PACKET);
 
-            //print("==> After encode ${DateTime.now().microsecondsSinceEpoch - prevTime};");
+            //print("==> After encode ${Now(ntp_offset).microsecondsSinceEpoch - prevTime};");
 
             //log.info("Sent $i message to $prover from ${socket4.port}");
 
@@ -569,12 +630,19 @@ class ChallengeHandler extends pob.ChallengeHandler
                 continue;
             }
 
-            last_message_received_time = DateTime.now(); /// update the last packet time
+            last_message_received_time = Now(ntp_offset); /// update the last packet time
 
             final sender_address    = datagram.address.address;
-            final sender_ip         = (ip_version == "IPv6") ?
-                                                    Uri.parseIPv6Address(sender_address):
-                                                    Uri.parseIPv4Address(sender_address);
+            final clean_address     = process_ip (sender_address);
+
+            if (ip_version == "IPv6" && sender_address != clean_address)
+            {
+                ip_version = "IPv4";
+            }
+
+            final sender_ip = (ip_version == "IPv6") ?
+                                    Uri.parseIPv6Address(clean_address):
+                                    Uri.parseIPv4Address(clean_address);
 
             try
             {
@@ -629,7 +697,7 @@ class ChallengeHandler extends pob.ChallengeHandler
     {
         double n = challenge_result["latency"] ?? 0.0;
 
-        endTime = last_message_received_time.toUtc().millisecondsSinceEpoch - (n ~/ 2.0);
+        endTime = last_message_received_time.microsecondsSinceEpoch - (n ~/ 2.0);
 
         received_hash               = data["hash"];           // must be verified when we get packet_bitmap
         received_hash_of_hashes     = data["hash_of_hashes"];
@@ -693,6 +761,7 @@ class ChallengeHandler extends pob.ChallengeHandler
         {
             challenge_succeeded = false;
             log.error("Challenge Failed");
+            await client.report_challenge_results(this);
         }
 
         return challenge_succeeded;
@@ -760,119 +829,75 @@ class ChallengeHandler extends pob.ChallengeHandler
         return latency;
     }
 
-    Future<void> start_HTTP_server () async
+    @override
+    Future<void> handle_challenge_message (final String string_signed_message, final InternetAddress ip, final WebSocket ws) async
     {
-        bool all_hashes_received    = false;
-        bool packet_bitmap_received = false;
-        final Map<String,List> expected_message_type = {
-            "/"                 : [],
-            "/start-challenge"  : [ "start_challenge"],
-            "/send-results"     : [ "all_hashes", "packet_bitmap" ],
-            "/end-challenge"    : [ "end_challenge" ],
-        };
+        if (string_signed_message == "ping" || string_signed_message == "pong")
+            return;
 
-        log.info("Starting HTTP server");
+        bool            is_sender_IPv6    = ip.type == InternetAddressType.IPv6;
+        final           clean_address     = process_ip (ip.address);
+        String          ip_version        = is_sender_IPv6 ? "IPv6" : "IPv4";
 
-        http_server = await HttpServer.bind(InternetAddress.anyIPv6,8080); //, shared: true);
+        if (ip_version == "IPv6" && ip.address != clean_address)
+        {
+            ip_version      = "IPv4";
+            is_sender_IPv6  = false;
+        }
 
-        final http_log = LOG("HTTP.Server");
+        final List<int> sender_ip = is_sender_IPv6?
+                                    Uri.parseIPv6Address(clean_address):
+                                    Uri.parseIPv4Address(clean_address);
 
-        http_server.forEach
-        (
-            (final HttpRequest req) async
-            {
-                if (req.method == "GET" && req.uri.path == "/")
-                {
-                        req.response
-                            ..statusCode = HttpStatus.ok
-                            ..write("");
+        final Map signed_message  = await process_message_as_json (
+                                        string_signed_message,
+                                        sender_ip,
+                                        ip_version,
+                                        0       // ignore sender port for TCP
+                                  );
 
-                       return req.response.close();
-                }
+        Map message = {};
 
-                if (req.method != "POST")
-                {
-                        req.response
-                            ..statusCode = HttpStatus.methodNotAllowed
-                            ..write("");
+        try
+        {
+            message = jsonDecode(signed_message["message"]);
+        }
+        catch (e)
+        {
+            ws_log.error("Invalid signed_message : $e");
+            return ws.close();
+        }
 
-                       return req.response.close();
-                }
+        final received_message_type = message["type"];
+        final amt                   = allowed_message_types [challenge_state];
 
-                final emt = expected_message_type [req.uri.path];
+        if (received_message_type == "websocket_connect")
+            return;
 
-                if (emt == null)
-                {
-                        req.response
-                            ..statusCode = HttpStatus.forbidden
-                            ..write("");
+        if (amt == null || received_message_type == null || received_message_type != amt)
+        {
+            ws_log.error("Got invalid message type : $received_message_type for $challenge_state");
+            return ws.close();
+        }
 
-                       req.response.close();
-                }
+        // the sender can no longer send this message
+        allowed_message_types.remove(challenge_state);
+        challenge_state = amt;
 
-                final   String    string_signed_message   = await utf8.decoder.bind(req).join();
-                        String    ip                      = req.connectionInfo?.remoteAddress.address ?? "";
+        final Map data = signed_message["DATA"];
 
-                if (ip.startsWith("::ffff:") && ip.contains(".")) // get rid of IPv4 mapped as IPv6
-                        ip = ip.split("::ffff:")[1];
+        ws_log.important("Got $received_message_type");
 
-                final bool is_sender_IPv6               = InternetAddress(ip).type == InternetAddressType.IPv6;
+        if (message["type"] == "start_challenge" && prover["udp_port"] == 0)
+        {
+            log.info("error!");
+            return ws.add('{"error":"Please send `udp_ping` first"}');
+        }
 
-                final List<int> sender_ip               = is_sender_IPv6 ? Uri.parseIPv6Address(ip) : Uri.parseIPv4Address(ip);
-                final String    ip_version              = is_sender_IPv6 ? "IPv6" : "IPv4";
+        ws.add("ok");
 
-                final Map       signed_message          = await process_message_as_json (
-                                                                    string_signed_message,
-                                                                    sender_ip,
-                                                                    ip_version,
-                                                                    0           // ignore sender port for TCP
-                                                        );
-                Map message = {};
-
-                try
-                {
-                    message = jsonDecode(signed_message["message"]);
-                }
-                catch (e)
-                {
-                    log.error("Invalid signed_message : $e");
-                    return req.response.close();
-                }
-
-                final Map       data                    = signed_message["DATA"];
-
-                if (message["type"] == null || emt == null || ! emt.contains(message["type"]))
-                {
-                        req.response
-                            ..statusCode = HttpStatus.forbidden
-                            ..write("");
-
-                       return req.response.close();
-                }
-
-                http_log.important("Got ${message['type']}");
-
-                // can be called only once : delete it from the list
-                expected_message_type[req.uri.path]?.remove(message["type"]);
-
-                if (message["type"] == "start_challenge" && prover["port"] == 0)
-                {
-                    req.response
-                        ..statusCode = HttpStatus.badRequest
-                        ..write("Please send 'udp_ping' first");
-
-                    return req.response.close();
-                }
-
-                req.response
-                    ..statusCode = HttpStatus.ok
-                    ..write("")
-                    ..close();
-
-                http_log.success("${req.uri.path} ${message['type']}");
-
-                switch (message["type"])
-                {
+        switch (message["type"])
+        {
                     case "start_challenge":
                     {
                         process_challenge_initiate_message (data);
@@ -889,7 +914,7 @@ class ChallengeHandler extends pob.ChallengeHandler
                         {
                             calculate_bandwidth();
 
-                            await pob_client.report_challenge_results(this);
+                            await client.report_challenge_results(this);
 
                             final result = art.renderFiglet((challenge_result["bandwidth"] / 1000000).toStringAsFixed(5) + "Mbps", art.Font.text(font.text));
                             print(result);
@@ -908,7 +933,7 @@ class ChallengeHandler extends pob.ChallengeHandler
                         {
                             calculate_bandwidth();
 
-                            await pob_client.report_challenge_results(this);
+                            await client.report_challenge_results(this);
 
                             final result = art.renderFiglet((challenge_result["bandwidth"] / 1000000).toStringAsFixed(5) + "Mbps", art.Font.text(font.text));
                             print(result);
@@ -923,29 +948,6 @@ class ChallengeHandler extends pob.ChallengeHandler
                         break;
                     }
                 }
-            }
-        );
-
-        final one_second = Duration (seconds : 5);
-
-        while (true)
-        {
-            try
-            {
-                final response = await http.get(Uri.parse("http://127.0.0.1:8080"));
-
-                if (response.statusCode == HttpStatus.ok)
-                {
-                    log.success("HTTP server started");
-                    return;
-                }
-            }
-            catch (e)
-            {
-                log.error("Exception $e");
-                sleep (one_second);
-            }
-        }
     }
 
     @override
@@ -954,7 +956,7 @@ class ChallengeHandler extends pob.ChallengeHandler
         log.info("$from : stopping HTTP server");
 
         try {
-            http_server.close(force:true);
+            challenge_http_server.close(force:true);
         }
         catch (e) {};
 
@@ -963,6 +965,12 @@ class ChallengeHandler extends pob.ChallengeHandler
         }
         catch (e) {};
 
-        pob_client.in_a_challenge = false;
+        try
+        {
+            challenge_websocket[prover["publicKey"]]?.close();
+        }
+        catch (e) {}
+
+        client.in_a_challenge = false;
     }
 }

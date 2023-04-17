@@ -4,10 +4,14 @@ dir=`dirname $0`
 
 cd $dir/../bin
 
+../run/update-pob-prover
+
 while :
 do
-	./run-prover.exe $1 $2 $3 $4 $5 $6 $7 $8 $9
+	./run-pob-prover.exe $1 $2 $3 $4 $5 $6 $7 $8 $9
 
 	echo "================> Restarting ===================="
 	sleep 1
+
+	yes | ../run/update-pob-prover
 done

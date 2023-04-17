@@ -5,14 +5,14 @@ import "dart:convert";
 import "package:solana/solana.dart";
 import "package:solana/base58.dart";
 
-import "pob.dart" as pob;
+import "abc.dart"                       as abc;
 
 final ENV = Platform.environment;
 
 final String project_name           = "solana";
 final String default_id_file_name   = "id.json";
 
-class Crypto extends pob.Crypto
+class Crypto extends abc.Crypto
 {
         Crypto (final Map args) : super ("solana", args)
         {

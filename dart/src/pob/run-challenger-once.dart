@@ -1,30 +1,29 @@
 import "dart:io";
 
-import "log.dart";
-import "challenger.dart" as challenger;
+import "../common/log.dart";
 
 import "constants.dart";
+import "challenger.dart"    as challenger;
+import "release.dart"       as release;
 
-void main (List<String> args) async
+Future<void> run (List<String> args) async
 {
-    String projectName      = "";
-    String projectPublicKey = "";
-    String walletPublicKey  = "INVALID";
-
-    if (args.length == 1 && args[0] == '-v')
-    {
-        print("$POB_RELEASE_VERSION");
-        exit(0);
-    }
+    String  projectName      = "";
+    String  projectPublicKey = "";
+    String  keyType          = "";
+    Map     walletPublicKey  = {};
 
     if (args.length >= 1)
         projectName         = args[0];
 
     if (args.length >= 2)
-        projectPublicKey    = args[1];
+        keyType             = args[1];
 
     if (args.length >= 3)
-        walletPublicKey     = args[2];
+        projectPublicKey    = args[2];
+
+    if (args.length >= 4)
+        walletPublicKey     = {keyType : args[3]};
 
     int num_consecutive_failures = 0;
 
@@ -32,17 +31,16 @@ void main (List<String> args) async
     {
         final c = challenger.Client ({
             "keyType"           : "solana",
-            "bandwidth_claimed" : 10.0,
             "projectName"       : projectName,
             "projectPublicKey"  : projectPublicKey,
             "walletPublicKey"   : walletPublicKey
         });
 
-        final log = LOG("Run.Challenger", set_pob_client : c);
+        final log = LOG("Run.Challenger", set_client : c);
 
         try
         {
-            await c.login();
+            await c.login (release.version);
 
             if (c.payment_or_staking_required == true)
             {
