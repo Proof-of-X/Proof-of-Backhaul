@@ -1,2 +1,2 @@
-pob_prover_client="Tue Apr 18 14:49:54 2023 +0700"
-pob_challenger_client="Tue Apr 18 14:49:54 2023 +0700"
+pob_prover_client="Tue Apr 18 20:34:06 2023 +0700"
+pob_challenger_client="Tue Apr 18 20:34:06 2023 +0700"
