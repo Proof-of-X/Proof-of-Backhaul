@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   push: 
     branches:
-      - 'update-workflow'
+      - 'update-workflow-2'
 
 jobs:
   build:
