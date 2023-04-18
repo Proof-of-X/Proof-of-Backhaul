@@ -1,19 +1,44 @@
+/*
+    Copyright (c) 2023 kaleidoscope-blockchain
+
+    Unless specified otherwise, this work is licensed under the Creative Commons
+    Attribution-NonCommercial 4.0 International License.
+
+    To view a copy of this license, visit:
+        http://creativecommons.org/licenses/by-nc/4.0/
+
+    ----------------------------------------------------------------------------
+
+    Licenses for the following files/packages may have different licenses: 
+
+    1. `font.dart`
+    
+        Big by Glenn Chappell 4/93 -- based on Standard
+        Includes ISO Latin-1
+        Greek characters by Bruce Jakeway <pbjakeway@neumann.uwaterloo.ca>
+        figlet release 2.2 -- November 1996
+        Permission is hereby given to modify this font, as long as the
+        modifier's name is placed on a comment line.
+
+    2. Dart packages used in this software have the following licenses:
+        BSD-3-Clause    (https://opensource.org/license/bsd-3-clause/)
+        MIT             (https://opensource.org/license/mit/)
+*/
+
 import "dart:io";
-import "dart:math"                          as math;
-import 'dart:async';
 import "dart:convert";
 import "dart:typed_data";
 
-import "package:bit_array/bit_array.dart";
-
 import "../common/log.dart";
 import "../common/utils.dart";
-import "../common/abc.dart"                 as abc;
+import "../common/abc.dart"                                     as abc;
 
 import "constants.dart";
-import "pob.dart"                           as pob;
+import "pob.dart"                                               as pob;
 
-final RNG = math.Random.secure();
+import 'dart:async';
+import "package:bit_array/bit_array.dart";
+
 
 class Client extends pob.Client
 {
@@ -64,14 +89,14 @@ class Client extends pob.Client
         assert(ci["total_num_packets_for_challenge"] is int);
 
         assert(m["message_type"]                     == "pob_challenge_for_prover");
-
         assert(ci["challengers"]                     is List);
+
         assert(ci["max_packets_per_challenger"]      is int);
 
-        log.info("Number of challengers : ${ci['challengers'].length}");
-
-        challenge_handler = ChallengeHandler (ci, crypto, this);
+        final challenge_handler = ChallengeHandler (ci, crypto, this);
         await challenge_handler.init();
+
+        log.info("Number of challengers : ${ci['challengers'].length}");
 
         final challenge_start_time      = DateTime
                                             .parse(ci["challenge_start_time"])
@@ -103,13 +128,13 @@ class Client extends pob.Client
                                         .microsecondsSinceEpoch;
 
         final current_time      = Now(ntp_offset)
-                                            .microsecondsSinceEpoch;
+                                        .microsecondsSinceEpoch;
 
         final timeout_in_microseconds = challenge_timeout - current_time;
 
-        log.important('Timeout : ${timeout_in_microseconds ~/ 1000} ms');
+        log.important('Timeout : ${timeout_in_microseconds ~/ 1000000} seconds');
 
-        Future.delayed(Duration(microseconds : timeout_in_microseconds), () async {
+        Future.delayed (Duration(microseconds : timeout_in_microseconds), () async {
             await challenge_handler.cleanup("Timeout");
         });
 
@@ -144,7 +169,7 @@ class ChallengeHandler extends pob.ChallengeHandler
         {
             InternetAddress?    setSourceAddress4   = null,
             InternetAddress?    setSourceAddress6   = null,
-            int                 setSourcePort       = 0,
+            int                 setSourcePort       = 0
         }
     ) : super
     (
@@ -153,12 +178,13 @@ class ChallengeHandler extends pob.ChallengeHandler
             _crypto,
             setSourceAddress4   : setSourceAddress4,
             setSourceAddress6   : setSourceAddress6,
-            setSourcePort       : setSourcePort,
+            setSourcePort       : setSourcePort
     )
     {
-        client      = _client;
-        log         = LOG("Prover.ChallengeHandler");
-        challengers = challenge_info["challengers"];
+        client              = _client;
+        log                 = LOG("Prover.ChallengeHandler");
+
+        challengers         = challenge_info["challengers"];
 
         for (int i = 0; i < challengers.length; ++i)
         {

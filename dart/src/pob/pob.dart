@@ -1,3 +1,30 @@
+/*
+    Copyright (c) 2023 kaleidoscope-blockchain
+
+    Unless specified otherwise, this work is licensed under the Creative Commons
+    Attribution-NonCommercial 4.0 International License.
+
+    To view a copy of this license, visit:
+        http://creativecommons.org/licenses/by-nc/4.0/
+
+    ----------------------------------------------------------------------------
+
+    Licenses for the following files/packages may have different licenses: 
+
+    1. `font.dart`
+    
+        Big by Glenn Chappell 4/93 -- based on Standard
+        Includes ISO Latin-1
+        Greek characters by Bruce Jakeway <pbjakeway@neumann.uwaterloo.ca>
+        figlet release 2.2 -- November 1996
+        Permission is hereby given to modify this font, as long as the
+        modifier's name is placed on a comment line.
+
+    2. Dart packages used in this software have the following licenses:
+        BSD-3-Clause    (https://opensource.org/license/bsd-3-clause/)
+        MIT             (https://opensource.org/license/mit/)
+*/
+
 import "dart:io";
 import "dart:core";
 import "dart:convert";
@@ -599,6 +626,9 @@ class ChallengeHandler extends abc.ChallengeHandler
                     verifySignature : verifySignature
                 );
 
+                if (signed_message["message"] == null)
+                    return {};
+
                 final Map message         = jsonDecode(signed_message["message"]);
                 final String message_type = message["type"];
 
@@ -630,6 +660,9 @@ class ChallengeHandler extends abc.ChallengeHandler
     ) async
     {
         Map signed_message = {};
+
+        if (string_signed_message[0] != "{")
+            return {};
 
         try
         {
@@ -866,6 +899,9 @@ class ChallengeHandler extends abc.ChallengeHandler
 
     Future<void> cleanup (final String from) async
     {
+        if (cleanup_done)
+            return;
+
         log.info("$from : sockets.close");
 
         try
@@ -886,6 +922,7 @@ class ChallengeHandler extends abc.ChallengeHandler
         }
         catch (e) {}
 
-        client.in_a_challenge = false;
+        cleanup_done            = true;
+        client.in_a_challenge   = false;
     }
 }

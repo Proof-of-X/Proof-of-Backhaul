@@ -1,20 +1,47 @@
+/*
+    Copyright (c) 2023 kaleidoscope-blockchain
+
+    Unless specified otherwise, this work is licensed under the Creative Commons
+    Attribution-NonCommercial 4.0 International License.
+
+    To view a copy of this license, visit:
+        http://creativecommons.org/licenses/by-nc/4.0/
+
+    ----------------------------------------------------------------------------
+
+    Licenses for the following files/packages may have different licenses: 
+
+    1. `font.dart`
+    
+        Big by Glenn Chappell 4/93 -- based on Standard
+        Includes ISO Latin-1
+        Greek characters by Bruce Jakeway <pbjakeway@neumann.uwaterloo.ca>
+        figlet release 2.2 -- November 1996
+        Permission is hereby given to modify this font, as long as the
+        modifier's name is placed on a comment line.
+
+    2. Dart packages used in this software have the following licenses:
+        BSD-3-Clause    (https://opensource.org/license/bsd-3-clause/)
+        MIT             (https://opensource.org/license/mit/)
+*/
+
 import "dart:io";
 import "dart:convert";
-
 import "dart:typed_data";
+
+import "../common/log.dart";
+import "../common/utils.dart";
+import "../common/abc.dart"                                     as abc;
+
+import "constants.dart";
+import "pob.dart"                                               as pob;
+
+import "../common/crypto-factory.dart"                          as cryptoFactory;
 
 import 'package:dart_ping/dart_ping.dart';
 
 import 'package:enough_ascii_art/enough_ascii_art.dart'         as art;
-
 import "../common/font.dart"                                    as font;
-import "../common/log.dart";
-import "../common/utils.dart";
-import "../common/abc.dart"                                     as abc;
-import "../common/crypto-factory.dart"                          as cryptoFactory;
-
-import "constants.dart";
-import "pob.dart"                                               as pob;
 
 class Client extends pob.Client
 {
@@ -65,29 +92,12 @@ class Client extends pob.Client
         assert(ci["total_num_packets_for_challenge"] is int);
 
         assert(m["message_type"]                     == "pob_challenge_for_challenger");
-
         assert(ci["prover"]                          is Map);
+
         assert(ci["max_packets_per_challenger"]      is int);
 
-        challenge_handler = ChallengersChallengeHandler (ci, crypto, this);
+        final challenge_handler = ChallengeHandler (ci, crypto, this);
         await challenge_handler.init();
-
-        final challenge_timeout = DateTime
-                                        .parse(ci["challenge_timeout"])
-                                        .toUtc()
-                                        .microsecondsSinceEpoch;
-
-        final current_time      = Now(ntp_offset)
-                                        .microsecondsSinceEpoch;
-
-        final timeout_in_microseconds = challenge_timeout - current_time;
-
-        log.important('Timeout : ${timeout_in_microseconds ~/ 1000} ms');
-
-        Future.delayed(Duration(microseconds : timeout_in_microseconds), () async {
-            await challenge_handler.cleanup("Timeout");
-            await report_challenge_results(challenge_handler);
-        });
 
         final challenge_start_time      = DateTime
                                             .parse(ci["challenge_start_time"])
@@ -102,7 +112,7 @@ class Client extends pob.Client
             final int diff          = challenge_start_time - now;
             final int wait_time     = (diff / 1000000).ceil();
 
-            final wait = Duration(seconds : wait_time - 10);
+            final wait = Duration (seconds : wait_time - 10);
 
             if (wait.inSeconds > 0)
             {
@@ -113,6 +123,22 @@ class Client extends pob.Client
             log.success("Ready for challenge");
         }
 
+        final challenge_timeout = DateTime
+                                        .parse(ci["challenge_timeout"])
+                                        .toUtc()
+                                        .microsecondsSinceEpoch;
+
+        final current_time      = Now(ntp_offset)
+                                        .microsecondsSinceEpoch;
+
+        final timeout_in_microseconds = challenge_timeout - current_time;
+
+        log.important('Timeout : ${timeout_in_microseconds ~/ 1000000} seconds');
+
+        Future.delayed (Duration(microseconds : timeout_in_microseconds), () async {
+            await challenge_handler.cleanup("Timeout");
+        });
+
         await challenge_handler.run();
 
         return challenge_handler.challenge_result;
@@ -121,6 +147,9 @@ class Client extends pob.Client
     @override
     Future<void> report_challenge_results (final abc.ChallengeHandler ch) async
     {
+        if (ch.sent_challenge_results)
+            return;
+
         final message = jsonEncode ({
             "type"  : "challenge_result",
             "data"  : {
@@ -152,14 +181,17 @@ class Client extends pob.Client
                 else
                 {
                     if (r["result"]["success"] == true)
+                    {
+                        ch.sent_challenge_results = true;
                         log.success("Sent Results");
+                    }
                 }
             }
         );
     }
 }
 
-class ChallengersChallengeHandler extends pob.ChallengeHandler
+class ChallengeHandler extends pob.ChallengeHandler
 {
     final Map sent_random_number                    = {};
 
@@ -186,11 +218,11 @@ class ChallengersChallengeHandler extends pob.ChallengeHandler
     bool all_hashes_received    = false;
     bool packet_bitmap_received = false;
 
-    ChallengersChallengeHandler
+    ChallengeHandler
     (
         final Map           _challenge_info,
         final abc.Crypto    _crypto,
-        final Client        _client,
+        final pob.Client    _client,
         {
             InternetAddress?    setSourceAddress4   = null,
             InternetAddress?    setSourceAddress6   = null,
@@ -206,11 +238,11 @@ class ChallengersChallengeHandler extends pob.ChallengeHandler
             setSourcePort       : setSourcePort
     )
     {
-        client                          = _client;
-        log                             = LOG("Challenger.ChallengeHandler");
+        client              = _client;
+        log                 = LOG("Challenger.ChallengeHandler");
 
-        prover                          = challenge_info["prover"];
-        prover["udp_port"]              = PROVER_PORT;
+        prover              = challenge_info["prover"];
+        prover["udp_port"]  = PROVER_PORT;
 
         final IPv6                      = prover["IPv6"];
 
@@ -299,12 +331,15 @@ class ChallengersChallengeHandler extends pob.ChallengeHandler
 
         await send_UDP_message (prover, "udp_pong", signed_udp_pong);
 
-        return true;
+        return init_done;
     }
 
     @override
     Future<bool> run () async
     {
+        if (! init_done)
+            await init();
+
         if (challenge_info["has_public_IP"] == false)
         {
             final udp_connect = jsonEncode ({
@@ -856,6 +891,9 @@ class ChallengersChallengeHandler extends pob.ChallengeHandler
                                         0       // ignore sender port for TCP
                                   );
 
+        if (signed_message["message"] == null)
+            return;
+
         Map message = {};
 
         try
@@ -953,6 +991,9 @@ class ChallengersChallengeHandler extends pob.ChallengeHandler
     @override
     Future<void> cleanup (final String from) async
     {
+        if (cleanup_done)
+            return;
+
         log.info("$from : stopping HTTP server");
 
         try {
@@ -971,6 +1012,7 @@ class ChallengersChallengeHandler extends pob.ChallengeHandler
         }
         catch (e) {}
 
-        client.in_a_challenge = false;
+        cleanup_done            = true;
+        client.in_a_challenge   = false;
     }
 }

@@ -1,3 +1,30 @@
+/*
+    Copyright (c) 2023 kaleidoscope-blockchain
+
+    Unless specified otherwise, this work is licensed under the Creative Commons
+    Attribution-NonCommercial 4.0 International License.
+
+    To view a copy of this license, visit:
+        http://creativecommons.org/licenses/by-nc/4.0/
+
+    ----------------------------------------------------------------------------
+
+    Licenses for the following files/packages may have different licenses: 
+
+    1. `font.dart`
+    
+        Big by Glenn Chappell 4/93 -- based on Standard
+        Includes ISO Latin-1
+        Greek characters by Bruce Jakeway <pbjakeway@neumann.uwaterloo.ca>
+        figlet release 2.2 -- November 1996
+        Permission is hereby given to modify this font, as long as the
+        modifier's name is placed on a comment line.
+
+    2. Dart packages used in this software have the following licenses:
+        BSD-3-Clause    (https://opensource.org/license/bsd-3-clause/)
+        MIT             (https://opensource.org/license/mit/)
+*/
+
 import "dart:io";
 import "dart:core";
 import "dart:convert";
@@ -100,8 +127,6 @@ class Client
     bool            websocket_IPv6_running  = false;
 
     bool            in_a_challenge          = false;
-
-    late ChallengeHandler           challenge_handler;
 
     bool            init_done               = false;
 
@@ -594,12 +619,6 @@ class Client
 
         try
         {
-            challenge_handler.cleanup("Proof.Client");
-        }
-        catch (e) {}
-
-        try
-        {
             connected_websockets["IPv4"]?.sink.close(status.goingAway);
         }
         catch (e) {}
@@ -773,6 +792,9 @@ class ChallengeHandler
 
     late String         role;
 
+    bool sent_challenge_results             = false;
+    bool cleanup_done                       = false;
+
     ChallengeHandler (this.role, this.challenge_info)
     {
         // nothing
@@ -788,7 +810,7 @@ class ChallengeHandler
         throw Exception("This is an abstract method!");
     }
 
-   Future<void> cleanup (final String from) async
+    Future<void> cleanup (final String from) async
     {
         throw Exception("This is an abstract method!");
     }
