@@ -1,6 +1,6 @@
 import "dart:io";
 
-import "pob.dart" as pob;
+import "abc.dart" as abc;
 
 final level = {
     "INFO" : 0,
@@ -25,18 +25,18 @@ final config = {
 
    "pob.Crypto"                     : "INFO",
    "solana.Crypto"                  : "INFO",
-   "filecoin.Crypto"                : "INFO",
+   "ethereum.Crypto"                : "INFO",
 };
 
 class LOG
 {
-    String      name        = "";
-    pob.Client? pob_client  = null;
+    String          name            = "";
+    abc.Client?     client    = null;
 
-    LOG (String set_name, {final pob.Client? set_pob_client = null})
+    LOG (String set_name, {final abc.Client? set_client = null})
     {
         name        = set_name;
-        pob_client  = set_pob_client;
+        client      = set_client;
     }
 
     void info(String message)
@@ -78,7 +78,7 @@ class LOG
 
             if (Platform.isAndroid || Platform.isIOS)
             {
-                pob_client?.Log(icon,message);
+               client?.Log (icon,message);
             }
 
             print("$time | ${name} | $color$message\x1B[0m");

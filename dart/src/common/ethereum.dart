@@ -3,26 +3,28 @@ import "dart:core";
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:web3dart/crypto.dart';
-import 'package:eth_sig_util/eth_sig_util.dart';
-import 'package:web3dart/web3dart.dart';
+import "package:web3dart/crypto.dart";
+import "package:eth_sig_util/eth_sig_util.dart";
+import "package:web3dart/web3dart.dart";
 
-import 'pob.dart' as pob;
+import "abc.dart"                   as abc;
 
 final ENV = Platform.environment;
 
 final String default_id_file_name = "ethereum_fc_id.json";
-final String evm_name = "filecoin";
 
-class Crypto extends pob.Crypto 
-  {
+class Crypto extends abc.Crypto
+{
+        String evm_name = "INVALID";
 
-        Crypto(final Map args) : super(evm_name, args) 
+        Crypto(final Map args) : super("ethereum", args) 
         {
             if (keyPair != null)
             {
                 publicKey   = get_public_key();
             }
+
+            evm_name = args["evm_name"] ?? evm_name;
         }
 
         @override

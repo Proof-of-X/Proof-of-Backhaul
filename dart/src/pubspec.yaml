@@ -18,7 +18,9 @@ dependencies:
  cryptography: 2.1.1
  dart_ping: any
  ecdsa: ^0.0.4
- async: any
+ ntp: any
+ system_info2: any
+
 
 dev_dependencies: 
  test: ^1.22.2

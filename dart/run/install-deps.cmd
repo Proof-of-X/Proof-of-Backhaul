@@ -2,6 +2,6 @@
 
 set dir=%0\..\
 
-cd dir\..\src
+cd %dir%\..\src
 
 dart pub get

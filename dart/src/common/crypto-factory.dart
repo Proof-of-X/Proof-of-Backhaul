@@ -1,29 +1,37 @@
-import "pob.dart"           as pob;
+import "abc.dart"           as abc;
 import "solana.dart"        as solana;
-import "filecoin.dart"      as filecoin;
+import "ethereum.dart"      as ethereum;
 
 enum CryptoAlgo
 {
+    ETHEREUM,
+    FILECOIN,
     SOLANA,
-    FILECOIN
 }
 
-final CRYPTO_ALGO_SOLANA    = CryptoAlgo.SOLANA.index;
+final CRYPTO_ALGO_ETHEREUM  = CryptoAlgo.ETHEREUM.index;
 final CRYPTO_ALGO_FILECOIN  = CryptoAlgo.FILECOIN.index;
+final CRYPTO_ALGO_SOLANA    = CryptoAlgo.SOLANA.index;
 
 final CRYPTO_KEY_TYPE = {
-    "solana"    : CRYPTO_ALGO_SOLANA,
+    "ethereum"  : CRYPTO_ALGO_ETHEREUM,
     "filecoin"  : CRYPTO_ALGO_FILECOIN,
+    "solana"    : CRYPTO_ALGO_SOLANA,
 };
 
-pob.Crypto create(final Map args)
+abc.Crypto create(final Map args)
 {
     final String keyType = args["keyType"];
 
     switch (keyType)
     {
+        case "ethereum":
+            args["evm_name"] = "ethereum";
+            return ethereum.Crypto(args);
+
         case "filecoin":
-            return filecoin.Crypto(args);
+            args["evm_name"] = "filecoin";
+            return ethereum.Crypto(args);
 
         case "solana":
             return solana.Crypto(args);
@@ -42,8 +50,11 @@ Future<bool> verify(final Map signed_message) async
 
     switch (keyType)
     {
+        case "ethereum":
+            return await ethereum.Crypto.verify (message, signature, publicKey);
+
         case "filecoin":
-            return await filecoin.Crypto.verify (message, signature, publicKey);
+            return await ethereum.Crypto.verify (message, signature, publicKey);
 
         case "solana":
             return await solana.Crypto.verify   (message, signature, publicKey);
@@ -57,8 +68,11 @@ Future<int> signature_length_in_bytes (String keyType) async
 {
     switch (keyType)
     {
+        case "ethereum":
+            return await ethereum.Crypto.signature_length_in_bytes();
+
         case "filecoin":
-            return await filecoin.Crypto.signature_length_in_bytes();
+            return await ethereum.Crypto.signature_length_in_bytes();
 
         case "solana":
             return await solana.Crypto.signature_length_in_bytes();
@@ -72,8 +86,11 @@ Future<int> publickey_length_in_bytes (String keyType) async
 {
     switch (keyType)
     {
+        case "ethereum":
+            return await ethereum.Crypto.publickey_length_in_bytes();
+
         case "filecoin":
-            return await filecoin.Crypto.publickey_length_in_bytes();
+            return await ethereum.Crypto.publickey_length_in_bytes();
 
         case "solana":
             return await solana.Crypto.publickey_length_in_bytes();
