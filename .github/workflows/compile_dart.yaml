@@ -44,16 +44,17 @@ jobs:
       with:
         sdk: ${{ matrix.sdk }}
 
-    - name: install dependencies
-      run: dart pub get
-
     - name: create output directory
       run: mkdir -p bin/${{ matrix.os-version }}/
 
     - name: script permission
-      run: chmod +x build
+      run: chmod +x install-deps; chmod +x build; 
       working-directory: dart/run
 
+    - name: install dependencies
+      run: dart pub get
+      working-directory: dart/run
+      
     - name: run build script
       run: |
         ${{ matrix.build-command }}
