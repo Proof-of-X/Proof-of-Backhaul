@@ -53,7 +53,6 @@ jobs:
 
     - name: install dependencies
       run: dart pub get
-      working-directory: dart/run
       
     - name: run build script
       run: |
