@@ -280,7 +280,7 @@ class ChallengeHandler extends pob.ChallengeHandler
             await calculate_median_latency();
             await generate_challenge_packets();
 
-            if (challenge_info["has_public_IP"] == true && challenge_info["prover"]["has_public_IP"] == false)
+            if (challenge_info["prover"]["has_public_IP"] == false)
             {
                 await start_websocket_server();
             }

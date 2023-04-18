@@ -590,6 +590,8 @@ class Client
 
         while (do_run && payment_or_staking_required == false) // until user stops -OR- some exception occurs
         {
+            await set_has_public_ip();
+
             final ws6 = run_websocket_IPv6();
             final ws4 = run_websocket_IPv4();
 
@@ -708,7 +710,8 @@ class Client
 
         log.success("Connected to WS : $ip_version");
 
-        ws.stream.listen (
+        ws.stream.listen
+        (
                 (final msg) async
                 {
                     Map json_msg = {};
@@ -723,16 +726,20 @@ class Client
                         return;
                     }
 
+                    print("");
+
                     log.important("Got a challenge : $ip_version");
 
                     handle_websocket(json_msg);
                 },
+
                 onDone  : () async
                 {
                     try {
                         ws.sink.close(status.goingAway);
                     } catch (e) {}
                 },
+
                 onError: (Object error, StackTrace stackTrace) async
                 {
                     try {
@@ -742,8 +749,6 @@ class Client
                     log.error("$ip_version : $error");
                 },
         );
-
-        await set_has_public_ip();
 
         if (ip_version == "IPv4" && has_public_IPv4)
         {

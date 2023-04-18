@@ -221,25 +221,25 @@ class ChallengeHandler extends pob.ChallengeHandler
     {
         init_done = await super.init();
 
-        if (challenge_info["has_public_IP"] == true && num_challengers_with_private_IPs > 0)
+        if (challenge_info["has_public_IP"] == true)
         {
-                await start_websocket_server();
+            await start_websocket_server();
         }
         else
         {
-                final List awaits = [];
+            final List awaits = [];
 
-                for (final Map c in challengers)
-                {
-                    awaits.add (
-                        start_websocket_client (c["ip"].address, c["publicKey"])
-                    );
-                }
+            for (final Map c in challengers)
+            {
+                awaits.add (
+                    start_websocket_client (c["ip"].address, c["publicKey"])
+                );
+            }
 
-                for (final a in awaits)
-                {
-                    await a;
-                }
+            for (final a in awaits)
+            {
+                await a;
+            }
         }
 
         return init_done;

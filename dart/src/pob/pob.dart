@@ -149,26 +149,33 @@ class Client extends abc.Client
             log.info("IPv4 is : $IPv4");
 
             HttpServer
-                .bind(InternetAddress.anyIPv4, HTTP_IPv4_PORT)
-                .then(
-            (final server)
-            {
-                http_server4 = server;
-
-                server.listen((final HttpRequest req)
+                .bind (InternetAddress.anyIPv4, HTTP_IPv4_PORT)
+                .then
+            (
+                (final server)
                 {
-                    if (req.uri.path == "/" + secret_request)
-                    {
-                        req.response.write (secret_response);
-                        req.response.close();
-                    }
-                    else
-                    {
-                        req.response.write("INVALID");
-                        req.response.close();
-                    }
-                });
-            });
+                    http_server4 = server;
+
+                    server.listen
+                    (
+                        (final HttpRequest req)
+                        {
+                            final remote_ip = req.connectionInfo?.remoteAddress ?? InternetAddress("");
+
+                            if (remote_ip.address == IPv4 && req.uri.path == "/" + secret_request)
+                            {
+                                req.response.write (secret_response);
+                                req.response.close ();
+                            }
+                            else
+                            {
+                                req.response.write ("INVALID");
+                                req.response.close ();
+                            }
+                        }
+                    );
+                }
+            );
         }
 
         if (IPv6 != "INVALID")
@@ -176,26 +183,33 @@ class Client extends abc.Client
             log.info("IPv6 is : $IPv6");
 
             HttpServer
-                .bind(InternetAddress.anyIPv6, HTTP_IPv6_PORT)
-                .then(
-            (final server)
-            {
-                http_server6 = server;
-
-                server.listen((final HttpRequest req)
+                .bind (InternetAddress.anyIPv6, HTTP_IPv6_PORT)
+                .then
+            (
+                (final server)
                 {
-                    if (req.uri.path == "/" + secret_request)
-                    {
-                        req.response.write (secret_response);
-                        req.response.close();
-                    }
-                    else
-                    {
-                        req.response.write("INVALID");
-                        req.response.close();
-                    }
-                });
-            });
+                    http_server6 = server;
+
+                    server.listen
+                    (
+                        (final HttpRequest req)
+                        {
+                            final remote_ip = req.connectionInfo?.remoteAddress ?? InternetAddress("");
+
+                            if (remote_ip.address == IPv6 && req.uri.path == "/" + secret_request)
+                            {
+                                req.response.write (secret_response);
+                                req.response.close ();
+                            }
+                            else
+                            {
+                                req.response.write ("INVALID");
+                                req.response.close ();
+                            }
+                        }
+                    );
+                }
+            );
 
             try
             {
@@ -835,13 +849,14 @@ class ChallengeHandler extends abc.ChallengeHandler
         }
     }
 
-    Future<void> start_websocket_client (String host, String publicKey) async
+    Future<void> start_websocket_client (final String host, final String publicKey) async
     {
-        if (host.contains(":"))
-            host = "[" + host + "]";
+        String host_with_brackets   = host.contains(":") ? "[" + host + "]" : host ;
 
-        final port          = role == "prover" ? CHALLENGER_PORT : PROVER_PORT;
-        final challenge_id  = challenge_info["challenge_id"];
+        final port                  = role == "prover" ? CHALLENGER_PORT : PROVER_PORT;
+        final challenge_id          = challenge_info["challenge_id"];
+
+        final ws_url                = "ws://" + host_with_brackets + ":" + port.toString()  + "/ws?challenge_id=$challenge_id";
 
         for (int i = 1; i <= 10; ++i)
         {
@@ -849,7 +864,7 @@ class ChallengeHandler extends abc.ChallengeHandler
             {
                 ws_log.important("Connecting to WebSocket of : $host ...");
 
-                challenge_websocket[publicKey] = await WebSocket.connect("ws://" + host + ":" + port.toString()  + "/ws?challenge_id=$challenge_id");
+                challenge_websocket[publicKey] = await WebSocket.connect(ws_url);
 
                 ws_log.success("Connected to WebSocket of : $host");
 
@@ -875,10 +890,13 @@ class ChallengeHandler extends abc.ChallengeHandler
 
                 ws.add(signed_websocket_connect);
 
-                await ws.listen((message) async
-                {
+                await ws.listen
+                (
+                    (final message) async
+                    {
                         await handle_challenge_message (message, InternetAddress(host), ws);
-                });
+                    }
+                );
 
                 return;
             }
