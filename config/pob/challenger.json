@@ -1,4 +1,9 @@
 {
-    "bandwidth_claimed" : 25.0,
-    "walletPublicKey"   : "E8VzCz92Da6XykE1nLAKeTt4Nts5Svp7C4eovBzeHUPk"
+	"claims" : {
+		"bandwidth" : 25.0
+	},
+
+	"walletPublicKey"	: {
+		"solana" : "E8VzCz92Da6XykE1nLAKeTt4Nts5Svp7C4eovBzeHUPk"
+	}
 }
