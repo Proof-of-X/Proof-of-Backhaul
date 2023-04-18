@@ -95,11 +95,12 @@ jobs:
     needs: build
     runs-on:  ubuntu-latest
     steps:
+
     - name: checkout
       uses: actions/checkout@v3
 
     - name: remove latest 
-      run: rm -rfv release/latest/
+      run: rm -rfv release/latest/          #this removes symlinks, hard to exclude
 
     - uses: actions/download-artifact@v3
       with:
@@ -113,13 +114,13 @@ jobs:
       env:
         version: ${{needs.build.outputs.prover_version}}
 
-    # - name: make config symlink
-    #   run: |
-    #     mkdir -p release/latest/arm64/Darwin
-    #     ln -s ../../../../config/pob release/latest/arm64/Darwin/config
-    #     ln -s ../../../../config/pob release/latest/x64/Darwin/config
-    #     ln -s ../../../../config/pob release/latest/x64/Linux/config
-    #     ln -s ../../../../config/pob release/latest/x64/Windows_NT/config
+    - name: make config symlink
+      run: |
+        mkdir -p release/latest/arm64/Darwin
+        ln -s ../../../../config/pob release/latest/arm64/Darwin/config
+        ln -s ../../../../config/pob release/latest/x64/Darwin/config
+        ln -s ../../../../config/pob release/latest/x64/Linux/config
+        ln -s ../../../../config/pob release/latest/x64/Windows_NT/config
 
     - name: remove bin
       run: rm -rfv bin/
