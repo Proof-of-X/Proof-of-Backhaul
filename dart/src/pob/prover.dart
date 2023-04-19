@@ -9,10 +9,10 @@
 
     ----------------------------------------------------------------------------
 
-    Licenses for the following files/packages may have different licenses: 
+    Licenses for the following files/packages may have different licenses:
 
     1. `font.dart`
-    
+
         Big by Glenn Chappell 4/93 -- based on Standard
         Includes ISO Latin-1
         Greek characters by Bruce Jakeway <pbjakeway@neumann.uwaterloo.ca>
@@ -42,8 +42,6 @@ import "package:bit_array/bit_array.dart";
 
 class Client extends pob.Client
 {
-    bool init_done = false;
-
     Client (final Map args) : super ("prover", args)
     {
         // nothing
@@ -153,11 +151,8 @@ class ChallengeHandler extends pob.ChallengeHandler
     int uplink_rate     = 0; // Uplink backhaul of prover
 
     late List               challengers;
+
     final Map <String,bool> got_udp_pong = {};
-
-    bool init_done  = false;
-
-    late LOG log;
 
     int num_challengers_with_private_IPs = 0;
 

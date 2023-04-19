@@ -9,10 +9,10 @@
 
     ----------------------------------------------------------------------------
 
-    Licenses for the following files/packages may have different licenses: 
+    Licenses for the following files/packages may have different licenses:
 
     1. `font.dart`
-    
+
         Big by Glenn Chappell 4/93 -- based on Standard
         Includes ISO Latin-1
         Greek characters by Bruce Jakeway <pbjakeway@neumann.uwaterloo.ca>

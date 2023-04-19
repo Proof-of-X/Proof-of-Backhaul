@@ -9,10 +9,10 @@
 
     ----------------------------------------------------------------------------
 
-    Licenses for the following files/packages may have different licenses: 
+    Licenses for the following files/packages may have different licenses:
 
     1. `font.dart`
-    
+
         Big by Glenn Chappell 4/93 -- based on Standard
         Includes ISO Latin-1
         Greek characters by Bruce Jakeway <pbjakeway@neumann.uwaterloo.ca>
@@ -45,8 +45,6 @@ import "../common/font.dart"                                    as font;
 
 class Client extends pob.Client
 {
-    bool init_done = false;
-
     Client (final Map args) : super ("challenger", args)
     {
         // nothing
@@ -193,27 +191,21 @@ class Client extends pob.Client
 
 class ChallengeHandler extends pob.ChallengeHandler
 {
-    final Map sent_random_number                    = {};
+    final Map   sent_random_number                  = {};
 
-    List received_all_hashes                        = [];
+    List        received_all_hashes                 = [];
 
-    int? received_hash                              = null;
-    int? received_hash_of_hashes                    = null;
-    String? received_packet_bitmap                  = null;
+    int?        received_hash                       = null;
+    int?        received_hash_of_hashes             = null;
+    String?     received_packet_bitmap              = null;
 
-    bool init_done                                  = false;
-
-    late Map prover;
-    int  http_server_port                           = CHALLENGER_PORT;
+    late Map    prover;
 
     final Map<int,List<int>> challenge_packets      = {};
 
-    late LOG log;
+    bool        bandwidth_calculated                = false;
 
-    bool bandwidth_calculated                       = false;
-
-    final Map<String,String> allowed_message_types  = new Map.from(ALL_VALID_CHALLENGE_STATES_FOR_CHALLENGER);
-    String challenge_state                          = "";
+    final Map<String,String> allowed_message_types  = new Map.from (ALL_VALID_CHALLENGE_STATES_FOR_CHALLENGER);
 
     bool all_hashes_received    = false;
     bool packet_bitmap_received = false;
@@ -374,11 +366,11 @@ class ChallengeHandler extends pob.ChallengeHandler
 
     void calculate_bandwidth()
     {
-        log.important("Time taken : ${endTime-startTime}");
+        log.important("Time taken : ${end_time-start_time}");
 
-        if (bandwidth_calculated == false && startTime != -1 && endTime != -1)
+        if (bandwidth_calculated == false && start_time != -1 && end_time != -1)
         {
-            final time_in_seconds   = (endTime - startTime) / 1000000.0;
+            final time_in_seconds   = (end_time - start_time) / 1000000.0;
 
             final num_bits          = challenge_info["total_num_packets_for_challenge"]
                                             *
@@ -389,8 +381,8 @@ class ChallengeHandler extends pob.ChallengeHandler
             log.important("Bandwidth : $num_bits/$time_in_seconds = ${bandwidth}");
 
             challenge_result["bandwidth"]   = bandwidth;
-            challenge_result["startTime"]   = startTime;
-            challenge_result["endTime"]     = endTime;
+            challenge_result["start_time"]   = start_time;
+            challenge_result["end_time"]     = end_time;
             challenge_result["timeTaken"]   = time_in_seconds;
 
             bandwidth_calculated = true;
@@ -618,10 +610,10 @@ class ChallengeHandler extends pob.ChallengeHandler
 
             final now = Now(ntp_offset).microsecondsSinceEpoch;
 
-            startTime = now + (n ~/ 2.0);
+            start_time = now + (n ~/ 2.0);
             nextTime  = now + wait_duration;
 
-            challenge_result["startTime"] = startTime;
+            challenge_result["start_time"] = start_time;
 
             log.important('Sent first packet @ ${Now(ntp_offset)}');
         }
@@ -732,7 +724,7 @@ class ChallengeHandler extends pob.ChallengeHandler
     {
         double n = challenge_result["latency"] ?? 0.0;
 
-        endTime = last_message_received_time.microsecondsSinceEpoch - (n ~/ 2.0);
+        end_time = last_message_received_time.microsecondsSinceEpoch - (n ~/ 2.0);
 
         received_hash               = data["hash"];           // must be verified when we get packet_bitmap
         received_hash_of_hashes     = data["hash_of_hashes"];

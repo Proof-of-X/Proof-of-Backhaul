@@ -9,10 +9,10 @@
 
     ----------------------------------------------------------------------------
 
-    Licenses for the following files/packages may have different licenses: 
+    Licenses for the following files/packages may have different licenses:
 
     1. `font.dart`
-    
+
         Big by Glenn Chappell 4/93 -- based on Standard
         Includes ISO Latin-1
         Greek characters by Bruce Jakeway <pbjakeway@neumann.uwaterloo.ca>
@@ -148,7 +148,7 @@ class Client
 
 
     Map config                              = {};
-    Map claims                              = {};   // all things claimed by the client 
+    Map claims                              = {};   // all things claimed by the client
 
     Client (final String _role, final Map args)
     {
@@ -227,14 +227,26 @@ class Client
         {
             found_invalid_walletPublicKey = true;
 
-            stdout.write("Could not find 'walletPublicKey' in '$role.json';\nplease enter it as keyType:walletPublicKey\nExample `solana:XYZ`");
+            log.error ("Could NOT find 'walletPublicKey' in '$role.json';\nplease enter it as keyType:walletPublicKey\nExample `solana:publicKey-of-Solana-Wallet`");
+
             final input = stdin.readLineSync() ?? ":";
 
-            final split = input.split(":");
+            final split_semicolon = input.split(";");
 
-            crypto.walletPublicKey = {
-                split[0] : split[1]
-            };
+            for (final wallet in split_semicolon)
+            {
+                final s = wallet.split(":");
+
+                final k = s[0].trim();
+                final v = s[1].trim();
+
+                if (k == "" || v == "")
+                    continue;
+
+                crypto.walletPublicKey [k] = v;
+
+                log.important ("Setting wallet : $k = $v");
+            }
         }
 
         // walletPublicKey was found invalid -BUT- now looks like is valid
@@ -315,26 +327,33 @@ class Client
             log.info("IPv4 is : $IPv4");
 
             HttpServer
-                .bind(InternetAddress.anyIPv4, HTTP_IPv4_PORT)
-                .then(
-            (final server)
-            {
-                http_server4 = server;
-
-                server.listen((final HttpRequest req)
+                .bind (InternetAddress.anyIPv4, HTTP_IPv4_PORT)
+                .then
+            (
+                (final server)
                 {
-                    if (req.uri.path == "/" + secret_request)
-                    {
-                        req.response.write (secret_response);
-                        req.response.close();
-                    }
-                    else
-                    {
-                        req.response.write("INVALID");
-                        req.response.close();
-                    }
-                });
-            });
+                    http_server4 = server;
+
+                    server.listen
+                    (
+                        (final HttpRequest req)
+                        {
+                            final remote_ip = req.connectionInfo?.remoteAddress ?? InternetAddress("");
+
+                            if (remote_ip.address == IPv4 && req.uri.path == "/" + secret_request)
+                            {
+                                req.response.write (secret_response);
+                                req.response.close ();
+                            }
+                            else
+                            {
+                                req.response.write ("INVALID");
+                                req.response.close ();
+                            }
+                        }
+                    );
+                }
+            );
         }
 
         if (IPv6 != "INVALID")
@@ -342,26 +361,33 @@ class Client
             log.info("IPv6 is : $IPv6");
 
             HttpServer
-                .bind(InternetAddress.anyIPv6, HTTP_IPv6_PORT)
-                .then(
-            (final server)
-            {
-                http_server6 = server;
-
-                server.listen((final HttpRequest req)
+                .bind (InternetAddress.anyIPv6, HTTP_IPv6_PORT)
+                .then
+            (
+                (final server)
                 {
-                    if (req.uri.path == "/" + secret_request)
-                    {
-                        req.response.write (secret_response);
-                        req.response.close();
-                    }
-                    else
-                    {
-                        req.response.write("INVALID");
-                        req.response.close();
-                    }
-                });
-            });
+                    http_server6 = server;
+
+                    server.listen
+                    (
+                        (final HttpRequest req)
+                        {
+                            final remote_ip = req.connectionInfo?.remoteAddress ?? InternetAddress("");
+
+                            if (remote_ip.address == IPv6 && req.uri.path == "/" + secret_request)
+                            {
+                                req.response.write (secret_response);
+                                req.response.close ();
+                            }
+                            else
+                            {
+                                req.response.write ("INVALID");
+                                req.response.close ();
+                            }
+                        }
+                    );
+                }
+            );
 
             try
             {
@@ -374,7 +400,7 @@ class Client
                                         .get    (myself)
                                         .timeout (const Duration(seconds: 5),
                                             onTimeout: () {
-                                                log.error("Self connect to IPv6 timedout");
+                                                log.warning ("Self connect to IPv6 timedout");
                                                 return http.Response('Error', 408);
                                             }
                                         );
@@ -409,7 +435,7 @@ class Client
                                         .get    (myself)
                                         .timeout (const Duration(seconds: 5),
                                             onTimeout: () {
-                                                log.error("Self connect to IPv4 timedout");
+                                                log.warning ("Self connect to IPv4 timedout");
                                                 return http.Response('Error', 408);
                                             }
                                         );
@@ -532,7 +558,7 @@ class Client
 
         claims.forEach
         (
-            (final k, final v) 
+            (final k, final v)
             {
                 log.info("Claiming : $k = $v");
             }
@@ -792,15 +818,36 @@ class ChallengeHandler
 {
     late Client         client;
 
-    Map                 challenge_info      = {};
-    Map                 challenge_result    = {};
+    Map                 challenge_info          = {};
+    Map                 challenge_result        = {};
+
+    String              challenge_state         = "";
+
+    bool                init_done               = false;
+    bool                sent_challenge_results  = false;
+    bool                cleanup_done            = false;
+
+    bool                challenge_succeeded     = false;
 
     late String         role;
 
-    bool sent_challenge_results             = false;
-    bool cleanup_done                       = false;
+    late LOG            log;
+    late LOG            ws_log;
 
-    ChallengeHandler (this.role, this.challenge_info)
+    late String         challenge_id;
+
+    late Duration       ntp_offset;
+
+    late Crypto         crypto;
+
+    List whitelist              = [];
+
+    int start_time               = -1;
+    int end_time                 = -1;
+
+    bool is_IPv6_challenge      = false;
+
+    ChallengeHandler (this.role, this.crypto, this.challenge_info)
     {
         // nothing
     }

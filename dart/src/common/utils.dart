@@ -9,10 +9,10 @@
 
     ----------------------------------------------------------------------------
 
-    Licenses for the following files/packages may have different licenses: 
+    Licenses for the following files/packages may have different licenses:
 
     1. `font.dart`
-    
+
         Big by Glenn Chappell 4/93 -- based on Standard
         Includes ISO Latin-1
         Greek characters by Bruce Jakeway <pbjakeway@neumann.uwaterloo.ca>
@@ -215,7 +215,7 @@ Future<void> update_client (final String client_key, final String current_versio
                         catch (e) {}
                     }
 
-                    // Test the new executable before updating 
+                    // Test the new executable before updating
 
                     await Process.run (latest_executable, ['-v']).then
                     (
@@ -228,7 +228,13 @@ Future<void> update_client (final String client_key, final String current_versio
                                 log.important("Downloaded update with version : ${result.stdout}");
                                 log.success("Update succeeded!");
 
-                                await Process.start (latest_executable, args, mode : ProcessStartMode.detached);
+                                await Process.start (
+                                    latest_executable,
+                                    args,
+                                    mode        : ProcessStartMode.detachedWithStdio,
+                                    runInShell  : true
+                                );
+
                                 exit(0);
                             }
                             else

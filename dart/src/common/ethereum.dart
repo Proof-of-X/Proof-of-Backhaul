@@ -9,10 +9,10 @@
 
     ----------------------------------------------------------------------------
 
-    Licenses for the following files/packages may have different licenses: 
+    Licenses for the following files/packages may have different licenses:
 
     1. `font.dart`
-    
+
         Big by Glenn Chappell 4/93 -- based on Standard
         Includes ISO Latin-1
         Greek characters by Bruce Jakeway <pbjakeway@neumann.uwaterloo.ca>
@@ -44,7 +44,7 @@ class Crypto extends abc.Crypto
 {
         String evm_name = "INVALID";
 
-        Crypto(final Map args) : super("ethereum", args) 
+        Crypto(final Map args) : super("ethereum", args)
         {
             if (keyPair != null)
             {
@@ -55,7 +55,7 @@ class Crypto extends abc.Crypto
         }
 
         @override
-        Future<bool> init() async 
+        Future<bool> init() async
         {
             await super.init();
 
@@ -72,24 +72,24 @@ class Crypto extends abc.Crypto
                     if (home == null)
                         id_file = default_id_file_name;
                     else
-                        id_file = home + "/.config/" + evm_name + "/" 
+                        id_file = home + "/.config/" + evm_name + "/"
                                                             + default_id_file_name;
             }
 
             //// Read contents of the id_file
-            try 
-            {  
+            try
+            {
                     print("Reading Keypair from file");
 
                     String key_info_in_file = bytesToHex(File(id_file).readAsBytesSync());
-                    
-                    
+
+
                     print("Read Keypair from file $key_info_in_file");
 
                     /*final k = jsonDecode(key_info_in_file)
                                         .cast<int>()
                                         .sublist(0,32); */
-                    
+
                     keyPair = EthPrivateKey.fromHex(key_info_in_file);
 
                     print(keyPair);
@@ -98,20 +98,19 @@ class Crypto extends abc.Crypto
 
                     private_key_found = true;
 
-                    if (await _sign_and_verify() == true) 
+                    if (await _sign_and_verify() == true)
                     {
                         print ("Verification success");
                         return true;
-                    } 
-                    else 
+                    }
+                    else
                     {
                         print ("Verification fail");
                         return false;
-                        
                     }
 
-            } 
-            catch (e) 
+            }
+            catch (e)
             {       print(e);
                     print("WARNING : Couldn't find $id_file");
             }
@@ -122,15 +121,15 @@ class Crypto extends abc.Crypto
                     print("Generating a new key ...");
 
                     /*
-                    
+
                     final ec_function             = getSecp256k1();
                     keyPair                     = ec_function.generatePrivateKey();
                     */
                     final rng = Random.secure();
-                    keyPair = EthPrivateKey.createRandom(rng);     
+                    keyPair = EthPrivateKey.createRandom(rng);
                     print("Pivate key is ${keyPair.privateKey}");
-                    
-                    if (await _sign_and_verify() == true) 
+
+                    if (await _sign_and_verify() == true)
                     {
                         //// Save keyPair to file
                         bool is_key_pair_saved = await save_keyPair ();
@@ -139,42 +138,41 @@ class Crypto extends abc.Crypto
                             return false;
                         }
 
-                    } 
-                    else 
+                    }
+                    else
                     {
                         return false;
-                        
                     }
             }
             publicKey     = get_public_key();
 
             print ("Generated Public key is $publicKey");
-            
+
             return true;
         }
 
         String get_public_key () {
-            
+
             return keyPair.address.hex;
 
         }
 
-        Future<bool> _sign_and_verify () async 
+        Future<bool> _sign_and_verify () async
         {
                 String validation_message   = "Hello world" ;
                 bool is_verified = false;
-                
-                try 
+
+                try
                 {
-                    String signed_message       = await 
+                    String signed_message       = await
                                                     sign(validation_message);
 
-                    is_verified                 = await 
+                    is_verified                 = await
                                                     verify
-                                                        (   validation_message, 
-                                                            signed_message, 
+                                                        (   validation_message,
+                                                            signed_message,
                                                             get_public_key()
-                                                        ); 
+                                                        );
                     print("Verified is $is_verified");
 
                 } catch (e) {
@@ -197,37 +195,37 @@ class Crypto extends abc.Crypto
                                                     Uint8List.fromList(
                                                         message.codeUnits)
                                                 );
-            
+
             print("Signed message is ${'0x'+bytesToHex(signed_message) }");
-            
+
             return '0x'+bytesToHex(signed_message);
         }
-        
-        static Future<bool> verify (final String message, 
-                                    final String signature, 
+
+        static Future<bool> verify (final String message,
+                                    final String signature,
                                     String public_key) async
         {
             String recovered_public_key = '';
 
             try {
 
-                    recovered_public_key 
-                            = 
+                    recovered_public_key
+                            =
                             EthSigUtil
                                 .recoverPersonalSignature
                                     (
                                         signature: signature,
                                         message: Uint8List.fromList(message.codeUnits)
                                     );
-                    
+
                             print ("Recovered public key is $recovered_public_key");
                 }
             catch (e)
                 {
                     return false;
                 }
-            
-            if (recovered_public_key == public_key) 
+
+            if (recovered_public_key == public_key)
                 {
                     return true;
                 }
@@ -249,7 +247,7 @@ class Crypto extends abc.Crypto
             return 64; // XXX to be verified
         }
 
-        
+
         @override
         Future<bool> save_keyPair () async
             {

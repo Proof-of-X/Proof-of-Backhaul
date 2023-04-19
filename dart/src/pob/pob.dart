@@ -9,10 +9,10 @@
 
     ----------------------------------------------------------------------------
 
-    Licenses for the following files/packages may have different licenses: 
+    Licenses for the following files/packages may have different licenses:
 
     1. `font.dart`
-    
+
         Big by Glenn Chappell 4/93 -- based on Standard
         Includes ISO Latin-1
         Greek characters by Bruce Jakeway <pbjakeway@neumann.uwaterloo.ca>
@@ -90,283 +90,6 @@ class Client extends abc.Client
         return (init_done = true);
     }
 
-    Future<void> set_has_public_ip () async
-    {
-        if (run_set_has_public_ip == true)
-            return;
-
-        run_set_has_public_ip = true;
-
-        Map j;  // json
-        Map r;  // result
-
-        // Try IPv6 first and then IPv4
-
-        try
-        {
-            j       = await do_post (IP_INFO_URL_IPv6,{});
-            r       = j["result"];
-
-            IPv6    = r["IPv6"] ?? "INVALID";
-
-            final clean_ip = process_ip(IPv6);
-
-            if (clean_ip != IPv6)
-            {
-                IPv6 = "INVALID";
-                IPv4 = clean_ip;
-            }
-        }
-        catch (e) {}
-
-        try
-        {
-            j       = await do_post (IP_INFO_URL_IPv4,{});
-            r       = j["result"];
-
-            IPv4    = r["IPv4"] ?? "INVALID";
-        }
-        catch (e) {}
-
-        if (IPv4 == "INVALID" && IPv6 == "INVALID")
-        {
-                log.error("Your IP is : PRIVATE");
-                return;
-        }
-
-        has_IPv6 = (IPv6 == "INVALID") ? false : true;
-
-        final String secret_request = base64.encode (
-            List<int>.generate(32, (i) => RNG.nextInt(256))
-        );
-
-        final String secret_response = base64.encode (
-            List<int>.generate(32, (i) => RNG.nextInt(256))
-        );
-
-        if (IPv4 != "INVALID")
-        {
-            log.info("IPv4 is : $IPv4");
-
-            HttpServer
-                .bind (InternetAddress.anyIPv4, HTTP_IPv4_PORT)
-                .then
-            (
-                (final server)
-                {
-                    http_server4 = server;
-
-                    server.listen
-                    (
-                        (final HttpRequest req)
-                        {
-                            final remote_ip = req.connectionInfo?.remoteAddress ?? InternetAddress("");
-
-                            if (remote_ip.address == IPv4 && req.uri.path == "/" + secret_request)
-                            {
-                                req.response.write (secret_response);
-                                req.response.close ();
-                            }
-                            else
-                            {
-                                req.response.write ("INVALID");
-                                req.response.close ();
-                            }
-                        }
-                    );
-                }
-            );
-        }
-
-        if (IPv6 != "INVALID")
-        {
-            log.info("IPv6 is : $IPv6");
-
-            HttpServer
-                .bind (InternetAddress.anyIPv6, HTTP_IPv6_PORT)
-                .then
-            (
-                (final server)
-                {
-                    http_server6 = server;
-
-                    server.listen
-                    (
-                        (final HttpRequest req)
-                        {
-                            final remote_ip = req.connectionInfo?.remoteAddress ?? InternetAddress("");
-
-                            if (remote_ip.address == IPv6 && req.uri.path == "/" + secret_request)
-                            {
-                                req.response.write (secret_response);
-                                req.response.close ();
-                            }
-                            else
-                            {
-                                req.response.write ("INVALID");
-                                req.response.close ();
-                            }
-                        }
-                    );
-                }
-            );
-
-            try
-            {
-                final open_bracket  = IPv6.contains(":") ? "[" : "";
-                final close_bracket = IPv6.contains(":") ? "]" : "";
-
-                final myself        = Uri.parse ("http://" + open_bracket + IPv6 + close_bracket + ":" + HTTP_IPv6_PORT.toString() + "/$secret_request");
-
-                final response      = await http
-                                        .get    (myself)
-                                        .timeout (const Duration(seconds: 5),
-                                            onTimeout: () {
-                                                log.error("Self connect to IPv6 timedout");
-                                                return http.Response('Error', 408);
-                                            }
-                                        );
-
-
-                final got_text      = response
-                                        .body
-                                        .replaceAll("\r","")
-                                        .replaceAll("\n","");
-
-                if (got_text == secret_response)
-                {
-                    has_public_IPv6 = true;
-
-                    log.success("Your IPv6 `$IPv6` is : PUBLIC");
-                }
-                else
-                {
-                    log.warning("Your IPv6 `$IPv6` is : PRIVATE");
-                }
-            }
-            catch (e)
-            {
-                log.warning("Your IPv6 `$IPv6` is : PRIVATE");
-            }
-        }
-
-        try
-        {
-            final myself        = Uri.parse ("http://" + IPv4 + ":" + HTTP_IPv4_PORT.toString()  + "/$secret_request");
-            final response      = await http
-                                        .get    (myself)
-                                        .timeout (const Duration(seconds: 5),
-                                            onTimeout: () {
-                                                log.error("Self connect to IPv4 timedout");
-                                                return http.Response('Error', 408);
-                                            }
-                                        );
-
-            final got_text      = response
-                                        .body
-                                        .replaceAll("\r","")
-                                        .replaceAll("\n","");
-
-            if (got_text == secret_response)
-            {
-                has_public_IPv4 = true;
-
-                log.success("Your IPv4 `$IPv4` is : PUBLIC");
-            }
-            else
-            {
-                log.warning("Your IPv4 `$IPv4` is : PRIVATE");
-            }
-        }
-        catch (e)
-        {
-            log.warning("Your IPv4 `$IPv4` is : PRIVATE");
-        }
-
-        http_server4?.close(force:true);
-        http_server6?.close(force:true);
-    }
-
-    void Log (final String icon, final String message)
-    {
-        final now   = Now(ntp_offset);
-        final time  = now.month.toString() + "/" + now.day.toString() + " " + now.hour.toString() + ":" + now.minute.toString();
-        final line  = "$icon $time $message";
-
-        if (logs_length >= 40)
-        {
-                final split = logs.split("\n").sublist(0,38);
-                logs = split.join("\n");
-                logs_length = 39;
-        }
-
-        logs = line + "\n" + logs;
-
-        ++logs_length;
-    }
-
-    Future<Map> do_post (final Uri uri, final Map body) async
-    {
-        String json_body        = jsonEncode(body);
-
-        final headers           = {
-                "Content-Type"  : "application/json",
-                "Cookie"        : cookie
-        };
-
-        final response = await http.post (
-                uri,
-                body    : json_body,
-                headers : headers
-        );
-
-        final c = response.headers["set-cookie"];
-
-        if (c != null)
-        {
-                const cookie_name       = "__Secure-session=";
-                const cookie_signature  = "__Secure-session.sig=";
-
-                cookie = "";
-
-                cookie += cookie_name;
-                cookie += c.split(cookie_name)[1].split(";")[0];
-
-                cookie += "; ";
-
-                cookie += cookie_signature;
-                cookie += c.split(cookie_signature)[1].split(";")[0];
-        }
-
-        Map j = {};
-
-        if (response.headers["content-type"] == "application/json")
-        {
-                try
-                {
-                        j = jsonDecode(response.body);
-
-                        if (response.statusCode != 200)
-                                log.error("${uri.path}: " + j["error"]["message"]);
-
-                        if (response.statusCode == 402)
-                        {
-                            do_run                      = false;
-                            payment_or_staking_required = true;
-                        }
-                }
-                catch (e)
-                {
-                        print("Exception $e");
-                }
-        }
-        else
-        {
-                log.error("Server did not return 'application/json'");
-        }
-
-        return j;
-    }
 }
 
 class ChallengeHandler extends abc.ChallengeHandler
@@ -380,42 +103,24 @@ class ChallengeHandler extends abc.ChallengeHandler
     late RawDatagramSocket      socket4;
     late RawDatagramSocket      socket6;
 
-    late abc.Crypto             crypto;
-
-    List whitelist              = [];
-
-    final Map challenge_result  = {};
-
-    int startTime               = -1;
-    int endTime                 = -1;
-
-    late LOG log;
-    late LOG ws_log;
-
-    bool challenge_succeeded    = false;
-    bool is_IPv6_challenge      = false;
-
     late DateTime last_message_received_time;
 
-    late String challenge_id;
     late List<int> challenge_id_in_ascii;
-
-    late Duration ntp_offset;
 
     Map<String,WebSocket>   challenge_websocket = {};
     late HttpServer         challenge_http_server;
 
     ChallengeHandler
     (
-        final String    _role,
-        final Map       _challenge_info,
-        this.crypto,
+        final String        _role,
+        final Map           _challenge_info,
+        final abc.Crypto    _crypto,
         {
             InternetAddress?    setSourceAddress4   = null,
             InternetAddress?    setSourceAddress6   = null,
             int                 setSourcePort       = 0
         }
-    ) : super (_role, _challenge_info)
+    ) : super (_role, _crypto, _challenge_info)
     {
         int? mppc = challenge_info ["max_packets_per_challenger"];
 
