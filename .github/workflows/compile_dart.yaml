@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-latest, buildjet-2vcpu-ubuntu-2204-arm]
         sdk: [stable] #2.19.2 as of Feb 2023
         include:
         - os: ubuntu-latest
@@ -32,6 +32,11 @@ jobs:
           os-version: x64/Windows_NT
           file-extension: '.exe'
           build-command: '.\build.cmd'
+
+        - os: buildjet-2vcpu-ubuntu-2204-arm
+          os-version: arm64/Linux
+          file-extension: '.exe'
+          build-command: './build'
 
     steps:
     - name: checkout
@@ -130,7 +135,7 @@ jobs:
         git config user.name github-actions
         git config user.email github-actions@github.com
         git add .
-        git commit -m "generated"
+        git commit -m "generated binaries"
         git push
 
 #sign code windows
@@ -161,7 +166,7 @@ jobs:
         git config user.name github-actions
         git config user.email github-actions@github.com
         git add .
-        git commit -m "generated"
+        git commit -m "windows exe code signing"
         git push
 
 
