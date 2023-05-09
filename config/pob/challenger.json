@@ -4,7 +4,7 @@
 	},
 
 	"walletPublicKey"	: {
-		"solana"	: "E8VzCz92Da6XykE1nLAKeTt4Nts5Svp7C4eovBzeHUPk",	
-		"ethereum"	: "0x630391b032F444cB40B3603b579064817f312353"
+		"solana"	: "E8VzCz92Da6XykE1nLAKeTt4Nts5Svp7C4eovBzeHUPk",	"//" : "TODO: Please change this!",
+		"ethereum"	: "0x630391b032F444cB40B3603b579064817f312353",		"//" : "TODO: Please change this!"
 	}
 }
