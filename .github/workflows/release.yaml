@@ -1,7 +1,6 @@
-name: compile dart and push
+name: Release Binaries and Docker
 on: 
   workflow_dispatch:
-
 
 jobs:
   build:
@@ -237,7 +236,63 @@ jobs:
 
 
 #docker workflow
-  # create_docker_version:
-  #   needs: release_public
-  #   runs-on:  ubuntu-latest
-  #   steps:
+  create_docker_version:
+    needs: release_public
+    runs-on:  ubuntu-latest
+    steps:
+    - name: checkout 
+      id: checkout
+      uses: actions/checkout@v3
+
+    - name: enable permission
+      run: |
+        chmod +x release/latest/x64/Linux/pob/run-pob-prover.exe
+        chmod +x release/latest/x64/Linux/pob/run-pob-challenger.exe
+        chmod +x release/latest/x64/Linux/pol/run-pol-prover.exe
+        chmod +x release/latest/x64/Linux/pol/run-pol-challenger.exe
+
+    - name: get pob prover version
+      id: pob_prover_version
+      run: echo "version=$(release/latest/x64/Linux/pob/run-pob-prover.exe -v)" >> "$GITHUB_OUTPUT"
+
+    - name: get pob challenger version
+      id: pob_challenger_version
+      run: echo "version=$(release/latest/x64/Linux/pob/run-pob-challenger.exe -v)" >> "$GITHUB_OUTPUT"
+
+    - name: get pol prover version
+      id: pol_prover_version
+      run: echo "version=$(release/latest/x64/Linux/pol/run-pol-prover.exe -v)" >> "$GITHUB_OUTPUT"
+
+    - name: get pol challenger version
+      id: pol_challenger_version
+      run: echo "version=$(release/latest/x64/Linux/pol/run-pol-challenger.exe -v)" >> "$GITHUB_OUTPUT"
+
+    - name: Build the Docker image
+      run: | 
+        docker build --target pob_challenger -t witnesschain/pob_challenger .; 
+        docker tag witnesschain/pob_challenger:latest witnesschain/pob_challenger:${{steps.pob_challenger_version.outputs.version}}; 
+        docker build --target pob_prover -t witnesschain/pob_prover .;
+        docker tag witnesschain/pob_prover:latest witnesschain/pob_prover:${{steps.pob_prover_version.outputs.version}}; 
+
+        docker build --target pol_challenger -t witnesschain/pol_challenger .; 
+        docker tag witnesschain/pol_challenger:latest witnesschain/pol_challenger:${{steps.pol_challenger_version.outputs.version}}; 
+        docker build --target pob_prover -t witnesschain/pol_prover .;
+        docker tag witnesschain/pol_prover:latest witnesschain/pol_prover:${{steps.pol_prover_version.outputs.version}}; 
+
+    - name: Login to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Upload Docker image to Docker Hub
+      run: |
+        docker push witnesschain/pob_challenger:latest;
+        docker push witnesschain/pob_challenger:${{steps.pob_challenger_version.outputs.version}};
+        docker push witnesschain/pob_prover:latest;
+        docker push witnesschain/pob_prover:${{steps.pob_prover_version.outputs.version}};
+
+        docker push witnesschain/pol_challenger:latest;
+        docker push witnesschain/pol_challenger:${{steps.pol_challenger_version.outputs.version}};
+        docker push witnesschain/pol_prover:latest;
+        docker push witnesschain/pol_prover:${{steps.pol_prover_version.outputs.version}};
