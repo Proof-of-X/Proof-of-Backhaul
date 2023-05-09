@@ -267,6 +267,10 @@ jobs:
       id: pol_challenger_version
       run: echo "version=$(release/latest/x64/Linux/pol/run-pol-challenger.exe -v)" >> "$GITHUB_OUTPUT"
 
+    - name: build script permission
+      run: chmod +x install-deps; chmod +x build; chmod +x build; chmod +x build-pob; chmod +x build-pol;
+      working-directory: dart/run
+
     - name: Build the Docker image
       run: | 
         docker build --target pob_challenger -t witnesschain/pob_challenger .; 
