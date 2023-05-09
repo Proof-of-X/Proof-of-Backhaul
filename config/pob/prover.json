@@ -1,9 +1,10 @@
 {
 	"claims" : {
-		"bandwidth" : 11.0
+		"bandwidth"	: 11.0,		"//" : "bandwidth is in Mbps"
 	},
 
 	"walletPublicKey"	: {
-		"solana" : "E8VzCz92Da6XykE1nLAKeTt4Nts5Svp7C4eovBzeHUPk"
+		"solana"	: "E8VzCz92Da6XykE1nLAKeTt4Nts5Svp7C4eovBzeHUPk",	
+		"ethereum"	: "0x630391b032F444cB40B3603b579064817f312353"
 	}
 }

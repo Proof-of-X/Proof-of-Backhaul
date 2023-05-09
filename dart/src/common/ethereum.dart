@@ -57,10 +57,11 @@ class Crypto extends abc.Crypto
         @override
         Future<bool> init() async
         {
-            await super.init();
+            if (init_done)
+                return true;
 
             if (keyPair != null && publicKey != "INVALID")
-                return true;     // keyPair is already initialized
+                return (init_done = true);     // keyPair was already initialized
 
             bool private_key_found = false;
 
@@ -148,7 +149,7 @@ class Crypto extends abc.Crypto
 
             print ("Generated Public key is $publicKey");
 
-            return true;
+            return (init_done = true);
         }
 
         String get_public_key () {

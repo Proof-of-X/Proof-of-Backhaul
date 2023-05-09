@@ -2,15 +2,7 @@
 
 dir=`dirname $0`
 
-cd $dir/../src
+cd $dir
 
-mkdir ../bin 2>/dev/null
-
-cd pob
-
-echo "final version = '''" > release.dart
-git log -1 --format=%cd origin/main >> release.dart
-echo "'''.trim();" >> release.dart
-
-dart compile exe run-prover.dart	-o ../../bin/run-pob-prover.exe
-dart compile exe run-challenger.dart	-o ../../bin/run-pob-challenger.exe
+./build-pob
+./build-pol

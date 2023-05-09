@@ -25,19 +25,21 @@
         MIT             (https://opensource.org/license/mit/)
 */
 
-import "dart:io";
 import "dart:core";
-import "dart:math";
-import "dart:typed_data";
 
-import 'package:system_info2/system_info2.dart';
+import "release.dart"           as release;
 
-final Map<String, String> ENV   = Platform.environment;
+import "../common/constants.dart";
 
-final RNG                       = Random.secure();
+final POL_RELEASE_VERSION       = release.version.trim();
 
+const PROVER_PORT               = 11111;
+const CHALLENGER_PORT           = 22222;
 const HTTP_IPv4_PORT            = 33333;
 const HTTP_IPv6_PORT            = 44444;
+
+const HASH_SIZE_IN_BITS         = 32; // XXX 64 is better ?
+const MAX_HASH                  = (1 << HASH_SIZE_IN_BITS) - 1;
 
 const SERVER                    = "pob.witnesschain.com";
 const SERVER_IPv4               = "IPv4." + SERVER;
@@ -53,6 +55,9 @@ const BASE_URL_IPv6             = "https://" + SERVER_IPv6 + SERVER_PORT + API_V
 final LOGIN_URL                 = Uri.parse(BASE_URL + "/login"                 );
 final LOGOUT_URL                = Uri.parse(BASE_URL + "/logout"                );
 final PRE_LOGIN_URL             = Uri.parse(BASE_URL + "/pre-login"             );
+final CHALLENGE_REQUEST_URL     = Uri.parse(BASE_URL + "/pol/challenge-request" );
+final CHALLENGE_STATUS_URL      = Uri.parse(BASE_URL + "/pol/challenge-status"  );
+final CHALLENGE_RESULT_URL      = Uri.parse(BASE_URL + "/pol/challenge-result"  );
 
 final CLAIM_PUBLIC_IP_URL       = Uri.parse(BASE_URL + "/claim-public-ip"       );
 
@@ -71,33 +76,18 @@ const CONTENT_TYPE_JSON         = {
         "content-type" : "application/json"
 };
 
-final FOR_2_SECONDS             = Duration (seconds : 2);
+const CHALLENGE_ID_LENGTH                   = 127;
 
-final LATEST_VERSION_URL        = Uri.parse("https://raw.githubusercontent.com/Proof-of-X/Proof-of-Backhaul/main/release/latest/version.txt");
+const INDEX_START_CHALLENGE_ID              = 2;
+const INDEX_END_CHALLENGE_ID                = INDEX_START_CHALLENGE_ID + CHALLENGE_ID_LENGTH - 1;
 
-const UDP_CHUNK_SIZE            = 1448;
-const UDP_HEADER_SIZE           = 40; // udp header size in bytes
+const INDEX_START_SEQUENCE_NUMBER           = INDEX_END_CHALLENGE_ID + 1;
+const INDEX_START_RANDOM_NUMBER             = INDEX_START_SEQUENCE_NUMBER + 4;
 
-const MAX_UDP_MESSAGE_TIMEOUT   = 10000;
+const INDEX_START_PUBLIC_KEY_TYPE           = INDEX_START_RANDOM_NUMBER + 4;
+const INDEX_START_PUBLIC_KEY_LENGTH         = INDEX_START_PUBLIC_KEY_TYPE + 1;
 
-const OS_TYPES = {
-    "macos"     : "Darwin",
-    "windows"   : "Windows_NT",
-    "linux"     : "Linux",
-    "unknown"   : "unknown"
-};
+const INDEX_START_PUBLIC_KEY                = INDEX_START_PUBLIC_KEY_LENGTH + 1;
 
-final OS = OS_TYPES [Platform.operatingSystem] ?? "unknown";
-
-final ARCHITECTURE_TYPES = {
-    "arm64"     : "arm64",
-    "amd64"     : "x64",
-    "x86_64"    : "x64",
-    "unknown"   : "unknown"
-};
-
-final arch = SysInfo.kernelArchitecture.toString() == "UNKNOWN" ? ENV["PROCESSOR_ARCHITECTURE"] : SysInfo.kernelArchitecture.toString();
-
-final ARCHITECTURE = ARCHITECTURE_TYPES [arch?.toLowerCase()] ?? "unknown";
-
-final EMPTY_PACKET = Uint8List(0);
+final LATEST_VERSION_PROVER_URL     = Uri.parse("https://github.com/Proof-of-X/Proof-of-Location/raw/main/release/latest/$ARCHITECTURE/$OS/run-pol-prover.exe");
+final LATEST_VERSION_CHALLENGER_URL = Uri.parse("https://github.com/Proof-of-X/Proof-of-Location/raw/main/release/latest/$ARCHITECTURE/$OS/run-pol-challenger.exe");

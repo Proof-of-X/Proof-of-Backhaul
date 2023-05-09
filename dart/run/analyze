@@ -1,11 +1,24 @@
 #!/bin/sh
 
+echo
+
 dir=`dirname $0`
 
 cd $dir/../src
 
 cd common
+echo
+echo ===== Common =====
 dart analyze *.dart
 
 cd ../pob 
+echo
+echo ===== PoB =====
 dart analyze *.dart
+
+cd ../pol 
+echo
+echo ===== PoL =====
+dart analyze *.dart
+
+echo

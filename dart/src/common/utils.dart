@@ -32,13 +32,6 @@ import "package:http/http.dart"                                 as http;
 import "constants.dart";
 import "log.dart";
 
-enum MessageType
-{
-    CHALLENGE_PACKET
-}
-
-final MESSAGE_TYPE_CHALLENGE_PACKET = MessageType.CHALLENGE_PACKET.index;
-
 bool is_string(final Map m, final String k)
 {
     if (m.containsKey(k) && m[k] is String)
@@ -68,12 +61,10 @@ bool is_list_equals (final List<int> a, final List<int> b)
     if (identical(a,b))
         return true;
 
-    final length = a.length;
-
-    if (length != b.length)
+    if (a.length != b.length)
         return false;
 
-    for (int i = 0; i < length; i++)
+    for (int i = 0; i < a.length; i++)
     {
         if (a[i] != b[i])
             return false;
@@ -105,18 +96,47 @@ DateTime Now (final Duration ntp_offset)
     return DateTime.now().add(ntp_offset).toUtc();
 }
 
-Future<void> update_client (final String client_key, final String current_version, final List<String> args) async
+Future<void> update_client (
+    final String        client_key,
+    final String        running_version,
+    final Uri           download_url,
+    final List<String>  args
+) async
 {
     final log = LOG("Updates");
 
     if (! Platform.executable.endsWith(".exe"))
         return;
 
-    if (ENV["NO_POB_UPDATES"] != null)
-        return;
+    print("\n----- $client_key -----");
 
-    print("-----");
-    log.important ("Checking for latest version ...");
+    switch (client_key)
+    {
+        case "pob_prover_client":
+        case "pob_challenger_client":
+        {
+            if (ENV["ENABLE_POB_UPDATES"] == null)
+            {
+                return log.warning("Updates are turned : OFF");
+            }
+
+            break;
+        }
+
+        case "pol_prover_client":
+        case "pol_challenger_client":
+        {
+            if (ENV["ENABLE_POL_UPDATES"] == null)
+            {
+                return log.warning("Updates are turned : OFF");
+            }
+
+            break;
+        }
+    }
+
+    log.success     ("Updates are turned : ON");
+    log.important   ("Checking for latest version ...");
 
     await http
         .get    (LATEST_VERSION_URL)
@@ -146,50 +166,29 @@ Future<void> update_client (final String client_key, final String current_versio
             }
             catch (e) {}
 
-            log.info("Current version is : '${current_version}'");
+            log.info("Current version is : '$running_version'");
             log.info("Latest  version is : '$latest_version'");
 
-            if (current_version == latest_version)
+            final int_running_version   = int.parse(running_version);
+            final int_latest_version    = int.parse(latest_version);
+
+            if (int_running_version >= int_latest_version)
             {
-                log.info("Already at latest version");
+                log.info("No new updates!");
                 return;
             }
 
             log.info("Trying to update ...");
-
-            final URLs = {
-                "pob_prover_client"         : LATEST_VERSION_PROVER_URL,
-                "pob_challenger_client"     : LATEST_VERSION_CHALLENGER_URL
-            };
-
-            final PATHs = {
-                "pob_prover_client"         : "run-pob-prover.exe",
-                "pob_challenger_client"     : "run-pob-challenger.exe",
-
-                "pol_prover_client"         : "run-pol-prover.exe",
-                "pol_challenger_client"     : "run-pol-challenger.exe"
-            };
-
-            final url = URLs [client_key];
-
-            if (url == null)
-            {
-                log.error("No url found to update. Update failed!");
-                return;
-            }
-
-            log.important("Downloading : `$url`");
+            log.important("Downloading : `$download_url`");
 
             await http
-                    .get (url)
+                    .get (download_url)
                     .then
             (
                 (final response) async
                 {
-                    final path = PATHs[client_key];
-
-                    if (path == null)
-                      return;
+                    final split = Platform.executable.split("/");
+                    final path  = split [split.length - 1];
 
                     if (response.statusCode != 200)
                     {

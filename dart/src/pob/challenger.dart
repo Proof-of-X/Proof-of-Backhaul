@@ -34,8 +34,9 @@ import "../common/utils.dart";
 import "../common/abc.dart"                                     as abc;
 
 import "constants.dart";
-import "pob.dart"                                               as pob;
+import "../common/constants.dart";
 
+import "pob.dart"                                               as pob;
 import "../common/crypto-factory.dart"                          as cryptoFactory;
 
 import 'package:dart_ping/dart_ping.dart';
@@ -133,8 +134,10 @@ class Client extends pob.Client
 
         log.important('Timeout : ${timeout_in_microseconds ~/ 1000000} seconds');
 
-        Future.delayed (Duration(microseconds : timeout_in_microseconds), () async {
-            await challenge_handler.cleanup("Timeout");
+        Future.delayed (Duration(microseconds : timeout_in_microseconds), () async
+        {
+            await report_challenge_results  (challenge_handler);
+            await challenge_handler.cleanup ("Timeout");
         });
 
         await challenge_handler.run();
@@ -182,6 +185,10 @@ class Client extends pob.Client
                     {
                         ch.sent_challenge_results = true;
                         log.success("Sent Results");
+                    }
+                    else
+                    {
+                        log.error("Could not sent Results");
                     }
                 }
             }
@@ -236,7 +243,7 @@ class ChallengeHandler extends pob.ChallengeHandler
         prover              = challenge_info["prover"];
         prover["udp_port"]  = PROVER_PORT;
 
-        final IPv6                      = prover["IPv6"];
+        final IPv6          = prover["IPv6"];
 
         if (IPv6 != null)
         {
@@ -290,20 +297,20 @@ class ChallengeHandler extends pob.ChallengeHandler
         return init_done;
     }
 
-    Future<void> process_udp_ping (final Map data) async
+    Future<void> process_UDP_ping (final Map data) async
     {
         if (data["SOURCE_PORT"] is int && data["SOURCE_PORT"] > 0)
         {
             prover["udp_port"] = data["SOURCE_PORT"];
-            await send_udp_pong();
+            await send_UDP_pong();
         }
         else
         {
-            log.error("Got message : $data");
+            log.error("Got invalid message : $data");
         }
     }
 
-    Future<bool> send_udp_pong () async
+    Future<bool> send_UDP_pong () async
     {
         final udp_pong = jsonEncode ({
             "type" : "udp_pong",
@@ -352,14 +359,14 @@ class ChallengeHandler extends pob.ChallengeHandler
             send_UDP_message (prover, "udp_connect", signed_udp_connect);
         }
 
-        log.important("waiting for udp ping");
+        log.important("Waiting for udp ping ...");
 
         final Map udp_ping = await get_UDP_message (
                             ["udp_ping"],
-                            only_IPv6 : is_IPv6_challenge
+                            is_IPv6_challenge : is_IPv6_challenge
         );
 
-        process_udp_ping (udp_ping);
+        process_UDP_ping (udp_ping);
 
         return true;
     }
@@ -381,8 +388,8 @@ class ChallengeHandler extends pob.ChallengeHandler
             log.important("Bandwidth : $num_bits/$time_in_seconds = ${bandwidth}");
 
             challenge_result["bandwidth"]   = bandwidth;
-            challenge_result["start_time"]   = start_time;
-            challenge_result["end_time"]     = end_time;
+            challenge_result["start_time"]  = start_time;
+            challenge_result["end_time"]    = end_time;
             challenge_result["timeTaken"]   = time_in_seconds;
 
             bandwidth_calculated = true;
@@ -703,17 +710,14 @@ class ChallengeHandler extends pob.ChallengeHandler
 
         if (! got_hash_packet)
         {
-            for (int i = 1; i <= 10; ++i)
-            {
-                final Map r = await get_UDP_message (
-                                ["hash_AND_hash_of_hashes"],
-                                only_IPv6 : is_IPv6_challenge
-                );
+            final Map r = await get_UDP_message (
+                ["hash_AND_hash_of_hashes"],
+                is_IPv6_challenge : is_IPv6_challenge
+            );
 
-                if (r["DATA"] != null)
-                {
-                    return process_hash_AND_hash_of_hashes (r["DATA"]);
-                }
+            if (r["DATA"] != null)
+            {
+                return process_hash_AND_hash_of_hashes (r["DATA"]);
             }
         }
 
@@ -742,7 +746,7 @@ class ChallengeHandler extends pob.ChallengeHandler
         return true;
     }
 
-    Future<bool> process_packet_bitmap (Map data) async
+    Future<bool> process_packet_bitmap (final Map data) async
     {
         List<int> compressed_bitmap = [];
 
@@ -916,7 +920,7 @@ class ChallengeHandler extends pob.ChallengeHandler
 
         final Map data = signed_message["DATA"];
 
-        ws_log.important("Got $received_message_type");
+        ws_log.success("Got $received_message_type");
 
         if (message["type"] == "start_challenge" && prover["udp_port"] == 0)
         {

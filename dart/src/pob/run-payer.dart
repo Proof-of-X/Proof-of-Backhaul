@@ -28,14 +28,14 @@
 import "dart:io";
 import "dart:isolate";
 
-import "run-challenger-once.dart"   as challenger;
+import "run-payer-once.dart"        as payer;
 
 import "../common/utils.dart";
 
 import "constants.dart";
 import "release.dart"               as release;
 
-const client_key = "pob_challenger_client";
+const client_key = "pob_payer_client";
 
 void main(final List<String> args) async
 {
@@ -65,30 +65,25 @@ void main(final List<String> args) async
         }
         else
         {
-            await update_client (client_key, release.version, LATEST_VERSION_CHALLENGER_URL, args);
+            await update_client (client_key, release.version, LATEST_VERSION_PROVER_URL, args);
         }
     }
 
-    while (true)
+    try
     {
-        try
-        {
-            print("\n----- $client_key -----");
+        print("\n----- $client_key -----");
 
-            await Isolate.run (
-                () async
-                {
-                    await challenger.run (args);
+        await Isolate.run (
+            () async
+        {
+                    await payer.run (args);
                 }
-            );
+        );
 
-            print("=====");
-        }
-        catch (e)
-        {
-            print("Exception : $e");
-        }
-
-        await update_client (client_key, release.version, LATEST_VERSION_CHALLENGER_URL, args);
+        print("=====");
+    }
+    catch (e)
+    {
+        print("Exception : $e");
     }
 }

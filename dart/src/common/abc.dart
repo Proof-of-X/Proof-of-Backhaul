@@ -37,16 +37,19 @@ import "package:stream_channel/stream_channel.dart";
 import "package:web_socket_channel/web_socket_channel.dart";
 
 import "log.dart";
-import "constants.dart";
 import "utils.dart";
+import "constants.dart";
 import "crypto-factory.dart"                                    as cryptoFactory;
 
 class Crypto
 {
     String          keyType                 = "INVALID";
     String          publicKey               = "INVALID";
-    Map             walletPublicKey         = {};
     String          id_file                 = "INVALID";
+
+    Map             walletPublicKey         = {};
+
+    bool            init_done               = false;
 
     /// We don't know the type of keyPair yet
     var             keyPair                 = null;
@@ -99,7 +102,9 @@ class Crypto
 
 class Client
 {
+    String          proof_type              = "INVALID";
     String          role                    = "INVALID";
+
     late Crypto     crypto;
 
     String?         projectName;
@@ -130,30 +135,25 @@ class Client
 
     bool            init_done               = false;
 
-    late LOG log;
-    late LOG ws_log;
+    late LOG        log;
+    late LOG        ws_log;
 
-    final Map connected_websockets          = {};
+    final Map       connected_websockets    = {};
 
-    HttpServer? http_server4                = null;
-    HttpServer? http_server6                = null;
+    HttpServer?     http_server4            = null;
+    HttpServer?     http_server6            = null;
 
-    bool    payment_or_staking_required     = false; // server expects some payment/staking
+    late Duration   ntp_offset;
 
-    bool logged_in                          = false;
+    final Map       config                  = {};
+    Map             claims                  = {};       // all things claimed by the client
 
-    bool run_set_has_public_ip              = false;
+    bool    payment_or_staking_required     = false;    // server expects some payment/staking
+    bool    logged_in                       = false;
+    bool    done_setting_public_ip          = false;
 
-    late Duration ntp_offset;
-
-
-    Map config                              = {};
-    Map claims                              = {};   // all things claimed by the client
-
-    Client (final String _role, final Map args)
+    Client (this.proof_type, this.role, final Map args)
     {
-        role = _role.toLowerCase();
-
         if (args.containsKey("crypto"))
             crypto = args["crypto"];
         else
@@ -171,7 +171,7 @@ class Client
         if (is_string(args,"configFile"))
             configFile = args["configFile"];
         else
-           configFile = role + ".json";
+            configFile = role + ".json";
     }
 
     Future<bool> init () async
@@ -203,8 +203,11 @@ class Client
                 (
                     (final k, final v)
                     {
-                        config[k] = v;
-                        log.important("Considering : '$k' = '$v'");
+                        if (! k.startsWith("//"))
+                        {
+                            config[k] = v;
+                            log.important("Considering : '$k' = '$v'");
+                        }
                     }
                 );
             }
@@ -221,13 +224,11 @@ class Client
             };
         }
 
-        bool found_invalid_walletPublicKey = false;
-
         if (crypto.walletPublicKey.length == 0)
         {
-            found_invalid_walletPublicKey = true;
-
-            log.error ("Could NOT find 'walletPublicKey' in '$role.json';\nplease enter it as keyType:walletPublicKey\nExample `solana:publicKey-of-Solana-Wallet`");
+            log.error       ("Could NOT find 'walletPublicKey' in '$role.json';");
+            log.important   (">>> Please enter it as keyType:walletPublicKey");
+            log.warning     (">>> Example `solana:publicKey-of-Solana-Wallet`");
 
             final input = stdin.readLineSync() ?? ":";
 
@@ -247,22 +248,36 @@ class Client
 
                 log.important ("Setting wallet : $k = $v");
             }
-        }
 
-        // walletPublicKey was found invalid -BUT- now looks like is valid
-
-        if (found_invalid_walletPublicKey == true && crypto.walletPublicKey.length > 0)
-        {
-            try
+            if (crypto.walletPublicKey.length > 0)
             {
-                log.info("Saving 'walletPublicKey' and 'claims' in '$role.json' ...");
+                try
+                {
+                    log.info("Saving 'walletPublicKey' and 'claims' in '$role.json' ...");
 
-                final f = await File(role + ".json").create();
-                f.writeAsStringSync('{"walletPublicKey" : ${crypto.walletPublicKey}, "claims" : $claims}');
+                    switch (proof_type)
+                    {
+                        case "pob":
+                        {
+                            if (claims["bandwidth"] == null)
+                                claims["bandwidth"] = 10;
 
-                log.success("Saved  'walletPublicKey' and 'claims' in '$role.json'");
+                            break;
+                        }
+                    }
+
+                    final save_config = {
+                        "claims"            : claims,
+                        "walletPublicKey"   : crypto.walletPublicKey
+                    };
+
+                    final f = await File(role + ".json").create();
+                    f.writeAsStringSync(jsonEncode(save_config));
+
+                    log.success("Saved 'walletPublicKey' and 'claims' in '$role.json'");
+                }
+                catch (e) {}
             }
-            catch (e) {}
         }
 
         return (init_done = true);
@@ -270,10 +285,10 @@ class Client
 
     Future<void> set_has_public_ip () async
     {
-        if (run_set_has_public_ip == true)
+        if (done_setting_public_ip == true)
             return;
 
-        run_set_has_public_ip = true;
+        done_setting_public_ip = true;
 
         Map j;  // json
         Map r;  // result
@@ -324,7 +339,7 @@ class Client
 
         if (IPv4 != "INVALID")
         {
-            log.info("IPv4 is : $IPv4");
+            log.info("IPv4 is   : $IPv4");
 
             HttpServer
                 .bind (InternetAddress.anyIPv4, HTTP_IPv4_PORT)
@@ -358,7 +373,7 @@ class Client
 
         if (IPv6 != "INVALID")
         {
-            log.info("IPv6 is : $IPv6");
+            log.info("IPv6 is   : $IPv6");
 
             HttpServer
                 .bind (InternetAddress.anyIPv6, HTTP_IPv6_PORT)
@@ -524,6 +539,8 @@ class Client
                 {
                         j = jsonDecode(response.body);
 
+                        j["HTTP_STATUS_CODE"] = response.statusCode;
+
                         if (response.statusCode != 200)
                                 log.error("${uri.path}: " + j["error"]["message"]);
 
@@ -560,11 +577,16 @@ class Client
         (
             (final k, final v)
             {
-                log.info("Claiming : $k = $v");
+                if (! k.startsWith("//"))
+                {
+                    log.important("Claiming  : $k = $v");
+                }
             }
         );
 
         final Map pre_login_body = {
+
+                "proof_type"            : proof_type,
                 "role"                  : role,
                 "claims"                : claims,
                 "projectName"           : projectName,
@@ -585,7 +607,6 @@ class Client
             return (logged_in = false);
 
         final String message    = j["result"]["message"];
-
         final String signature  = await crypto.sign(message);
 
         final Map login_body = {
@@ -593,18 +614,33 @@ class Client
                 "signature"     : signature
         };
 
-        await do_post (LOGIN_URL,login_body);
+        final Map r = await do_post (LOGIN_URL,login_body);
 
-        return (logged_in = true);
+        if (r["result"] != null && r["result"]["success"] == true)
+        {
+            logged_in = true;
+        }
+        else
+        {
+            logged_in = false;
+            log.error("Error : ${r}");
+        }
+
+        return logged_in;
     }
 
     Future<bool> logout () async
     {
-        final Map body = {};
+        final Map body  = {};
+        final Map r     = await do_post (LOGOUT_URL,body);
 
-        await do_post (LOGOUT_URL,body);
+        if (r["result"] != null && r["result"]["success"] == true)
+        {
+            cookie      = "";
+            logged_in   = false;
+        }
 
-        return true;
+        return (logged_in == false);
     }
 
     Future<void> run () async
@@ -702,6 +738,9 @@ class Client
         if (payment_or_staking_required)
             return false;
 
+        if (cookie == "" || logged_in == false)
+            return false;
+
         final HttpClient client = HttpClient();
         final request           = await client.openUrl ("GET",url);
 
@@ -754,7 +793,7 @@ class Client
 
                     print("");
 
-                    log.important("Got a challenge : $ip_version");
+                    log.success("Got a challenge : $ip_version");
 
                     handle_websocket(json_msg);
                 },
@@ -835,26 +874,66 @@ class ChallengeHandler
     late LOG            ws_log;
 
     late String         challenge_id;
+    late List<int>      challenge_id_in_ascii;
 
     late Duration       ntp_offset;
 
     late Crypto         crypto;
 
-    List whitelist              = [];
+    List whitelist                              = [];
 
-    int start_time               = -1;
-    int end_time                 = -1;
+    int start_time                              = -1;
+    int end_time                                = -1;
 
-    bool is_IPv6_challenge      = false;
+    bool is_IPv6_challenge                      = false;
+
+    InternetAddress             source_address4 = InternetAddress.anyIPv4;
+    InternetAddress             source_address6 = InternetAddress.anyIPv6;
+
+    late int                    source_port;
+    late int                    destination_port;
+
+    late RawDatagramSocket      socket4;
+    late RawDatagramSocket      socket6;
+
+    late DateTime               last_message_received_time;
 
     ChallengeHandler (this.role, this.crypto, this.challenge_info)
     {
-        // nothing
+        challenge_id            = this.challenge_info["challenge_id"] ?? "INVALID";
+        challenge_id_in_ascii   = ascii.encode(this.challenge_id);
     }
 
     Future<bool> init () async
     {
-        throw Exception("This is an abstract method!");
+        await crypto.init();
+
+        ntp_offset = Duration (milliseconds : await ntp.NTP.getNtpOffset());
+
+        log     = LOG("ChallengeHandler", set_client : client);
+        ws_log  = LOG("WebSocket.Message",set_client : client);
+
+        try
+        {
+            socket4 = await RawDatagramSocket.bind (
+                source_address4,
+                source_port,
+                reusePort : ((role == "prover") && (! Platform.isWindows))
+            );
+        }
+        catch (e) {print("Bind socket4 Exception $e");}
+
+        try
+        {
+            socket6 = await RawDatagramSocket.bind (
+                source_address6,
+                source_port,
+                reusePort : ((role == "prover") && (! Platform.isWindows))
+            );
+        }
+        catch (e) {print("Bind socket6 Exception $e");}
+
+        return true;
     }
 
     Future<bool> run () async
@@ -864,6 +943,285 @@ class ChallengeHandler
 
     Future<void> cleanup (final String from) async
     {
-        throw Exception("This is an abstract method!");
+        log.info("$from : sockets.close");
+
+        try
+        {
+            socket4.close();
+        }
+        catch (e) {}
+
+        try
+        {
+            socket6.close();
+        }
+        catch (e) {}
+    }
+
+    bool send_UDP_message (final Map to, final String message_type, final Map message_map)
+    {
+        final   message     = jsonEncode(message_map).codeUnits;
+
+        final   destination = to["ip"];
+        final   dport       = to["udp_port"] ?? destination_port;
+        final   socket      = (destination.type == InternetAddressType.IPv6) ? socket6 : socket4;
+
+        for (int i = 1; i <= 10; ++i)
+        {
+            final sent = socket.send (
+                message,
+                destination,
+                dport
+            );
+
+            if (sent == message.length)
+            {
+                log.success("Sent : $message_type");
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    bool send_UDP_message_bytes (final Map to, final String message_type, final List<int> message)
+    {
+        final   destination = to["ip"];
+        final   dport       = to["udp_port"] ?? destination_port;
+        final   socket      = (destination.type == InternetAddressType.IPv6) ? socket6 : socket4;
+
+        for (int i = 1; i <= 10; ++i)
+        {
+            final sent = socket.send (
+                message,
+                destination,
+                dport
+            );
+
+            if (sent == message.length)
+            {
+                return true;
+            }
+        }
+        log.error("could not send $message_type to $to");
+        return false;
+    }
+
+    Future<Map> get_UDP_message
+    (
+        final List<String> expected_message_types,
+        {
+            final   bool    verifySignature         = true,
+            final   dynamic processMessageFunction  = null,
+            final   int     timeout_in_milliseconds = MAX_UDP_MESSAGE_TIMEOUT,
+            final   bool    is_IPv6_challenge       = false
+        }
+    ) async
+    {
+        final timeout = Now (ntp_offset)
+                            .add (
+                                  Duration (
+                                    milliseconds : timeout_in_milliseconds
+                                  )
+                             ).millisecondsSinceEpoch;
+
+        while (true)
+        {
+            Datagram? datagram  = null;
+            String ip_version   = "";
+
+            if (is_IPv6_challenge)
+            {
+                datagram        = socket6.receive();
+                ip_version      = "IPv6";
+            }
+            else
+            {
+                datagram        = socket4.receive();
+                ip_version      = "IPv4";
+            }
+
+            if (datagram == null || datagram.data.length == 0 || datagram.data.length > UDP_CHUNK_SIZE)
+            {
+                final now = Now(ntp_offset).millisecondsSinceEpoch;
+
+                if (now > timeout)
+                {
+                    log.error("Timeout for : $expected_message_types");
+                    return {};
+                }
+
+                continue;
+            }
+
+            last_message_received_time = Now(ntp_offset);
+
+            // if the user has specified a custom processMessageFunction, then process accordingly
+
+            if (processMessageFunction != null)
+                return await processMessageFunction(datagram.data);
+
+            final sender_address    = datagram.address.address;
+            final clean_address     = process_ip (sender_address);
+
+            if (ip_version == "IPv6" && sender_address != clean_address)
+            {
+                ip_version = "IPv4";
+            }
+
+            final sender_ip         = (ip_version == "IPv6") ?
+                                                    Uri.parseIPv6Address(clean_address):
+                                                    Uri.parseIPv4Address(clean_address);
+
+            // else process the message as a JSON
+
+            if (processMessageFunction != null)
+                return await processMessageFunction(datagram.data);
+
+            // else process the message as a JSON
+
+            try
+            {
+                final String string_signed_message = String.fromCharCodes(datagram.data);
+
+                final Map signed_message = await process_message_as_json (
+                    string_signed_message,
+                    sender_ip,
+                    ip_version,
+                    datagram.port,
+                    verifySignature : verifySignature
+                );
+
+                if (signed_message["message"] == null)
+                    return {};
+
+                final Map message         = jsonDecode(signed_message["message"]);
+                final String message_type = message["type"];
+
+                if (expected_message_types.contains(message_type))
+                    return signed_message;
+                else
+                {
+                    // XXX store `m` in a queue ?
+                    return {};
+                }
+            }
+            catch (e)
+            {
+                print("GOT exception $e");
+                continue;
+            }
+        }
+    }
+
+    Future<Map> process_message_as_json
+    (
+        final String    string_signed_message,
+        final List<int> sender_ip,
+        final String    ip_version,
+        final int       port,
+        {
+            final bool verifySignature = true
+        }
+    ) async
+    {
+        Map signed_message = {};
+
+        if (string_signed_message[0] != "{")
+            return {};
+
+        try
+        {
+            signed_message = jsonDecode (string_signed_message);
+        }
+        catch (e)
+        {
+            log.error("$string_signed_message is not a valid JSON");
+            return {};
+        }
+
+        final String string_message = signed_message["message"];
+
+        Map message = {};
+
+        try
+        {
+            message = jsonDecode (string_message);
+        }
+        catch(e)
+        {
+            log.error("Could not convert string_message to Json : $e");
+            return {};
+        }
+
+        // the data in the message
+        final Map data = message["data"];
+
+        // reject invalid challenge id
+        if (data["challenge_id"] != challenge_id)
+            return {};
+
+        final sender = {
+            ip_version  : sender_ip,
+            "keyType"   : signed_message["keyType"],
+            "publicKey" : signed_message["publicKey"],
+        };
+
+        bool allowed = false;
+
+        if (whitelist.length > 0)
+        {
+            for (final w in whitelist)
+            {
+                final whitelist_address = w[ip_version]; // address
+
+                if (whitelist_address == null)
+                    continue;
+
+                // ip in list format
+
+                final whitelist_ip  = (ip_version == "IPv6") ?
+                                            Uri.parseIPv6Address(whitelist_address):
+                                            Uri.parseIPv4Address(whitelist_address);
+
+                if (
+                    sender["keyType"]   == w["keyType"]     &&
+                    sender["publicKey"] == w["publicKey"]   &&
+                    (
+                        is_list_equals (sender_ip, whitelist_ip)
+                    )
+                )
+                {
+                    allowed = true;
+                    break;
+                }
+             }
+
+             if (! allowed)
+                return {};
+        }
+
+        if (verifySignature)
+        {
+            if (! await cryptoFactory.verify (signed_message))
+                return {};
+        }
+
+        signed_message["DATA"] = data;
+
+        if (port > 0)
+        {
+            signed_message["SOURCE_PORT"]  = port;
+        }
+
+        final message_type = message["type"];
+
+        if (message_type == null)
+        {
+            log.error("message type is empty");
+            return {};
+        }
+
+        return signed_message;
     }
 }

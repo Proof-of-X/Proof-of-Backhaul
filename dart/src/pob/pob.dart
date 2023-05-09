@@ -29,28 +29,25 @@ import "dart:io";
 import "dart:core";
 import "dart:convert";
 
-import "package:ntp/ntp.dart"                                   as ntp;
 import "package:http/http.dart"                                 as http;
 
 import "../common/log.dart";
 import "../common/utils.dart";
-import "../common/crypto-factory.dart"                          as cryptoFactory;
 import "../common/abc.dart"                                     as abc;
 
 import "constants.dart";
+import "../common/constants.dart";
 
 class Client extends abc.Client
 {
     Map args = {};
 
-    Client (final String _role, final Map _args) : super (_role, _args)
+    Client (final String _role, final Map _args) : super ("pob", _role, _args)
     {
         args = _args;
 
         if (is_double(args,"bandwidth_claimed"))
                 claims["bandwidth"] = args["bandwidth_claimed"];
-
-        init_done = false;
     }
 
     Future<bool> init () async
@@ -65,50 +62,34 @@ class Client extends abc.Client
         if (! init_done)
             throw Exception("Could not initialize pob.Client");
 
-        log.info("Version            : $POB_RELEASE_VERSION");
-
-        if (ENV["NO_POB_UPDATES"] == null)
-            log.success("Updates are turned : ON");
-        else
-            log.warning("Updates are turned : OFF");
+        log.info("Version      : $POB_RELEASE_VERSION");
 
         if (is_double(config,"bandwidth_claimed"))
             claims["bandwidth"] = args["bandwidth_claimed"];
 
-        try
+        if (role == "prover" || role == "challenger")
         {
-            claims["bandwidth"] = double.parse (ENV["BANDWIDTH_CLAIMED"] ?? claims["bandwidth"].toString());
-        }
-        catch (e)
-        {
-            log.error("`BANDWIDTH_CLAIMED` environment variable is invalid");
-        }
+            try
+            {
+                claims["bandwidth"] = double.parse (ENV["BANDWIDTH_CLAIMED"] ?? claims["bandwidth"].toString());
+            }
+            catch (e)
+            {
+                log.error("`BANDWIDTH_CLAIMED` environment variable is invalid");
+            }
 
-        if (claims["bandwidth"] == null || claims["bandwidth"] < 0.001)
-            throw Exception("Invalid 'bandwidth' claimed");
+            if (claims["bandwidth"] == null || claims["bandwidth"] < 0.001)
+                throw Exception("Invalid 'bandwidth' claimed");
+        }
 
         return (init_done = true);
     }
-
 }
 
 class ChallengeHandler extends abc.ChallengeHandler
 {
-    InternetAddress             source_address4  = InternetAddress.anyIPv4;
-    InternetAddress             source_address6  = InternetAddress.anyIPv6;
-
-    late int                    source_port;
-    late int                    destination_port;
-
-    late RawDatagramSocket      socket4;
-    late RawDatagramSocket      socket6;
-
-    late DateTime last_message_received_time;
-
-    late List<int> challenge_id_in_ascii;
-
-    Map<String,WebSocket>   challenge_websocket = {};
-    late HttpServer         challenge_http_server;
+    Map<String,WebSocket>       challenge_websocket = {};
+    late HttpServer             challenge_http_server;
 
     ChallengeHandler
     (
@@ -138,42 +119,6 @@ class ChallengeHandler extends abc.ChallengeHandler
 
         if (setSourcePort > 0)
             source_port = setSourcePort;
-
-        challenge_id            = challenge_info["challenge_id"] ?? "INVALID";
-        challenge_id_in_ascii   = ascii.encode(challenge_id);
-    }
-
-    @override
-    Future<bool> init () async
-    {
-        await crypto.init();
-
-        ntp_offset = Duration (milliseconds : await ntp.NTP.getNtpOffset());
-
-        log     = LOG("ChallengeHandler", set_client : client);
-        ws_log  = LOG("WebSocket.Message",set_client : client);
-
-        try
-        {
-            socket4 = await RawDatagramSocket.bind (
-                source_address4,
-                source_port,
-                reusePort : (role == "prover")
-            );
-        }
-        catch (e) {print("Bind socket4 Exception $e");}
-
-        try
-        {
-            socket6 = await RawDatagramSocket.bind (
-                source_address6,
-                source_port,
-                reusePort : (role == "prover")
-            );
-        }
-        catch (e) {print("Bind socket6 Exception $e");}
-
-        return true;
     }
 
     Future<bool> send_message (final Map to, final String message_type, final Map message) async
@@ -211,273 +156,6 @@ class ChallengeHandler extends abc.ChallengeHandler
         }
     }
 
-    bool send_UDP_message (final Map to, final String message_type, final Map message_map)
-    {
-        final   message     = jsonEncode(message_map).codeUnits;
-
-        final   destination = to["ip"];
-        final   dport       = to["udp_port"] ?? destination_port;
-        final   socket      = (destination.type == InternetAddressType.IPv6) ? socket6 : socket4;
-
-        for (int i = 1; i <= 10; ++i)
-        {
-            final sent = socket.send (
-                message,
-                destination,
-                dport
-            );
-
-            if (sent == message.length)
-            {
-                log.success("Sent : $message_type");
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    bool send_UDP_message_bytes (final Map to, final String message_type, final List<int> message)
-    {
-        final   destination = to["ip"];
-        final   dport       = to["udp_port"] ?? destination_port;
-        final   socket      = (destination.type == InternetAddressType.IPv6) ? socket6 : socket4;
-
-        for (int i = 1; i <= 10; ++i)
-        {
-            final sent = socket.send (
-                message,
-                destination,
-                dport
-            );
-
-            if (sent == message.length)
-            {
-                return true;
-            }
-        }
-        log.error("could not send $message_type to $to");
-        return false;
-    }
-
-    Future<Map> get_UDP_message
-    (
-        final List<String> expected_message_types,
-        {
-            final   bool    verifySignature         = true,
-            final   dynamic processMessageFunction  = null,
-            final   int     timeout_in_milliseconds = 0,
-            final   bool    only_IPv6               = false
-        }
-    ) async
-    {
-        final timeout = (timeout_in_milliseconds == 0)  ?
-                                            0           :
-                                            Now (ntp_offset)
-                                            .add (
-                                                Duration (
-                                                    milliseconds : timeout_in_milliseconds
-                                                )
-                                            ).millisecondsSinceEpoch;
-
-        while (true)
-        {
-            Datagram? datagram  = null;
-            String ip_version   = "";
-
-            if (only_IPv6)
-            {
-                datagram        = socket6.receive();
-                ip_version      = "IPv6";
-            }
-            else
-            {
-                datagram        = socket4.receive();
-                ip_version      = "IPv4";
-            }
-
-            if (datagram == null || datagram.data.length == 0 || datagram.data.length > UDP_CHUNK_SIZE)
-            {
-                if (timeout > 0)
-                {
-                    final now = Now(ntp_offset).millisecondsSinceEpoch;
-
-                    if (now > timeout)
-                    {
-                        log.error("timeout happened for $expected_message_types");
-                        return {};
-                    }
-                }
-
-                continue;
-            }
-
-            last_message_received_time = Now(ntp_offset);
-
-            final sender_address    = datagram.address.address;
-            final clean_address     = process_ip (sender_address);
-
-            if (ip_version == "IPv6" && sender_address != clean_address)
-            {
-                ip_version = "IPv4";
-            }
-
-            final sender_ip         = (ip_version == "IPv6") ?
-                                                    Uri.parseIPv6Address(clean_address):
-                                                    Uri.parseIPv4Address(clean_address);
-
-            // if the user has specified a custom processMessageFunction, then process accordingly
-
-            if (processMessageFunction != null)
-                return await processMessageFunction(datagram.data);
-
-            // else process the message as a JSON
-
-            try
-            {
-                final String string_signed_message = String.fromCharCodes(datagram.data);
-
-                final Map signed_message = await process_message_as_json (
-                    string_signed_message,
-                    sender_ip,
-                    ip_version,
-                    datagram.port,
-                    verifySignature : verifySignature
-                );
-
-                if (signed_message["message"] == null)
-                    return {};
-
-                final Map message         = jsonDecode(signed_message["message"]);
-                final String message_type = message["type"];
-
-                if (expected_message_types.contains(message_type))
-                    return signed_message;
-                else
-                {
-                    // XXX store `m` in a queue ?
-                    return {};
-                }
-            }
-            catch (e)
-            {
-                print("GOT exception $e");
-                continue;
-            }
-        }
-    }
-
-    Future<Map> process_message_as_json
-    (
-        final String    string_signed_message,
-        final List<int> sender_ip,
-        final String    ip_version,
-        final int       port,
-        {
-            final bool  verifySignature = true
-        }
-    ) async
-    {
-        Map signed_message = {};
-
-        if (string_signed_message[0] != "{")
-            return {};
-
-        try
-        {
-            signed_message = jsonDecode (string_signed_message);
-        }
-        catch (e)
-        {
-            log.error("$string_signed_message is not a valid JSON");
-            return {};
-        }
-
-        final String string_message = signed_message["message"];
-
-        Map message = {};
-
-        try
-        {
-            message = jsonDecode (string_message);
-        }
-        catch(e)
-        {
-            log.error("Could not convert string_message to Json : $e");
-            return {};
-        }
-
-        // the data in the message
-        final Map data = message["data"];
-
-        // reject invalid challenge id
-        if (data["challenge_id"] != challenge_id)
-            return {};
-
-        final sender = {
-            ip_version  : sender_ip,
-            "keyType"   : signed_message["keyType"],
-            "publicKey" : signed_message["publicKey"],
-        };
-
-        bool allowed = false;
-
-        if (whitelist.length > 0)
-        {
-            for (final w in whitelist)
-            {
-                final whitelist_address = w[ip_version]; // address
-
-                if (whitelist_address == null)
-                    continue;
-
-                // ip in list format
-
-                final whitelist_ip  = (ip_version == "IPv6") ?
-                                            Uri.parseIPv6Address(whitelist_address):
-                                            Uri.parseIPv4Address(whitelist_address);
-
-                if (
-                    sender["keyType"]   == w["keyType"]     &&
-                    sender["publicKey"] == w["publicKey"]   &&
-                    (
-                        is_list_equals (sender_ip, whitelist_ip)
-                    )
-                )
-                {
-                    allowed = true;
-                    break;
-                }
-             }
-
-             if (! allowed)
-                return {};
-        }
-
-        if (verifySignature)
-        {
-            if (! await cryptoFactory.verify (signed_message))
-                return {};
-        }
-
-        signed_message["DATA"] = data;
-
-        if (port > 0)
-        {
-            signed_message["SOURCE_PORT"]  = port;
-        }
-
-        final message_type = message["type"];
-
-        if (message_type == null)
-        {
-            log.error("message type is empty");
-            return {};
-        }
-
-        return signed_message;
-    }
-
     Future<void> start_websocket_server () async
     {
         final port              = (role == "prover") ? PROVER_PORT : CHALLENGER_PORT;
@@ -507,13 +185,16 @@ class ChallengeHandler extends abc.ChallengeHandler
                             return;
                         }
 
-                        final socket    = await WebSocketTransformer.upgrade(request);
-                        final ip        = request.connectionInfo?.remoteAddress ?? InternetAddress("");
+                        final WebSocket         socket    = await WebSocketTransformer.upgrade(request);
+                        final InternetAddress   ip        = request.connectionInfo?.remoteAddress ?? InternetAddress("");
 
-                        await socket.listen((message) async
-                        {
-                            await handle_challenge_message (message,ip,socket);
-                        });
+                        await socket.listen
+                        (
+                            (final message) async
+                            {
+                                await handle_challenge_message (message,ip,socket);
+                            }
+                        );
 
                         return;
                     }
@@ -532,7 +213,7 @@ class ChallengeHandler extends abc.ChallengeHandler
         await connect_to_self(port);
     }
 
-    Future<void> connect_to_self (int port) async
+    Future<void> connect_to_self (final int port) async
     {
         while (true)
         {
@@ -625,19 +306,7 @@ class ChallengeHandler extends abc.ChallengeHandler
         if (cleanup_done)
             return;
 
-        log.info("$from : sockets.close");
-
-        try
-        {
-            socket4.close();
-        }
-        catch (e) {}
-
-        try
-        {
-            socket6.close();
-        }
-        catch (e) {}
+        await super.cleanup(from);
 
         try
         {

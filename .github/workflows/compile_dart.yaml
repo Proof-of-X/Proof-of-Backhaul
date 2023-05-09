@@ -49,8 +49,10 @@ jobs:
       with:
         sdk: ${{ matrix.sdk }}
 
-    - name: create output directory
-      run: mkdir -p bin/${{ matrix.os-version }}/
+    - name: create output directories
+      run: |
+        mkdir -p bin/${{ matrix.os-version }}/pob/
+        mkdir -p bin/${{ matrix.os-version }}/pol/
 
     - name: script permission
       run: chmod +x install-deps; chmod +x build; 
@@ -66,29 +68,45 @@ jobs:
 
     - name: rename and move directory
       run: |
-        cp ../bin/run-pob-prover.exe bin/${{ matrix.os-version }}/run-pob-prover${{ matrix.file-extension }}
-        cp ../bin/run-pob-challenger.exe bin/${{ matrix.os-version }}/run-pob-challenger${{ matrix.file-extension }}
+        cp ../bin/pob/run-pob-prover.exe bin/${{ matrix.os-version }}/pob/run-pob-prover${{ matrix.file-extension }}
+        cp ../bin/pob/run-pob-challenger.exe bin/${{ matrix.os-version }}/pob/run-pob-challenger${{ matrix.file-extension }}
+        cp ../bin/pol/run-pol-prover.exe bin/${{ matrix.os-version }}/pol/run-pol-prover${{ matrix.file-extension }}
+        cp ../bin/pol/run-pol-challenger.exe bin/${{ matrix.os-version }}/pol/run-pol-challenger${{ matrix.file-extension }}
 
     - name: enable executable permission
       run: |
-        chmod +x bin/${{ matrix.os-version }}/run-pob-prover${{ matrix.file-extension }}
-        chmod +x bin/${{ matrix.os-version }}/run-pob-challenger${{ matrix.file-extension }}
+        chmod +x bin/${{ matrix.os-version }}/pob/run-pob-prover${{ matrix.file-extension }}
+        chmod +x bin/${{ matrix.os-version }}/pob/run-pob-challenger${{ matrix.file-extension }}
+        chmod +x bin/${{ matrix.os-version }}/pol/run-pol-prover${{ matrix.file-extension }}
+        chmod +x bin/${{ matrix.os-version }}/pol/run-pol-challenger${{ matrix.file-extension }}
 
     - if: runner.os == 'Linux'
-      name: get prover version
-      id: prover_version
-      run: echo "version=$(../bin/run-pob-prover.exe -v)" >> "$GITHUB_OUTPUT"
+      name: get pob prover version
+      id: pob_prover_version
+      run: echo "version=$(bin/${{ matrix.os-version }}/pob/run-pob-prover${{ matrix.file-extension }} -v)" >> "$GITHUB_OUTPUT"
 
     - if: runner.os == 'Linux'
-      name: get challenger version
-      id: challenger_version
-      run: echo "version=$(../bin/run-pob-challenger.exe -v)">> "$GITHUB_OUTPUT"
+      name: get pob challenger version
+      id: pob_challenger_version
+      run: echo "version=$(bin/${{ matrix.os-version }}/pob/run-pob-challenger${{ matrix.file-extension }} -v)">> "$GITHUB_OUTPUT"
+
+    - if: runner.os == 'Linux'
+      name: get pol prover version
+      id: pol_prover_version
+      run: echo "version=$(bin/${{ matrix.os-version }}/pol/run-pol-prover${{ matrix.file-extension }} -v)" >> "$GITHUB_OUTPUT"
+
+    - if: runner.os == 'Linux'
+      name: get pol challenger version
+      id: pol_challenger_version
+      run: echo "version=$(bin/${{ matrix.os-version }}/pol/run-pol-challenger${{ matrix.file-extension }} -v)">> "$GITHUB_OUTPUT"
 
     - if: runner.os == 'Linux'
       name: make version.txt
       run: |
-        echo "pob_prover_client=\"${{ steps.prover_version.outputs.version }}\"" > bin/version.txt
-        echo "pob_challenger_client=\"${{ steps.challenger_version.outputs.version }}\"" >> bin/version.txt
+        echo "pob_prover_client=\"${{ steps.pob_prover_version.outputs.version }}\"" > bin/version.txt
+        echo "pob_challenger_client=\"${{ steps.pob_challenger_version.outputs.version }}\"" >> bin/version.txt
+        echo "pol_prover_client=\"${{ steps.pob_prover_version.outputs.version }}\"" >> bin/version.txt
+        echo "pol_challenger_client=\"${{ steps.pob_challenger_version.outputs.version }}\"" >> bin/version.txt
 
     - name: upload binaries
       uses: actions/upload-artifact@v3
@@ -104,8 +122,49 @@ jobs:
     - name: checkout
       uses: actions/checkout@v3
 
-    - name: remove latest 
-      run: rm -rfv release/latest/          #this removes symlinks, hard to exclude
+    - name: remove old binaries
+      run: |
+        rm -rfv release/latest/arm64/Darwin/run-pob-challenger.exe
+        rm -rfv release/latest/x64/Darwin/run-pob-challenger.exe  
+        rm -rfv release/latest/x64/Linux/run-pob-challenger.exe   
+        rm -rfv release/latest/x64/Windows_NT/run-pob-challenger.exe
+        rm -rfv release/latest/arm64/Darwin/run-pob-prover.exe
+        rm -rfv release/latest/x64/Darwin/run-pob-prover.exe  
+        rm -rfv release/latest/x64/Linux/run-pob-prover.exe   
+        rm -rfv release/latest/x64/Windows_NT/run-pob-prover.exe
+
+    - name: remove old binaries
+      run: |
+        rm -rfv release/latest/arm64/Darwin/run-pol-challenger.exe
+        rm -rfv release/latest/x64/Darwin/run-pol-challenger.exe  
+        rm -rfv release/latest/x64/Linux/run-pol-challenger.exe   
+        rm -rfv release/latest/x64/Windows_NT/run-pol-challenger.exe
+        rm -rfv release/latest/arm64/Darwin/run-pol-prover.exe
+        rm -rfv release/latest/x64/Darwin/run-pol-prover.exe  
+        rm -rfv release/latest/x64/Linux/run-pol-prover.exe   
+        rm -rfv release/latest/x64/Windows_NT/run-pol-prover.exe
+
+    - name: remove old binaries
+      run: |
+        rm -rfv release/latest/arm64/Darwin/pob/run-pob-challenger.exe
+        rm -rfv release/latest/x64/Darwin/pob/run-pob-challenger.exe  
+        rm -rfv release/latest/x64/Linux/pob/run-pob-challenger.exe   
+        rm -rfv release/latest/x64/Windows_NT/pob/run-pob-challenger.exe
+        rm -rfv release/latest/arm64/Darwin/pob/run-pob-prover.exe
+        rm -rfv release/latest/x64/Darwin/pob/run-pob-prover.exe  
+        rm -rfv release/latest/x64/Linux/pob/run-pob-prover.exe   
+        rm -rfv release/latest/x64/Windows_NT/pob/run-pob-prover.exe
+
+    - name: remove old binaries
+      run: |
+        rm -rfv release/latest/arm64/Darwin/pol/run-pol-challenger.exe
+        rm -rfv release/latest/x64/Darwin/pol/run-pol-challenger.exe  
+        rm -rfv release/latest/x64/Linux/pol/run-pol-challenger.exe   
+        rm -rfv release/latest/x64/Windows_NT/pol/run-pol-challenger.exe
+        rm -rfv release/latest/arm64/Darwin/pol/run-pol-prover.exe
+        rm -rfv release/latest/x64/Darwin/pol/run-pol-prover.exe  
+        rm -rfv release/latest/x64/Linux/pol/run-pol-prover.exe   
+        rm -rfv release/latest/x64/Windows_NT/pol/run-pol-prover.exe
 
     - uses: actions/download-artifact@v3
       with:
@@ -114,18 +173,18 @@ jobs:
 
     - name: copy files
       run: |
-        cp -r bin/ release/latest/
+        cp -r bin/* release/latest/
 
       env:
         version: ${{needs.build.outputs.prover_version}}
 
-    - name: make config symlink
-      run: |
-        mkdir -p release/latest/arm64/Darwin
-        ln -s ../../../../config/pob release/latest/arm64/Darwin/config
-        ln -s ../../../../config/pob release/latest/x64/Darwin/config
-        ln -s ../../../../config/pob release/latest/x64/Linux/config
-        ln -s ../../../../config/pob release/latest/x64/Windows_NT/config
+    # - name: make config symlink
+    #   run: |
+    #     mkdir -p release/latest/arm64/Darwin
+    #     ln -s ../../../../config/pob release/latest/arm64/Darwin/config
+    #     ln -s ../../../../config/pob release/latest/x64/Darwin/config
+    #     ln -s ../../../../config/pob release/latest/x64/Linux/config
+    #     ln -s ../../../../config/pob release/latest/x64/Windows_NT/config
 
     - name: remove bin
       run: rm -rfv bin/
@@ -155,11 +214,22 @@ jobs:
       with:
         certificate: '${{ secrets.CERT_WINDOWS }}'
         password: '${{ secrets.CERT_WINDOWS_PWD }}'
-        folder: release/latest/x64/Windows_NT/
+        folder: release/latest/x64/Windows_NT/pob/
         recursive: true
         files: |
           run-pob-prover.exe
           run-pob-challenger.exe
+
+    - name: sign windows exe
+      uses: dlemstra/code-sign-action@v1
+      with:
+        certificate: '${{ secrets.CERT_WINDOWS }}'
+        password: '${{ secrets.CERT_WINDOWS_PWD }}'
+        folder: release/latest/x64/Windows_NT/pol/
+        recursive: true
+        files: |
+          run-pol-prover.exe
+          run-pol-challenger.exe
 
     - name: commit & push changes    
       run: |
@@ -171,3 +241,7 @@ jobs:
 
 
 #docker workflow
+  # create_docker_version:
+  #   needs: release_public
+  #   runs-on:  ubuntu-latest
+  #   steps:

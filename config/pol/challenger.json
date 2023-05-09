@@ -1,0 +1,15 @@
+{
+	"claims" : {
+		"latitude"	: 40.7128,
+		"longitude"	: 74.0060,
+		"country"	: "IN",
+		"region"	: "Karnataka",
+		"city"		: "Bengaluru",
+		"radius"	: 1000,		"//" : "radius is in meters"
+	},
+
+	"walletPublicKey"	: {
+		"solana"	: "E8VzCz92Da6XykE1nLAKeTt4Nts5Svp7C4eovBzeHUPk",
+		"ethereum"	: "0x630391b032F444cB40B3603b579064817f312353"
+	}
+}

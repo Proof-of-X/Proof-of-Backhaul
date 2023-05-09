@@ -34,11 +34,11 @@ import "../common/utils.dart";
 import "../common/abc.dart"                                     as abc;
 
 import "constants.dart";
+import "../common/constants.dart";
+
 import "pob.dart"                                               as pob;
 
-import 'dart:async';
 import "package:bit_array/bit_array.dart";
-
 
 class Client extends pob.Client
 {
@@ -132,29 +132,40 @@ class Client extends pob.Client
 
         log.important('Timeout : ${timeout_in_microseconds ~/ 1000000} seconds');
 
-        Future.delayed (Duration(microseconds : timeout_in_microseconds), () async {
-            await challenge_handler.cleanup("Timeout");
+        Future.delayed (Duration(microseconds : timeout_in_microseconds), () async
+        {
+            await report_challenge_results  (challenge_handler);
+            await challenge_handler.cleanup ("Timeout");
         });
 
         await challenge_handler.run();
 
         return challenge_handler.challenge_result;
     }
+
+    @override
+    Future<void> report_challenge_results (final abc.ChallengeHandler ch) async
+    {
+        if (ch.sent_challenge_results)
+            return;
+
+        ch.sent_challenge_results = true;
+    }
 }
 
 class ChallengeHandler extends pob.ChallengeHandler
 {
-    final Map <String,BitArray>   packet_bitmap     = {};
-    final Map <String,int>        challenger_hash   = {};
+    final Map <String,BitArray>     packet_bitmap     = {};
+    final Map <String,int>          challenger_hash   = {};
+
+    late List                       challengers;
+
+    final Map <String,bool>         got_udp_pong      = {};
+
+    int num_challengers_with_private_IPs              = 0;
 
     int hash_of_hashes  = 0;
     int uplink_rate     = 0; // Uplink backhaul of prover
-
-    late List               challengers;
-
-    final Map <String,bool> got_udp_pong = {};
-
-    int num_challengers_with_private_IPs = 0;
 
     ChallengeHandler
     (
@@ -254,18 +265,18 @@ class ChallengeHandler extends pob.ChallengeHandler
 
             if (await send_udp_ping())
             {
-                log.success("1/7 DONE  send_udp_ping");
-                log.important("2/7 START recv_udp_pong");
+                log.success     ("1/7 DONE  send_udp_ping");
+                log.important   ("2/7 START receive_udp_pong");
 
                 if (await receive_udp_pong())
                 {
-                    log.success("2/7 DONE  recv_udp_pong");
-                    log.important("3/7 START send_challenge_initiate_message");
+                    log.success     ("2/7 DONE  receive_udp_pong");
+                    log.important   ("3/7 START send_challenge_initiate_message");
 
                     if (await send_challenge_initiate_message())
                     {
-                        log.success("3/7 DONE  send_challenge_initiate_message");
-                        log.important("4/7 START received_enough_packets_for_challenge");
+                        log.success     ("3/7 DONE  send_challenge_initiate_message");
+                        log.important   ("4/7 START received_enough_packets_for_challenge");
 
                         String result = await received_enough_packets_for_challenge();
 
@@ -277,13 +288,13 @@ class ChallengeHandler extends pob.ChallengeHandler
 
                             if (await send_hash_AND_hash_of_hashes())
                             {
-                                log.success("5/7 DONE  send_hash_AND_hash_of_hashes");
-                                log.important("6/7 START send_all_hashes_AND_packet_bitmap");
+                                log.success     ("5/7 DONE  send_hash_AND_hash_of_hashes");
+                                log.important   ("6/7 START send_all_hashes_AND_packet_bitmap");
 
                                 if (await send_all_hashes_AND_packet_bitmap())
                                 {
-                                    log.success("6/7 DONE  send_all_hashes_AND_packet_bitmap");
-                                    log.important("7/7 START send_end_challenge");
+                                    log.success     ("6/7 DONE  send_all_hashes_AND_packet_bitmap");
+                                    log.important   ("7/7 START send_end_challenge");
 
                                     challenge_succeeded = true;
 
@@ -366,7 +377,6 @@ class ChallengeHandler extends pob.ChallengeHandler
     {
         final int?              max_packets_per_challenger      = challenge_info["max_packets_per_challenger"];
         final int?              total_num_packets_for_challenge = challenge_info["total_num_packets_for_challenge"];
-        final String?           current_challenge_id            = challenge_info["challenge_id"];
         final String?           challenge_timeout               = challenge_info["challenge_timeout"];
 
         if (max_packets_per_challenger == null)
@@ -375,21 +385,31 @@ class ChallengeHandler extends pob.ChallengeHandler
         if (total_num_packets_for_challenge == null)
             return "total_num_packets_for_challenge is null";
 
-        if (current_challenge_id == null)
-            return "current_challenge_id is null";
-
         if (challenge_timeout == null)
             return "challenge_timeout is null";
+
+        final challenge_end_time = DateTime
+                                    .parse(challenge_timeout)
+                                    .toUtc()
+                                    .microsecondsSinceEpoch;
 
         int num_packets_received = 0;
 
         while (num_packets_received < total_num_packets_for_challenge)
         {
+            final now = Now(ntp_offset).millisecondsSinceEpoch;
+
+            if (now > challenge_end_time)
+            {
+                log.error("Timeout - received : $num_packets_received/$total_num_packets_for_challenge");
+                return "Timed Out";
+            }
+
             final Map signed_message = await get_UDP_message (
                         ["challenge_packet"],
                         verifySignature         : false,
                         processMessageFunction  : process_challenge_packet,
-                        only_IPv6               : is_IPv6_challenge
+                        is_IPv6_challenge       : is_IPv6_challenge
             );
 
             final String? cpk = signed_message["publicKey"]; // challenger's publicKey
@@ -436,7 +456,7 @@ class ChallengeHandler extends pob.ChallengeHandler
             final Map udp_connect = await get_UDP_message (
                             ["udp_connect"],
                             timeout_in_milliseconds : 1000,
-                            only_IPv6               : is_IPv6_challenge
+                            is_IPv6_challenge       : is_IPv6_challenge
             );
 
             final cpk = udp_connect["publicKey"];
@@ -502,7 +522,7 @@ class ChallengeHandler extends pob.ChallengeHandler
             final Map udp_pong  = await get_UDP_message (
                                 ["udp_pong"],
                                 timeout_in_milliseconds : 1000,
-                                only_IPv6               : is_IPv6_challenge
+                                is_IPv6_challenge       : is_IPv6_challenge
             );
 
             if (udp_pong["DATA"] != null)

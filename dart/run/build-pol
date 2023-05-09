@@ -1,0 +1,17 @@
+#!/bin/sh
+
+dir=`dirname $0`
+
+cd $dir/../src
+
+mkdir ../bin 2>/dev/null
+mkdir ../bin/pol 2>/dev/null
+
+cd pol
+
+echo "final version = '''" > release.dart
+git log -1 --format=%ct origin/main >> release.dart
+echo "'''.trim();" >> release.dart
+
+dart compile exe run-prover.dart	-o ../../bin/pol/run-pol-prover.exe
+dart compile exe run-challenger.dart	-o ../../bin/pol/run-pol-challenger.exe

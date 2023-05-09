@@ -35,13 +35,13 @@ import "../common/utils.dart";
 import "constants.dart";
 import "release.dart"               as release;
 
-const client_key = "pob_challenger_client";
+const client_key = "pol_challenger_client";
 
 void main(final List<String> args) async
 {
     if (args.length == 1 && args[0] == '-v')
     {
-        print("$POB_RELEASE_VERSION");
+        print("$POL_RELEASE_VERSION");
         exit(0);
     }
 

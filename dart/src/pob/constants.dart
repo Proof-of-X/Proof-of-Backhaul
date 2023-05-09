@@ -25,23 +25,13 @@
         MIT             (https://opensource.org/license/mit/)
 */
 
-import "dart:io";
 import "dart:core";
-import "dart:math";
-
-import "dart:typed_data";
-import 'package:system_info2/system_info2.dart';
 
 import "release.dart"           as release;
 
+import "../common/constants.dart";
+
 final POB_RELEASE_VERSION       = release.version.trim();
-
-final Map<String, String> ENV   = Platform.environment;
-
-final RNG                       = Random.secure();
-
-const UDP_CHUNK_SIZE            = 1448;
-const UDP_HEADER_SIZE           = 40; // udp header size in bytes
 
 const PROVER_PORT               = 11111;
 const CHALLENGER_PORT           = 22222;
@@ -65,9 +55,9 @@ const BASE_URL_IPv6             = "https://" + SERVER_IPv6 + SERVER_PORT + API_V
 final LOGIN_URL                 = Uri.parse(BASE_URL + "/login"                 );
 final LOGOUT_URL                = Uri.parse(BASE_URL + "/logout"                );
 final PRE_LOGIN_URL             = Uri.parse(BASE_URL + "/pre-login"             );
-final CHALLENGE_REQUEST_URL     = Uri.parse(BASE_URL + "/pob-challenge-request" );
-final CHALLENGE_STATUS_URL      = Uri.parse(BASE_URL + "/pob-challenge-status"  );
-final CHALLENGE_RESULT_URL      = Uri.parse(BASE_URL + "/pob-challenge-result"  );
+final CHALLENGE_REQUEST_URL     = Uri.parse(BASE_URL + "/pob/challenge-request" );
+final CHALLENGE_STATUS_URL      = Uri.parse(BASE_URL + "/pob/challenge-status"  );
+final CHALLENGE_RESULT_URL      = Uri.parse(BASE_URL + "/pob/challenge-result"  );
 
 final CLAIM_PUBLIC_IP_URL       = Uri.parse(BASE_URL + "/claim-public-ip"       );
 
@@ -99,9 +89,15 @@ const INDEX_START_PUBLIC_KEY_LENGTH         = INDEX_START_PUBLIC_KEY_TYPE + 1;
 
 const INDEX_START_PUBLIC_KEY                = INDEX_START_PUBLIC_KEY_LENGTH + 1;
 
-final FOR_2_SECONDS                         = Duration (seconds : 2);
+final LATEST_VERSION_PROVER_URL     = Uri.parse("https://github.com/Proof-of-X/Proof-of-Backhaul/raw/main/release/latest/$ARCHITECTURE/$OS/run-pob-prover.exe");
+final LATEST_VERSION_CHALLENGER_URL = Uri.parse("https://github.com/Proof-of-X/Proof-of-Backhaul/raw/main/release/latest/$ARCHITECTURE/$OS/run-pob-challenger.exe");
 
-final EMPTY_PACKET                          = Uint8List(0);
+enum MessageType
+{
+    CHALLENGE_PACKET
+}
+
+final MESSAGE_TYPE_CHALLENGE_PACKET         = MessageType.CHALLENGE_PACKET.index;
 
 final ALL_VALID_CHALLENGE_STATES_FOR_CHALLENGER = {
 
@@ -113,26 +109,4 @@ final ALL_VALID_CHALLENGE_STATES_FOR_CHALLENGER = {
     "packet_bitmap"     : "end_challenge",
 };
 
-const OS_TYPES = {
-    "macos"     : "Darwin",
-    "windows"   : "Windows_NT",
-    "linux"     : "Linux",
-    "unknown"   : "unknown"
-};
 
-final OS = OS_TYPES [Platform.operatingSystem] ?? "unknown";
-
-final ARCHITECTURE_TYPES = {
-    "arm64"     : "arm64",
-    "amd64"     : "x64",
-    "x86_64"    : "x64",
-    "unknown"   : "unknown"
-};
-
-final arch = SysInfo.kernelArchitecture.toString() == "UNKNOWN" ? ENV["PROCESSOR_ARCHITECTURE"] : SysInfo.kernelArchitecture.toString();
-
-final ARCHITECTURE = ARCHITECTURE_TYPES [arch?.toLowerCase()] ?? "unknown";
-
-final LATEST_VERSION_URL            = Uri.parse("https://raw.githubusercontent.com/Proof-of-X/Proof-of-Backhaul/main/release/latest/version.txt");
-final LATEST_VERSION_PROVER_URL     = Uri.parse("https://github.com/Proof-of-X/Proof-of-Backhaul/raw/main/release/latest/$ARCHITECTURE/$OS/run-pob-prover.exe");
-final LATEST_VERSION_CHALLENGER_URL = Uri.parse("https://github.com/Proof-of-X/Proof-of-Backhaul/raw/main/release/latest/$ARCHITECTURE/$OS/run-pob-challenger.exe");

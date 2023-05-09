@@ -65,7 +65,7 @@ void main(final List<String> args) async
         }
         else
         {
-            await update_client (client_key, release.version, args);
+            await update_client (client_key, release.version, LATEST_VERSION_PROVER_URL, args);
         }
     }
 
@@ -73,7 +73,7 @@ void main(final List<String> args) async
     {
         try
         {
-            print("-----");
+            print("\n----- $client_key -----");
 
             await Isolate.run (
                 () async
@@ -89,6 +89,6 @@ void main(final List<String> args) async
             print("Exception : $e");
         }
 
-        await update_client (client_key, release.version, args);
+        await update_client (client_key, release.version, LATEST_VERSION_PROVER_URL, args);
     }
 }

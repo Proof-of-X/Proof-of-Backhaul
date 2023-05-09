@@ -28,45 +28,36 @@
 import "dart:io";
 
 import "../common/log.dart";
-import "../common/constants.dart";
 
-import "challenger.dart"    as challenger;
-import "release.dart"       as release;
+import "payer.dart"     as payer;
+import "release.dart"   as release;
 
 Future<void> run (final List<String> args) async
 {
-    String  projectName      = "";
-    String  projectPublicKey = "";
-    String  keyType          = "solana";
-    Map     walletPublicKey  = {};
+    String  keyType         = "solana";
+    String  prover          = "INVALID";
+
+    Map     walletPublicKey = {};
 
     if (args.length >= 1)
-        projectName         = args[0];
+        prover              = args[0];
 
     if (args.length >= 2)
         keyType             = args[1];
 
     if (args.length >= 3)
-        projectPublicKey    = args[2];
+        walletPublicKey     = {keyType : args[2]};
 
-    if (args.length >= 4)
-        walletPublicKey     = {keyType : args[3]};
+    final c = payer.Client ({
+        "prover"            : prover,
+        "keyType"           : keyType,
+        "walletPublicKey"   : walletPublicKey
+    });
 
-    int num_consecutive_failures = 0;
+    final log = LOG("Run.Payer", set_client : c);
 
-    while (num_consecutive_failures < 10)
+    try
     {
-        final c = challenger.Client ({
-            "keyType"           : keyType,
-            "projectName"       : projectName,
-            "projectPublicKey"  : projectPublicKey,
-            "walletPublicKey"   : walletPublicKey
-        });
-
-        final log = LOG("Run.Challenger", set_client : c);
-
-        try
-        {
             await c.login (release.version);
 
             if (c.payment_or_staking_required == true)
@@ -79,20 +70,15 @@ Future<void> run (final List<String> args) async
             }
 
             await c.run();
-
-            if (c.logged_in == false)
-                ++num_consecutive_failures;
-
-            num_consecutive_failures = 0;
-        }
-        catch (e)
-        {
-            log.error("Exception : $e");
-            await c.cleanup("Run.Challenger");
-
-            ++num_consecutive_failures;
-        }
-
-        sleep (FOR_2_SECONDS);
     }
+    catch (e)
+    {
+        log.error("Exception : $e");
+
+        await c.cleanup("Run.Payer");
+
+        exit(-1);
+    }
+
+    exit(0);
 }

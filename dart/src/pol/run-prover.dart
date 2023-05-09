@@ -28,20 +28,20 @@
 import "dart:io";
 import "dart:isolate";
 
-import "run-challenger-once.dart"   as challenger;
+import "run-prover-once.dart"       as prover;
 
 import "../common/utils.dart";
 
 import "constants.dart";
 import "release.dart"               as release;
 
-const client_key = "pob_challenger_client";
+const client_key = "pol_prover_client";
 
 void main(final List<String> args) async
 {
     if (args.length == 1 && args[0] == '-v')
     {
-        print("$POB_RELEASE_VERSION");
+        print("$POL_RELEASE_VERSION");
         exit(0);
     }
 
@@ -65,7 +65,7 @@ void main(final List<String> args) async
         }
         else
         {
-            await update_client (client_key, release.version, LATEST_VERSION_CHALLENGER_URL, args);
+            await update_client (client_key, release.version, LATEST_VERSION_PROVER_URL, args);
         }
     }
 
@@ -78,7 +78,7 @@ void main(final List<String> args) async
             await Isolate.run (
                 () async
                 {
-                    await challenger.run (args);
+                    await prover.run (args);
                 }
             );
 
@@ -89,6 +89,6 @@ void main(final List<String> args) async
             print("Exception : $e");
         }
 
-        await update_client (client_key, release.version, LATEST_VERSION_CHALLENGER_URL, args);
+        await update_client (client_key, release.version, LATEST_VERSION_PROVER_URL, args);
     }
 }

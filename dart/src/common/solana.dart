@@ -53,10 +53,11 @@ class Crypto extends abc.Crypto
         @override
         Future<bool> init() async
         {
-            await super.init();
+            if (init_done)
+                return true;
 
             if (keyPair != null && publicKey != "INVALID")
-                return true;     // keyPair was already initialized
+                return (init_done = true);     // keyPair was already initialized
 
             bool private_key_found = false;
 
@@ -130,7 +131,7 @@ class Crypto extends abc.Crypto
             final p     = keyPair.publicKey;
             publicKey   = p.toBase58();
 
-            return true;
+            return (init_done = true);
         }
 
         @override
