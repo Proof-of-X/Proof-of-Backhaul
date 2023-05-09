@@ -15,7 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest, buildjet-2vcpu-ubuntu-2204-arm]
+        os: [ubuntu-latest, macos-latest, windows-latest]
         sdk: [stable] #2.19.2 as of Feb 2023
         include:
         - os: ubuntu-latest
@@ -33,10 +33,6 @@ jobs:
           file-extension: '.exe'
           build-command: '.\build.cmd'
 
-        - os: buildjet-2vcpu-ubuntu-2204-arm
-          os-version: arm64/Linux
-          file-extension: '.exe'
-          build-command: './build'
 
     steps:
     - name: checkout
@@ -55,7 +51,7 @@ jobs:
         mkdir -p bin/${{ matrix.os-version }}/pol/
 
     - name: script permission
-      run: chmod +x install-deps; chmod +x build; 
+      run: chmod +x install-deps; chmod +x build; chmod +x build; chmod +x build-pob; chmod +x build-pol;
       working-directory: dart/run
 
     - name: install dependencies
