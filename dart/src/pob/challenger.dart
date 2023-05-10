@@ -392,7 +392,7 @@ class ChallengeHandler extends pob.ChallengeHandler
             challenge_result["bandwidth"]                   = bandwidth;
             challenge_result["start_time"]                  = start_time;
             challenge_result["end_time"]                    = end_time;
-            challenge_result["number_of_packets_received"]  = end_time;
+            challenge_result["number_of_packets_received"]  = number_of_packets_received;
 
             bandwidth_calculated = true;
         }
