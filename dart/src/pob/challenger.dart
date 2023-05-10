@@ -206,6 +206,8 @@ class ChallengeHandler extends pob.ChallengeHandler
     int?        received_hash_of_hashes             = null;
     String?     received_packet_bitmap              = null;
 
+    int         number_of_packets_received          = 0;
+
     late Map    prover;
 
     final Map<int,List<int>> challenge_packets      = {};
@@ -387,10 +389,10 @@ class ChallengeHandler extends pob.ChallengeHandler
 
             log.important("Bandwidth : $num_bits/$time_in_seconds = ${bandwidth}");
 
-            challenge_result["bandwidth"]   = bandwidth;
-            challenge_result["start_time"]  = start_time;
-            challenge_result["end_time"]    = end_time;
-            challenge_result["timeTaken"]   = time_in_seconds;
+            challenge_result["bandwidth"]                   = bandwidth;
+            challenge_result["start_time"]                  = start_time;
+            challenge_result["end_time"]                    = end_time;
+            challenge_result["number_of_packets_received"]  = end_time;
 
             bandwidth_calculated = true;
         }
@@ -775,6 +777,7 @@ class ChallengeHandler extends pob.ChallengeHandler
         {
             if (received_packet_bitmap?[i] == "1")
             {
+                ++number_of_packets_received;
                 calculated_hash = calculated_hash ^ sent_random_number[i];
             }
         }
