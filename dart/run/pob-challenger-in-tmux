@@ -1,0 +1,3 @@
+#!/bin/sh
+
+tmux new-session -d -s pob-challenger "./pob-challenger"

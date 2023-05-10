@@ -1,0 +1,23 @@
+#!/bin/sh
+
+dir=`dirname $0`
+
+cd $dir/../bin/pol
+
+if [ -n "$ENABLE_POL_UPDATES" ]
+then
+	yes | ../run/update-pol-prover
+fi
+
+while :
+do
+	./run-pol-prover.exe $1 $2 $3 $4 $5 $6 $7 $8 $9
+
+	echo "================> Restarting ===================="
+	sleep 1
+
+	if [ -n "$ENABLE_POL_UPDATES" ]
+	then
+		yes | ../run/update-pol-prover
+	fi
+done

@@ -1,0 +1,19 @@
+#!/bin/sh
+
+if [ -n "$ENABLE_POB_UPDATES" ]
+then
+	yes | ./update-pob-challenger
+fi
+
+while :
+do
+	./run-pob-challenger.exe $1 $2 $3 $4 $5 $6 $7 $8 $9
+
+	echo "================> Restarting ===================="
+	sleep 1
+
+	if [ -n "$ENABLE_POB_UPDATES" ]
+	then
+		yes | ../run/update-pob-challenger
+	fi
+done
