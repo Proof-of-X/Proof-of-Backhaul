@@ -15,3 +15,9 @@ echo "'''.trim();" >> release.dart
 
 dart compile exe run-prover.dart	-o ../../bin/pol/run-pol-prover.exe
 dart compile exe run-challenger.dart	-o ../../bin/pol/run-pol-challenger.exe
+
+# revert changes
+
+echo "final version = '''" > release.dart
+echo INVALID >> release.dart
+echo "'''.trim();" >> release.dart
