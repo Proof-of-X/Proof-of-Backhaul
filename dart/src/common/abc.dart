@@ -893,8 +893,7 @@ class ChallengeHandler
     late int                    source_port;
     late int                    destination_port;
 
-    late RawDatagramSocket      socket4;
-    late RawDatagramSocket      socket6;
+    late RawDatagramSocket      socket;
 
     late DateTime               last_message_received_time;
 
@@ -913,25 +912,11 @@ class ChallengeHandler
         log     = LOG("ChallengeHandler", set_client : client);
         ws_log  = LOG("WebSocket.Message",set_client : client);
 
-        try
-        {
-            socket4 = await RawDatagramSocket.bind (
-                source_address4,
+        socket = await RawDatagramSocket.bind (
+                is_IPv6_challenge ? source_address6 : source_address4,
                 source_port,
                 reusePort : ((role == "prover") && (! Platform.isWindows))
-            );
-        }
-        catch (e) {print("Bind socket4 Exception $e");}
-
-        try
-        {
-            socket6 = await RawDatagramSocket.bind (
-                source_address6,
-                source_port,
-                reusePort : ((role == "prover") && (! Platform.isWindows))
-            );
-        }
-        catch (e) {print("Bind socket6 Exception $e");}
+        );
 
         return true;
     }
@@ -947,13 +932,7 @@ class ChallengeHandler
 
         try
         {
-            socket4.close();
-        }
-        catch (e) {}
-
-        try
-        {
-            socket6.close();
+            socket.close();
         }
         catch (e) {}
     }
@@ -964,7 +943,6 @@ class ChallengeHandler
 
         final   destination = to["ip"];
         final   dport       = to["udp_port"] ?? destination_port;
-        final   socket      = (destination.type == InternetAddressType.IPv6) ? socket6 : socket4;
 
         for (int i = 1; i <= 10; ++i)
         {
@@ -988,7 +966,6 @@ class ChallengeHandler
     {
         final   destination = to["ip"];
         final   dport       = to["udp_port"] ?? destination_port;
-        final   socket      = (destination.type == InternetAddressType.IPv6) ? socket6 : socket4;
 
         for (int i = 1; i <= 10; ++i)
         {
@@ -1027,19 +1004,8 @@ class ChallengeHandler
 
         while (true)
         {
-            Datagram? datagram  = null;
-            String ip_version   = "";
-
-            if (is_IPv6_challenge)
-            {
-                datagram        = socket6.receive();
-                ip_version      = "IPv6";
-            }
-            else
-            {
-                datagram        = socket4.receive();
-                ip_version      = "IPv4";
-            }
+            final Datagram? datagram    = socket.receive();
+            String          ip_version  = is_IPv6_challenge ? "IPv6" : "IPv4";
 
             if (datagram == null || datagram.data.length == 0 || datagram.data.length > UDP_CHUNK_SIZE)
             {

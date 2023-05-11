@@ -341,8 +341,7 @@ class ChallengeHandler extends pob.ChallengeHandler
             // XXX print error
         }
 
-        socket4.close();
-        socket6.close();
+        socket.close();
 
         return;
     }

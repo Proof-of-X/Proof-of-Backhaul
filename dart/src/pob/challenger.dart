@@ -263,10 +263,13 @@ class ChallengeHandler extends pob.ChallengeHandler
         if (prover["ip"].type == InternetAddressType.IPv6)
             is_IPv6_challenge = true;
 
-        whitelist                       = [ prover ];
+        whitelist = [ prover ];
 
-        challenge_result["latency"]     = 50.0;
-        challenge_result["bandwidth"]   = 0.0;
+        challenge_result["latency"]                     = 50.0;
+        challenge_result["bandwidth"]                   = 0.0;
+        challenge_result["start_time"]                  = start_time;
+        challenge_result["end_time"]                    = end_time;
+        challenge_result["number_of_packets_received"]  = 0;
     }
 
     @override
@@ -412,8 +415,7 @@ class ChallengeHandler extends pob.ChallengeHandler
             // XXX print error
         }
 
-        socket4.close();
-        socket6.close();
+        socket.close();
 
         return result;
     }
@@ -423,7 +425,7 @@ class ChallengeHandler extends pob.ChallengeHandler
         bool first              = true;
         int start_time          = 0;
         while (num_packets_to_rx > 0) {
-            Datagram? d = socket4.receive();
+            Datagram? d = socket.receive();
             if (d != null) {
                 if (d.data.length < UDP_CHUNK_SIZE) {
                     return {}; // received smaller than expected size packet
@@ -646,20 +648,10 @@ class ChallengeHandler extends pob.ChallengeHandler
 
             //print("==> After encode ${Now(ntp_offset).microsecondsSinceEpoch - prevTime};");
 
-            //log.info("Sent $i message to $prover from ${socket4.port}");
+            //log.info("Sent $i message to $prover from ${socket.port}");
 
-            Datagram? datagram = null;
-            String ip_version  = "IPv6";
-
-            if (is_IPv6_challenge)
-            {
-                datagram = socket6.receive();
-            }
-            else
-            {
-                datagram    = socket4.receive();
-                ip_version  = "IPv4";
-            }
+            final Datagram? datagram    = socket.receive();
+            String          ip_version  = is_IPv6_challenge ? "IPv6" : "IPv4";
 
             if (datagram == null || datagram.data.length == 0 || datagram.data.length > UDP_CHUNK_SIZE)
             {
@@ -935,56 +927,56 @@ class ChallengeHandler extends pob.ChallengeHandler
 
         switch (message["type"])
         {
-                    case "start_challenge":
-                    {
-                        process_challenge_initiate_message (data);
-                        break;
-                    }
+            case "start_challenge":
+            {
+                process_challenge_initiate_message (data);
+                break;
+            }
 
-                    case "all_hashes":
-                    {
-                        await process_all_hashes (data);
+            case "all_hashes":
+            {
+                await process_all_hashes (data);
 
-                        all_hashes_received = true;
+                all_hashes_received = true;
 
-                        if (packet_bitmap_received == true)
-                        {
-                            calculate_bandwidth();
+                if (packet_bitmap_received == true)
+                {
+                    calculate_bandwidth();
 
-                            await client.report_challenge_results(this);
+                    await client.report_challenge_results(this);
 
-                            final result = art.renderFiglet((challenge_result["bandwidth"] / 1000000).toStringAsFixed(5) + "Mbps", art.Font.text(font.text));
-                            print(result);
-                        }
-
-                        break;
-                    }
-
-                    case "packet_bitmap":
-                    {
-                        await process_packet_bitmap (data);
-
-                        packet_bitmap_received = true;
-
-                        if (all_hashes_received == true)
-                        {
-                            calculate_bandwidth();
-
-                            await client.report_challenge_results(this);
-
-                            final result = art.renderFiglet((challenge_result["bandwidth"] / 1000000).toStringAsFixed(5) + "Mbps", art.Font.text(font.text));
-                            print(result);
-                        }
-
-                        break;
-                    }
-
-                    case "end_challenge":
-                    {
-                        await cleanup("End Challenge");
-                        break;
-                    }
+                    final result = art.renderFiglet((challenge_result["bandwidth"] / 1000000).toStringAsFixed(5) + "Mbps", art.Font.text(font.text));
+                    print(result);
                 }
+
+                break;
+            }
+
+            case "packet_bitmap":
+            {
+                await process_packet_bitmap (data);
+
+                packet_bitmap_received = true;
+
+                if (all_hashes_received == true)
+                {
+                    calculate_bandwidth();
+
+                    await client.report_challenge_results(this);
+
+                    final result = art.renderFiglet((challenge_result["bandwidth"] / 1000000).toStringAsFixed(5) + "Mbps", art.Font.text(font.text));
+                    print(result);
+                }
+
+                break;
+            }
+
+            case "end_challenge":
+            {
+                await cleanup("End Challenge");
+                break;
+            }
+        }
     }
 
     @override
