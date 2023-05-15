@@ -20,6 +20,6 @@ then
 	echo "===> Done."
 fi
 
-echo "Running in background ..."
+echo "===> Running in background ..."
 
 ./run-pob-prover-in-tmux
