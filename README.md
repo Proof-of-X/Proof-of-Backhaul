@@ -12,6 +12,8 @@ Please read:
 
 ## Running a challenger
 
+We currently support Linux/Mac/Windows-WSL.
+
 Edit the `config/pob/challenger.json` file
 to change the `walletPublicKey` and `bandwidth`.
 
