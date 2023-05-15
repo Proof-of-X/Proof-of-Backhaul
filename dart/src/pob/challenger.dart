@@ -858,7 +858,7 @@ class ChallengeHandler extends pob.ChallengeHandler
     @override
     Future<void> handle_challenge_message (final String string_signed_message, final InternetAddress ip, final WebSocket ws) async
     {
-        if (string_signed_message == "ping" || string_signed_message == "pong")
+        if (string_signed_message[0] != "{") // expecting a JSON
             return;
 
         bool            is_sender_IPv6    = ip.type == InternetAddressType.IPv6;

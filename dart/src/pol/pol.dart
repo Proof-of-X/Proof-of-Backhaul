@@ -30,6 +30,7 @@ import "dart:core";
 import "dart:convert";
 
 import "../common/log.dart";
+import "../common/utils.dart";
 import "../common/abc.dart"                                     as abc;
 
 import "constants.dart";
@@ -42,6 +43,24 @@ class Client extends abc.Client
     Client (final String _role, final Map _args) : super ("pol", _role, _args)
     {
         args = _args;
+
+        if (is_double(args,"latitude"))
+                claims["latitude"] = args["latitude"];
+
+        if (is_double(args,"longitude"))
+                claims["longitude"] = args["longitude"];
+
+        if (is_double(args,"radius"))
+                claims["radius"] = args["radius"];
+
+        if (is_string(args,"country"))
+                claims["country"] = args["country"];
+
+        if (is_string(args,"area"))
+                claims["area"] = args["area"];
+
+        if (is_string(args,"area"))
+                claims["area"] = args["area"];
     }
 
     Future<bool> init () async
@@ -85,6 +104,11 @@ class ChallengeHandler extends abc.ChallengeHandler
 
         if (setSourcePort > 0)
             source_port = setSourcePort;
+    }
+
+    Future<void> handle_challenge_message (final String message, final InternetAddress sender, final WebSocket ws)
+    {
+        throw Exception("This is an abstract method!");
     }
 
     Future<void> cleanup (final String from) async

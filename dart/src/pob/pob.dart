@@ -185,14 +185,16 @@ class ChallengeHandler extends abc.ChallengeHandler
                             return;
                         }
 
-                        final WebSocket         socket    = await WebSocketTransformer.upgrade(request);
-                        final InternetAddress   ip        = request.connectionInfo?.remoteAddress ?? InternetAddress("");
+                        final WebSocket         ws = await WebSocketTransformer.upgrade(request);
+                        final InternetAddress   ip = request.connectionInfo?.remoteAddress ?? InternetAddress("");
 
-                        await socket.listen
+                        ws.pingInterval = EVERY_30_SECONDS;
+
+                        await ws.listen
                         (
                             (final message) async
                             {
-                                await handle_challenge_message (message,ip,socket);
+                                await handle_challenge_message (message,ip,ws);
                             }
                         );
 
@@ -250,7 +252,8 @@ class ChallengeHandler extends abc.ChallengeHandler
             {
                 ws_log.important("Connecting to WebSocket of : $host ...");
 
-                challenge_websocket[publicKey] = await WebSocket.connect(ws_url);
+                final ws = challenge_websocket[publicKey] = await WebSocket.connect(ws_url);
+                ws.pingInterval = EVERY_30_SECONDS;
 
                 ws_log.success("Connected to WebSocket of : $host");
 
@@ -268,11 +271,6 @@ class ChallengeHandler extends abc.ChallengeHandler
                     "publicKey"   : crypto.publicKey,
                     "signature"   : await crypto.sign(websocket_connect),
                 });
-
-                final ws = challenge_websocket[publicKey];
-
-                if (ws == null)
-                    return;
 
                 ws.add(signed_websocket_connect);
 

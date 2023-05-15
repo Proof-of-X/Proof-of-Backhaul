@@ -126,8 +126,6 @@ class Client
     bool            has_public_IPv4         = false;
     bool            has_public_IPv6         = false;
 
-    bool            has_IPv6                = false;
-
     bool            websocket_IPv4_running  = false;
     bool            websocket_IPv6_running  = false;
 
@@ -327,8 +325,6 @@ class Client
                 return;
         }
 
-        has_IPv6 = (IPv6 == "INVALID") ? false : true;
-
         final String secret_request = base64.encode (
             List<int>.generate(32, (i) => RNG.nextInt(256))
         );
@@ -489,6 +485,7 @@ class Client
         if (logs_length >= 40)
         {
                 final split = logs.split("\n").sublist(0,38);
+
                 logs = split.join("\n");
                 logs_length = 39;
         }
@@ -701,7 +698,7 @@ class Client
         if (! logged_in || websocket_IPv4_running)
             return;
 
-        while (do_run) // until user stops -OR- some exception occurs
+        while (do_run && payment_or_staking_required == false) // until user stops -OR- some exception occurs
         {
             websocket_IPv4_running = true;
                 await run_websocket (WEBSOCKET_GET_URL_IPv4,"IPv4");
@@ -715,10 +712,10 @@ class Client
 
     Future<void> run_websocket_IPv6 () async
     {
-        if (! logged_in || ! has_IPv6)
+        if (IPv6 == "INVALID")
             return;
 
-        if (websocket_IPv6_running)
+        if (! logged_in || websocket_IPv6_running)
             return;
 
         while (do_run && payment_or_staking_required == false) // until user stops -OR- some exception occurs
@@ -763,11 +760,9 @@ class Client
                                         socket
                                 );
 
-        final every_30_seconds  = Duration (seconds : 30);
-
         final ws                = WebSocketChannel (
                                         innerChannel,
-                                        pingInterval    : every_30_seconds,
+                                        pingInterval    : EVERY_30_SECONDS,
                                         serverSide      : false
                                 );
 
@@ -855,37 +850,37 @@ class Client
 
 class ChallengeHandler
 {
-    late Client         client;
+    late Client                 client;
 
-    Map                 challenge_info          = {};
-    Map                 challenge_result        = {};
+    Map                         challenge_info          = {};
+    Map                         challenge_result        = {};
 
-    String              challenge_state         = "";
+    String                      challenge_state         = "";
 
-    bool                init_done               = false;
-    bool                sent_challenge_results  = false;
-    bool                cleanup_done            = false;
+    bool                        init_done               = false;
+    bool                        sent_challenge_results  = false;
+    bool                        cleanup_done            = false;
 
-    bool                challenge_succeeded     = false;
+    bool                        challenge_succeeded     = false;
 
-    late String         role;
+    late String                 role;
 
-    late LOG            log;
-    late LOG            ws_log;
+    late LOG                    log;
+    late LOG                    ws_log;
 
-    late String         challenge_id;
-    late List<int>      challenge_id_in_ascii;
+    late String                 challenge_id;
+    late List<int>              challenge_id_in_ascii;
 
-    late Duration       ntp_offset;
+    late Duration               ntp_offset;
 
-    late Crypto         crypto;
+    late Crypto                 crypto;
 
-    List whitelist                              = [];
+    List whitelist              = [];
 
-    int start_time                              = -1;
-    int end_time                                = -1;
+    int start_time              = -1;
+    int end_time                = -1;
 
-    bool is_IPv6_challenge                      = false;
+    bool is_IPv6_challenge      = false;
 
     InternetAddress             source_address4 = InternetAddress.anyIPv4;
     InternetAddress             source_address6 = InternetAddress.anyIPv6;
@@ -913,9 +908,11 @@ class ChallengeHandler
         ws_log  = LOG("WebSocket.Message",set_client : client);
 
         socket = await RawDatagramSocket.bind (
-                is_IPv6_challenge ? source_address6 : source_address4,
+
+                is_IPv6_challenge   ? source_address6 : source_address4,
                 source_port,
-                reusePort : ((role == "prover") && (! Platform.isWindows))
+                reusePort           : ((role == "prover") && (! Platform.isWindows))
+
         );
 
         return true;

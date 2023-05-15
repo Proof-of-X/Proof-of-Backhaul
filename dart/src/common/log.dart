@@ -57,41 +57,41 @@ final config = {
 
 class LOG
 {
-    String          name            = "";
+    String          name      = "";
     abc.Client?     client    = null;
 
-    LOG (String set_name, {final abc.Client? set_client = null})
+    LOG (final String set_name, {final abc.Client? set_client = null})
     {
         name        = set_name;
         client      = set_client;
     }
 
-    void info(String message)
+    void info(final String message)
     {
         _log("\x1B[37m",message);
     }
 
-    void error (String message)
+    void error (final String message)
     {
         _log("\x1B[31m",message);
     }
 
-    void warning (String message)
+    void warning (final String message)
     {
         _log("\x1B[33m",message);
     }
 
-    void success (String message)
+    void success (final String message)
     {
         _log("\x1B[32m",message);
     }
 
-    void important (String message)
+    void important (final String message)
     {
         _log("\x1B[34m",message);
     }
 
-    void _log(String color, String message)
+    void _log(final String color, final String message)
     {
         int min_log_level       = level[name]           ?? 0;
         int config_log_level    = level[config[name]]   ?? 0;

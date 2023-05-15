@@ -45,6 +45,12 @@ void main(final List<String> args) async
         exit(0);
     }
 
+    if (args.length == 1 && args[0] == '-h')
+    {
+        print("run-pob-prover.exe [blockchain-project-name] [key-type] [project-public-key] [wallet-public-key]");
+        exit(0);
+    }
+
     final executable = Platform.executable;
 
     if (executable.endsWith(".exe"))

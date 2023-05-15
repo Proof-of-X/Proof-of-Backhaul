@@ -819,47 +819,54 @@ class ChallengeHandler extends pob.ChallengeHandler
     @override
     Future<void> handle_challenge_message (final String string_signed_message, final InternetAddress ip, final WebSocket ws) async
     {
-        if (string_signed_message == "ok")
-        {
+        if (string_signed_message[0] != "{") // expecting a JSON
             return;
-        }
-        else if (string_signed_message[0] == "{") // looks like a JSON map
+
+        bool            is_sender_IPv6    = ip.type == InternetAddressType.IPv6;
+        final           clean_address     = process_ip (ip.address);
+        String          ip_version        = is_sender_IPv6 ? "IPv6" : "IPv4";
+
+        if (ip_version == "IPv6" && ip.address != clean_address)
         {
-            try
-            {
-                final sender_address    = ip.address;
-                final clean_address     = process_ip (sender_address);
-
-                String ip_version = is_IPv6_challenge ? "IPv6" : "IPv4";
-
-                if (ip_version == "IPv6" && sender_address != clean_address)
-                {
-                    ip_version = "IPv4";
-                }
-
-                final sender_ip = (ip_version == "IPv6") ?
-                                                    Uri.parseIPv6Address(clean_address):
-                                                    Uri.parseIPv4Address(clean_address);
-
-                final Map message = await process_message_as_json (
-                    string_signed_message,
-                    sender_ip,
-                    ip_version,
-                    0,
-                );
-
-                final cpk = message["publicKey"];
-
-                if (cpk == null)
-                    return ws.close();
-
-                challenge_websocket [cpk] = ws;
-            }
-            catch (e)
-            {
-                // invalid JSON
-            }
+            ip_version      = "IPv4";
+            is_sender_IPv6  = false;
         }
+
+        final List<int> sender_ip = is_sender_IPv6?
+                                    Uri.parseIPv6Address(clean_address):
+                                    Uri.parseIPv4Address(clean_address);
+
+        final Map signed_message  = await process_message_as_json (
+                                        string_signed_message,
+                                        sender_ip,
+                                        ip_version,
+                                        0       // ignore sender port for TCP
+                                  );
+
+        if (signed_message["message"] == null)
+            return;
+
+        Map message = {};
+
+        try
+        {
+            message = jsonDecode(signed_message["message"]);
+        }
+        catch (e)
+        {
+            ws_log.error("Invalid signed_message : $e");
+            return ws.close();
+        }
+
+        final cpk = signed_message["publicKey"];
+
+        if (cpk == null)
+        {
+            ws_log.error("Got invalid message : $signed_message -> $message");
+            return ws.close();
+        }
+
+        challenge_websocket [cpk] = ws;
     }
 
     /*

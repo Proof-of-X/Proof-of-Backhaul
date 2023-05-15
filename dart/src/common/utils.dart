@@ -178,8 +178,8 @@ Future<void> update_client (
                 return;
             }
 
-            log.info("Trying to update ...");
-            log.important("Downloading : `$download_url`");
+            log.info        ("Trying to update ...");
+            log.important   ("Downloading : `$download_url`");
 
             await http
                     .get (download_url)
@@ -224,8 +224,8 @@ Future<void> update_client (
 
                             if (result.stdout != "" || result.stderr == "")
                             {
-                                log.important("Downloaded update with version : ${result.stdout}");
-                                log.success("Update succeeded!");
+                                log.important   ("Downloaded update with version : ${result.stdout}");
+                                log.success     ("Update succeeded!");
 
                                 await Process.start (
                                     latest_executable,

@@ -72,6 +72,7 @@ const CONTENT_TYPE_JSON         = {
 };
 
 final FOR_2_SECONDS             = Duration (seconds : 2);
+final EVERY_30_SECONDS          = Duration (seconds : 30);
 
 final LATEST_VERSION_URL        = Uri.parse("https://raw.githubusercontent.com/Proof-of-X/Proof-of-Backhaul/main/release/latest/version.txt");
 
