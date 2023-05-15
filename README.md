@@ -9,3 +9,23 @@ to determine the backhaul capacity of a “prover” with the help of a pool of
 Please read:
 
 [GitBook link](https://witness-chain.gitbook.io/witness-chain/proof-of-backhaul/introduction)
+
+## Running a challenger
+
+Edit the `config/pob/challenger.json` file
+to change the `walletPublicKey` and `bandwidth`.
+
+The `walletPublicKey` is where rewards go; and the `bandwidth` is the amount of bandwidth you wish to allocate
+for PoB challenges.
+
+### To check if everything is working fine
+
+```
+./run-pob-challenger
+```
+
+### To run in production 
+
+```
+./run-pob-challenger-in-tmux
+```
