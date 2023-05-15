@@ -1,3 +1,3 @@
 #!/bin/sh
 cd release/latest/`arch`/`uname`/pob
-./run-pob-prover-in-tmux
+./run-pob-challenger-in-tmux
