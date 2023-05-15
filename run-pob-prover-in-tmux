@@ -1,3 +1,25 @@
 #!/bin/sh
-cd release/latest/`arch`/`uname`/pob
+
+os=`uname`
+cd release/latest/`arch`/$os/pob
+
+v=`tmux -V`
+
+if [ "$?" != "0" ]
+then
+	echo
+	echo "===> 'tmux' command not found. Installing it ..."
+
+	if [ "$os" = "Darwin" ]
+	then
+		brew install tmux
+	else
+		sudo apt install tmux
+	fi
+
+	echo "===> Done."
+fi
+
+echo "Running in background ..."
+
 ./run-pob-prover-in-tmux
