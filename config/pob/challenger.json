@@ -1,6 +1,6 @@
 {
 	"claims" : {
-		"bandwidth"	: 25.0,		"//" : "bandwidth is in Mbps"
+		"bandwidth"	: 100.0, "//" : "bandwidth is in Mbps"
 	},
 
 	"walletPublicKey"	: {
