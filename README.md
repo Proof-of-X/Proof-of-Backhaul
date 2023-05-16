@@ -31,3 +31,22 @@ for PoB challenges.
 ```
 ./run-pob-challenger-in-tmux
 ```
+
+## For developers
+
+### Building the PoB binaries
+```
+dart/run/build-pob
+```
+
+### Running the challenger code
+
+```
+dart/bin/pob/run-pob-challenger
+```
+
+To run in background
+
+```
+dart/bin/pob/run-pob-challenger-in-tmux
+```

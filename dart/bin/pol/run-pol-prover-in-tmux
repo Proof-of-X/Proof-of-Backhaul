@@ -1,0 +1,25 @@
+#!/bin/sh
+
+dir=`dirname $0`
+cd $dir
+
+v=`tmux -V`
+
+if [ "$?" != "0" ]
+then
+	echo
+	echo "===> 'tmux' command not found. Installing it ..."
+
+	if [ "$os" = "Darwin" ]
+	then
+		brew install tmux
+	else
+		sudo apt install tmux
+	fi
+
+	echo "===> Done."
+fi
+
+echo "===> Running in background ..."
+
+tmux new-session -d -s pol-prover "./run-pol-prover"
