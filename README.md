@@ -26,13 +26,19 @@ for PoB challenges.
 ./run-pob-challenger
 ```
 
-### To run in production 
+### To run in production
 
 ```
 ./run-pob-challenger-in-tmux
 ```
 
 ## For developers
+
+### Installing dependencies
+
+```
+dart/run/install-deps
+```
 
 ### Building the PoB binaries
 ```

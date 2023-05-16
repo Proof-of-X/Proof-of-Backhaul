@@ -189,11 +189,20 @@ class Client
 
         for (final cf in CONFIG_FILES)
         {
+            String json_string = "{}";
+
             try
             {
-                final Map c = jsonDecode (
-                    File(cf).readAsStringSync()
-                );
+                json_string = File(cf).readAsStringSync();
+            }
+            catch (e)
+            {
+                continue;
+            }
+
+            try
+            {
+                final Map c = jsonDecode (json_string);
 
                 log.success("Read : $cf");
 
@@ -209,7 +218,11 @@ class Client
                     }
                 );
             }
-            catch (e) {}
+            catch (e)
+            {
+                log.success ("Found the file : `$cf`");
+                log.error   ("However, it appears to contain invalid JSON\n");
+            }
         }
 
         claims                  = config["claims"]          ?? claims;
