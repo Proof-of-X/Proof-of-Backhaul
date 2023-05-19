@@ -431,13 +431,13 @@ class ChallengeHandler extends pob.ChallengeHandler
                     return {}; // received smaller than expected size packet
                 }
                 if (first) {
-                    start_time = Now(ntp_offset).millisecondsSinceEpoch;
+                    start_time = Now(ntp_offset).microsecondsSinceEpoch;
                     first = false;
                 }
                 num_packets_to_rx--;
             }
         }
-        int end_time    = Now(ntp_offset).millisecondsSinceEpoch;
+        int end_time    = Now(ntp_offset).microsecondsSinceEpoch;
 
         double BW       = (challenge_info["num_packets"] *
                             (UDP_CHUNK_SIZE + UDP_HEADER_SIZE) * 8) /

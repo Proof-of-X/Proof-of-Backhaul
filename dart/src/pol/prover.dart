@@ -264,7 +264,7 @@ class ChallengeHandler extends pol.ChallengeHandler
 
         while (num_udp_pings_received < challengers.length)
         {
-            final now = Now(ntp_offset).millisecondsSinceEpoch;
+            final now = Now(ntp_offset).microsecondsSinceEpoch;
 
             if (now > challenge_end_time)
             {

@@ -341,7 +341,7 @@ class ChallengeHandler extends pol.ChallengeHandler
 
         final timeout = Now(ntp_offset).add (
                 Duration (milliseconds : 10000) // 10 seconds
-        ).millisecondsSinceEpoch;
+        ).microsecondsSinceEpoch;
 
         while (true)
         {
@@ -362,7 +362,7 @@ class ChallengeHandler extends pol.ChallengeHandler
                 }
             }
 
-            final now = Now(ntp_offset).millisecondsSinceEpoch;
+            final now = Now(ntp_offset).microsecondsSinceEpoch;
 
             if (now > timeout)
                 return false;

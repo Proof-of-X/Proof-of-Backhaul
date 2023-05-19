@@ -396,7 +396,7 @@ class ChallengeHandler extends pob.ChallengeHandler
 
         while (num_packets_received < total_num_packets_for_challenge)
         {
-            final now = Now(ntp_offset).millisecondsSinceEpoch;
+            final now = Now(ntp_offset).microsecondsSinceEpoch;
 
             if (now > challenge_end_time)
             {
@@ -514,7 +514,7 @@ class ChallengeHandler extends pob.ChallengeHandler
 
         final timeout = Now(ntp_offset).add (
                 Duration (milliseconds : 10000) // 10 seconds
-        ).millisecondsSinceEpoch;
+        ).microsecondsSinceEpoch;
 
         while (num_udp_pongs_received < challengers.length)
         {
@@ -543,7 +543,7 @@ class ChallengeHandler extends pob.ChallengeHandler
                 }
             }
 
-            final now = Now(ntp_offset).millisecondsSinceEpoch;
+            final now = Now(ntp_offset).microsecondsSinceEpoch;
 
             if (now > timeout)
                 break;

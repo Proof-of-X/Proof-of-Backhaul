@@ -221,7 +221,7 @@ class Client
             catch (e)
             {
                 log.success ("Found the file : `$cf`");
-                log.error   ("However, it appears to contain invalid JSON\n");
+                log.error   ("However, it appears to contain invalid JSON : $e\n");
             }
         }
 
@@ -1010,7 +1010,7 @@ class ChallengeHandler
                                   Duration (
                                     milliseconds : timeout_in_milliseconds
                                   )
-                             ).millisecondsSinceEpoch;
+                             ).microsecondsSinceEpoch;
 
         while (true)
         {
@@ -1019,7 +1019,7 @@ class ChallengeHandler
 
             if (datagram == null || datagram.data.length == 0 || datagram.data.length > UDP_CHUNK_SIZE)
             {
-                final now = Now(ntp_offset).millisecondsSinceEpoch;
+                final now = Now(ntp_offset).microsecondsSinceEpoch;
 
                 if (now > timeout)
                 {
