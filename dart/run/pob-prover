@@ -1,19 +1,20 @@
 #!/bin/sh
 
-if [ -n "$ENABLE_POB_UPDATES" ]
-then
-	yes | ./update-pob-prover
-fi
+dir=`dirname $0`
 
 while :
 do
+	if [ -n "$ENABLE_POB_UPDATES" ]
+	then
+		if [ -e "new--run-pob-prover.exe" ]
+		then
+			mv new--run-pob-prover.exe run-pob-prover.exe
+			chmod +x run-pob-prover.exe
+		fi
+	fi
+
 	./run-pob-prover.exe $1 $2 $3 $4 $5 $6 $7 $8 $9
 
 	echo "================> Restarting ===================="
 	sleep 1
-
-	if [ -n "$ENABLE_POB_UPDATES" ]
-	then
-		yes | ./update-pob-prover
-	fi
 done

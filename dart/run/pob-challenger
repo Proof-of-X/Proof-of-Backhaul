@@ -1,19 +1,20 @@
 #!/bin/sh
 
-if [ -n "$ENABLE_POB_UPDATES" ]
-then
-	yes | ./update-pob-challenger
-fi
+dir=`dirname $0`
 
 while :
 do
+	if [ ! -v "$DISABLE_POB_UPDATES" ]
+	then
+		if [ -e "new--run-pob-challenger.exe" ]
+		then
+			mv new--run-pob-challenger.exe run-pob-challenger.exe
+			chmod +x run-pob-challenger.exe
+		fi
+	fi
+
 	./run-pob-challenger.exe $1 $2 $3 $4 $5 $6 $7 $8 $9
 
 	echo "================> Restarting ===================="
 	sleep 1
-
-	if [ -n "$ENABLE_POB_UPDATES" ]
-	then
-		yes | ../run/update-pob-challenger
-	fi
 done
