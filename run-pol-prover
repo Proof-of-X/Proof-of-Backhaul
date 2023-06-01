@@ -1,0 +1,5 @@
+#!/bin/sh
+
+cd release/latest/`arch`/`uname`/pol
+
+./run-pol-prover

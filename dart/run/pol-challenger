@@ -4,7 +4,7 @@ dir=`dirname $0`
 
 while :
 do
-	if [ ! -v "$DISABLE_POL_UPDATES" ]
+	if [ ! -z $DISABLE_POL_UPDATES ]
 	then
 		if [ -e "new--run-pol-challenger.exe" ]
 		then
