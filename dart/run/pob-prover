@@ -4,7 +4,7 @@ dir=`dirname $0`
 
 while :
 do
-	if [ -n "$ENABLE_POB_UPDATES" ]
+	if [ -z $ENABLE_POB_UPDATES ]
 	then
 		if [ -e "new--run-pob-prover.exe" ]
 		then

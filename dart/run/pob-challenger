@@ -4,7 +4,7 @@ dir=`dirname $0`
 
 while :
 do
-	if [ ! -v "$DISABLE_POB_UPDATES" ]
+	if [ ! -z $DISABLE_POB_UPDATES ]
 	then
 		if [ -e "new--run-pob-challenger.exe" ]
 		then
