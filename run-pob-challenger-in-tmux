@@ -13,8 +13,10 @@ then
 	if [ "$os" = "Darwin" ]
 	then
 		brew install tmux
+		brew install sqlite
 	else
 		sudo apt install tmux
+		sudo apt install libsqlite3-dev
 	fi
 
 	echo "===> Done."
