@@ -1,0 +1,980 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Proof of Backhaul",
+    "version": "1.0"
+  },
+  "paths": {
+    "/api/pre-login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "description": "-----\n\n\tThis API is to be called before logging in.\n\n\tIt will return a 'message' that has to be signed and sent to /login API.\n\n\tThis will also create a cookie; hence must be called in a session.",
+        "operationId": "ApiPreLogin",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PreloginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Set-Cookie": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PreloginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "description": "-----\n\n\tThis API logs in the user. \n\n\tIt should send back the 'message' that was sent during /pre-login API; \n\n\tand must sign the 'message' using private key\n\n\tand send it in the 'signature' field.",
+        "operationId": "ApiLogin",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/user-info": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "description": "-----\n\n\tGet logged in user information.",
+        "operationId": "ApiUserInfo",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserInfoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "description": "-----\n\n\tLogs out the user.",
+        "operationId": "ApiLogout",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/prover": {
+      "post": {
+        "tags": [
+          "Prover Information"
+        ],
+        "description": "-----\n\n\tGet information about a prover.",
+        "operationId": "ApiProver",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProverRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProverResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/provers": {
+      "post": {
+        "tags": [
+          "Prover Information"
+        ],
+        "description": "-----\n\n\tGet information about all the provers.",
+        "operationId": "ApiProvers",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "headers": {
+              "Cookie": {
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProversResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/challenge-request": {
+      "post": {
+        "tags": [
+          "Challenge"
+        ],
+        "description": "-----\n\n\tRequest to create a new challenge.\t\n\n\tBefore calling this api 'startChallenge()' smart contract must be called.\n\n\tAnd the 'transaction' after calling the startChallenge must be provided.",
+        "operationId": "ApiChallengeRequest",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChallengeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/challenge-status": {
+      "post": {
+        "tags": [
+          "Challenge"
+        ],
+        "description": "-----\n\tGet the status of a given challenge.",
+        "operationId": "ApiChallengeStatus",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChallengeStatusRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/challenge-result": {
+      "post": {
+        "tags": [
+          "Challenge"
+        ],
+        "description": "-----\n\tPost the results of a challenge.",
+        "operationId": "ApiChallengeResult",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChallengeResultRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ws": {
+      "get": {
+        "tags": [
+          "Websocket for Heartbeat and Notifications"
+        ],
+        "description": "-----\n\tA websocket connection for:\n\n\t\t1. Sending heartbeat (websocket ping).\n\t\t2. Receiving notification regarding challenges.",
+        "operationId": "ApiHeartbeat",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\n\tthis cookie should come from the result of /login API",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "101": {
+            "description": "-----\n\n\tThis opens up a websocket connection.\n\tThis response is the successful response.",
+            "headers": {
+              "Upgrade": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "websocket"
+                  ]
+                }
+              },
+              "Connection": {
+                "required": true,
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "Upgrade"
+                  ]
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "-----\n\n\tthis message is sent to a 'prover' through websocket when a challenge has been scheduled\n\n\t// ignore the status code given here.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeInfoForProver"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "-----\n\n\tthis message is sent to a 'challenger' through websocket when a challenge has been scheduled\n\n\t// ignore the status code given here.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeInfoForChallenger"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "PreloginRequest": {
+        "type": "object",
+        "properties": {
+          "publicKey": {
+            "type": "string"
+          },
+          "walletPublicKey": {
+            "type": "string"
+          },
+          "keyType": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "prover",
+              "challenger",
+              "payer"
+            ]
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "projectPublicKey": {
+            "type": "string"
+          },
+          "bandwidth_claimed": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "required": [
+          "publicKey",
+          "keyType",
+          "role",
+          "projectName",
+          "projectPublicKey",
+          "bandwidth_claimed"
+        ]
+      },
+      "PreloginResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string",
+                "description": "-----\n\tto be signed and sent in '/login' API"
+              }
+            },
+            "required": [
+              "message"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "FailureResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "description": "-----\n\ton failure the message contains the reason for failure"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string",
+            "description": "-----\n\tthe message received in /pre-login API"
+          },
+          "signature": {
+            "type": "string",
+            "description": "-----\n\tthe signature afer signing the message with private key"
+          }
+        },
+        "required": [
+          "message",
+          "signature"
+        ]
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "success": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "success"
+            ],
+            "description": "-----\n\tsuccessful response has some result"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "UserInfoResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "publicKey": {
+                "type": "string",
+                "nullable": true,
+                "description": "-----\n\n\twill return 'null' if the user has not logged in"
+              }
+            },
+            "required": [
+              "publicKey"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "ProverRequest": {
+        "type": "object",
+        "properties": {
+          "prover": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "prover"
+        ]
+      },
+      "Result": {
+        "type": "object",
+        "properties": {
+          "bandwidth": {
+            "type": "number",
+            "format": "float"
+          },
+          "latency": {
+            "type": "number",
+            "format": "float"
+          }
+        },
+        "required": [
+          "bandwidth",
+          "latency"
+        ]
+      },
+      "ChallengeResult": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Result"
+            }
+          },
+          "message": {
+            "type": "string"
+          },
+          "signature": {
+            "type": "string"
+          },
+          "challenger": {
+            "type": "string"
+          },
+          "challenge_start_time": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "result",
+          "message",
+          "signature",
+          "challenger",
+          "challenge_start_time"
+        ]
+      },
+      "ProverDetails": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "geoip": {
+            "type": "string"
+          },
+          "last_alive": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "bandwidth_claimed": {
+            "type": "number",
+            "format": "float"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChallengeResult"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "geoip",
+          "last_alive",
+          "bandwidth_claimed",
+          "results"
+        ]
+      },
+      "ProverResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/ProverDetails"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "ProversResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "provers": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "provers"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "ChallengeRequest": {
+        "type": "object",
+        "properties": {
+          "prover": {
+            "type": "string"
+          },
+          "transaction": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "prover",
+          "transaction"
+        ]
+      },
+      "ChallengeResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "challenge_id": {
+                "type": "string"
+              },
+              "challenge_status": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "challenge_id",
+              "challenge_status"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "ChallengeStatusRequest": {
+        "type": "object",
+        "properties": {
+          "transaction": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "transaction"
+        ]
+      },
+      "ChallengeStatusResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "challenge_id": {
+                "type": "string"
+              },
+              "challenge_status": {
+                "type": "string"
+              },
+              "start_challenge_transaction": {
+                "type": "string"
+              },
+              "end_challenge_transaction": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "challenge_id",
+              "challenge_status",
+              "start_challenge_transaction"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "ChallengeResultRequest": {
+        "type": "object",
+        "properties": {
+          "prover": {
+            "type": "string"
+          },
+          "transaction": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "prover",
+          "transaction"
+        ]
+      },
+      "Challenger": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string"
+          },
+          "publicKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ip",
+          "publicKey"
+        ]
+      },
+      "ChallengeInfoForProver": {
+        "type": "object",
+        "properties": {
+          "message_type": {
+            "type": "string",
+            "enum": [
+              "challenge_for_prover"
+            ]
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "challenge_id": {
+                "type": "string"
+              },
+              "challenge_start_time": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "challenge_timeout": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "challengers": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/Challenger"
+                }
+              },
+              "max_packets_per_challenger": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "total_num_packets_for_challenge": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": [
+              "challenge_id",
+              "challenge_start_time",
+              "challenge_timeout",
+              "challengers",
+              "max_packets_per_challenger",
+              "total_num_packets_for_challenge"
+            ]
+          },
+          "signature": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message_type",
+          "message",
+          "signature"
+        ]
+      },
+      "Prover": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string"
+          },
+          "publicKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ip",
+          "publicKey"
+        ]
+      },
+      "ChallengeInfoForChallenger": {
+        "type": "object",
+        "properties": {
+          "message_type": {
+            "type": "string",
+            "enum": [
+              "challenge_for_challenger"
+            ]
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "challenge_id": {
+                "type": "string"
+              },
+              "prover": {
+                "$ref": "#/components/schemas/Prover"
+              },
+              "challenge_start_time": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "challenge_timeout": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "num_packets": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "rate_of_packets_mbps": {
+                "type": "number",
+                "format": "float"
+              },
+              "total_num_packets_for_challenge": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": [
+              "challenge_id",
+              "prover",
+              "challenge_start_time",
+              "challenge_timeout",
+              "num_packets",
+              "rate_of_packets_mbps",
+              "total_num_packets_for_challenge"
+            ]
+          },
+          "signature": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message_type",
+          "message",
+          "signature"
+        ]
+      }
+    }
+  }
+}
