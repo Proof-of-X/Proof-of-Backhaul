@@ -1,16 +1,16 @@
 {
   "openapi": "3.0.2",
   "info": {
-    "title": "Proof of Backhaul",
+    "title": "Proof of X",
     "version": "1.0"
   },
   "paths": {
-    "/api/pre-login": {
+    "/pre-login": {
       "post": {
         "tags": [
-          "Auth"
+          "Session"
         ],
-        "description": "-----\n\n\tThis API is to be called before logging in.\n\n\tIt will return a 'message' that has to be signed and sent to /login API.\n\n\tThis will also create a cookie; hence must be called in a session.",
+        "description": "-----\n\n\tThis API is to be called before logging in.\n\n\tIt will return a 'message' that has to be signed and sent to '/login' API.\n\n\tThis will also create a cookie;\n\n\thence the '/login' API must be called in a session.",
         "operationId": "ApiPreLogin",
         "parameters": [],
         "requestBody": {
@@ -28,6 +28,7 @@
             "description": "200 response",
             "headers": {
               "Set-Cookie": {
+                "description": "-----\n\t\tThe cookie that is to be sent to '/login' API\n\n\t\tThe name of the cookies are:\n\t\t\t'__Secure-session' and '__Secure-session.sig'",
                 "required": true,
                 "schema": {
                   "type": "string"
@@ -51,31 +52,22 @@
                 }
               }
             }
-          },
-          "401": {
-            "description": "401 response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/FailureResponse"
-                }
-              }
-            }
           }
         }
       }
     },
-    "/api/login": {
+    "/login": {
       "post": {
         "tags": [
-          "Auth"
+          "Session"
         ],
-        "description": "-----\n\n\tThis API logs in the user. \n\n\tIt should send back the 'message' that was sent during /pre-login API; \n\n\tand must sign the 'message' using private key\n\n\tand send it in the 'signature' field.",
+        "description": "-----\n\n\tThis API logs in the user.\n\n\tThe user should send the 'message' that was received during the '/pre-login';\n\n\tand must sign the 'message' using privateKey.\n\n\tAnd send it in the 'signature' field.",
         "operationId": "ApiLogin",
         "parameters": [
           {
             "name": "Cookie",
             "in": "header",
+            "description": "-----\n\tThe cookie that was received after calling '/pre-login' API.\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
             "required": true,
             "schema": {
               "type": "string"
@@ -95,6 +87,15 @@
         "responses": {
           "200": {
             "description": "200 response",
+            "headers": {
+              "Set-Cookie": {
+                "description": "-----\n\tthe cookie after successful login.\n\tit must be presented for next api calls.",
+                "required": true,
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
             "content": {
               "application/json": {
                 "schema": {
@@ -112,14 +113,34 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
+          "402": {
+            "description": "402 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StakingResponse"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/api/user-info": {
+    "/user-info": {
       "post": {
         "tags": [
-          "Auth"
+          "General Information"
         ],
         "description": "-----\n\n\tGet logged in user information.",
         "operationId": "ApiUserInfo",
@@ -127,6 +148,7 @@
           {
             "name": "Cookie",
             "in": "header",
+            "description": "-----\n\tThe cookie that was received after calling '/login' API\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
             "required": true,
             "schema": {
               "type": "string"
@@ -147,10 +169,10 @@
         }
       }
     },
-    "/api/logout": {
+    "/logout": {
       "post": {
         "tags": [
-          "Auth"
+          "Session"
         ],
         "description": "-----\n\n\tLogs out the user.",
         "operationId": "ApiLogout",
@@ -169,7 +191,7 @@
         }
       }
     },
-    "/api/prover": {
+    "/prover": {
       "post": {
         "tags": [
           "Prover Information"
@@ -180,6 +202,7 @@
           {
             "name": "Cookie",
             "in": "header",
+            "description": "-----\n\tThe cookie that was received after calling '/login' API\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
             "required": true,
             "schema": {
               "type": "string"
@@ -207,6 +230,16 @@
               }
             }
           },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "401 response",
             "content": {
@@ -220,34 +253,37 @@
         }
       }
     },
-    "/api/provers": {
+    "/provers": {
       "post": {
         "tags": [
           "Prover Information"
         ],
-        "description": "-----\n\n\tGet information about all the provers.",
+        "description": "-----\n\tGet all provers info.",
         "operationId": "ApiProvers",
         "parameters": [
           {
             "name": "Cookie",
             "in": "header",
+            "description": "-----\n\tThe cookie that was received after calling '/login' API\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
             "required": true,
             "schema": {
               "type": "string"
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProversRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "200 response",
-            "headers": {
-              "Cookie": {
-                "required": true,
-                "schema": {
-                  "type": "string"
-                }
-              }
-            },
             "content": {
               "application/json": {
                 "schema": {
@@ -272,17 +308,18 @@
         }
       }
     },
-    "/api/challenge-request": {
+    "/challenge-request": {
       "post": {
         "tags": [
-          "Challenge"
+          "PoB Challenge"
         ],
-        "description": "-----\n\n\tRequest to create a new challenge.\t\n\n\tBefore calling this api 'startChallenge()' smart contract must be called.\n\n\tAnd the 'transaction' after calling the startChallenge must be provided.",
+        "description": "-----\n\n\tRequest to create a new challenge.\n\n\tBefore calling this api 'startChallenge()' smart contract must be called.\n\n\tAnd the 'transaction' after calling the 'startChallenge' must be provided.",
         "operationId": "ApiChallengeRequest",
         "parameters": [
           {
             "name": "Cookie",
             "in": "header",
+            "description": "-----\n\tThe cookie that was received after calling '/login' API\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
             "required": true,
             "schema": {
               "type": "string"
@@ -309,14 +346,34 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/api/challenge-status": {
+    "/challenge-status": {
       "post": {
         "tags": [
-          "Challenge"
+          "PoB Challenge"
         ],
         "description": "-----\n\tGet the status of a given challenge.",
         "operationId": "ApiChallengeStatus",
@@ -324,6 +381,7 @@
           {
             "name": "Cookie",
             "in": "header",
+            "description": "-----\n\tThe cookie that was received after calling '/login' API\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
             "required": true,
             "schema": {
               "type": "string"
@@ -350,14 +408,34 @@
                 }
               }
             }
+          },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
           }
         }
       }
     },
-    "/api/challenge-result": {
+    "/challenge-result": {
       "post": {
         "tags": [
-          "Challenge"
+          "PoB Challenge"
         ],
         "description": "-----\n\tPost the results of a challenge.",
         "operationId": "ApiChallengeResult",
@@ -365,6 +443,7 @@
           {
             "name": "Cookie",
             "in": "header",
+            "description": "-----\n\tThe cookie that was received after calling '/login' API\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
             "required": true,
             "schema": {
               "type": "string"
@@ -387,7 +466,89 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ChallengeResponse"
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/claims": {
+      "post": {
+        "tags": [
+          "Claims"
+        ],
+        "description": "-----\n\tClaim that the 'user' has certain claims",
+        "operationId": "ApiClaimBandwidth",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookie that was received after calling '/login' API\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
                 }
               }
             }
@@ -406,7 +567,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\n\tthis cookie should come from the result of /login API",
+            "description": "-----\n\tThe cookie that was received after calling '/login' API\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
             "required": true,
             "schema": {
               "type": "string"
@@ -415,7 +576,7 @@
         ],
         "responses": {
           "101": {
-            "description": "-----\n\n\tThis opens up a websocket connection.\n\tThis response is the successful response.",
+            "description": "-----\n\n\tThis opens up a websocket connection.\n\n\tThis response is the successful response.",
             "headers": {
               "Upgrade": {
                 "required": true,
@@ -438,7 +599,7 @@
             }
           },
           "201": {
-            "description": "-----\n\n\tthis message is sent to a 'prover' through websocket when a challenge has been scheduled\n\n\t// ignore the status code given here.",
+            "description": "-----\n\n\tThis message is sent to a 'prover' through websocket when a challenge\n\n\thas been scheduled\n\n\t// ignore the status code '201' given here.",
             "content": {
               "application/json": {
                 "schema": {
@@ -448,7 +609,7 @@
             }
           },
           "202": {
-            "description": "-----\n\n\tthis message is sent to a 'challenger' through websocket when a challenge has been scheduled\n\n\t// ignore the status code given here.",
+            "description": "-----\n\n\tThis message is sent to a 'challenger' through websocket when a challenge\n\n\thas been scheduled\n\n\t// ignore the status code '202' given here.",
             "content": {
               "application/json": {
                 "schema": {
@@ -469,21 +630,143 @@
           }
         }
       }
+    },
+    "/ip-info": {
+      "post": {
+        "tags": [
+          "General Information"
+        ],
+        "description": "-----\n\n\tGet user's IP addresses as seen by the challenge co-ordinator",
+        "operationId": "ApiIPInfo",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookie that was received after calling '/login' API\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IPInfoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/statistics": {
+      "post": {
+        "tags": [
+          "Statistics"
+        ],
+        "description": "-----\n\n\tGet PoB statistics on 'provers' and 'challengers'.",
+        "operationId": "ApiStatistics",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookie that was received after calling '/login' API\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatisticsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/release-info": {
+      "post": {
+        "tags": [
+          "General Information"
+        ],
+        "description": "-----\n\n\tGet the latest released version information on various software",
+        "operationId": "ApiReleaseInfo",
+        "parameters": [
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookie that was received after calling '/login' API\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReleaseInfoResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "WalletPublicKey": {
+        "type": "object",
+        "properties": {
+          "solana": {
+            "type": "string",
+            "description": "-----\n\tThe 'solana' wallet public key"
+          },
+          "ethereum": {
+            "type": "string",
+            "description": "-----\n\tThe 'ethereum' wallet public key"
+          }
+        },
+        "required": [
+          "solana",
+          "ethereum"
+        ]
+      },
       "PreloginRequest": {
         "type": "object",
         "properties": {
           "publicKey": {
-            "type": "string"
+            "type": "string",
+            "description": "-----\n\tThe key used for login"
+          },
+          "proof_type": {
+            "type": "string",
+            "description": "-----\n\tThe kind of proof the user wishes to participate in.\n\tValid values are : \"pob\" and \"pol\""
           },
           "walletPublicKey": {
-            "type": "string"
+            "$ref": "#/components/schemas/WalletPublicKey"
           },
           "keyType": {
-            "type": "string"
+            "type": "string",
+            "enum": [
+              "solana"
+            ],
+            "description": "-----\n\tThe key-type of publicKey.\n\n\tAs of now these are supported keyTypes:\n\t\t1. solana\n\t\t2. ethereum"
           },
           "role": {
             "type": "string",
@@ -491,26 +774,28 @@
               "prover",
               "challenger",
               "payer"
-            ]
+            ],
+            "description": "-----\n \tThe role the user intends to play after login:\n\n\t\t1. prover\n\t\t\tUser who wants to prove what it offers to the network.\n\n\t\t\tExample: 'bandwidth', 'latency', 'disk', 'cpu' etc.\n\n\t\t2. challenger\n\t\t\tUser who wants to challenge a 'prover'\n\t\t\tand earn rewards.\n\n\t\t3. payer\n\t\t\tAn abstract entity/user who pays\n\t\t\tand requests for a challenge.\n\n\t\t\tA payer could be:\n\t\t\tthe 'prover' itself, other users, or the blockchain."
           },
           "projectName": {
-            "type": "string"
+            "type": "string",
+            "description": "-----\n\tIf the user is also part of another blockchain project/app,\n\n\tthen the project-name/app-name can be provided here.\n\n\t\te.g. \"filecoin\", \"filecoin-station\", \"oort\", etc."
           },
           "projectPublicKey": {
-            "type": "string"
+            "type": "string",
+            "description": "-----\n\tpublicKey of the user associated with the\n\n\t'projectName' blockchain project/app."
           },
-          "bandwidth_claimed": {
-            "type": "number",
-            "format": "float"
+          "claims": {
+            "type": "object",
+            "description": "-----\n\tAll claims.\n\tclaims is dependent on proof_type,\n\n\tExample: for pob it could be:\n\t\t{\t\n\t\t\tbandwidth : Float; // The bandwidth in Mbps the user wants to claim\n\t\t}"
           }
         },
         "required": [
           "publicKey",
+          "proof_type",
           "keyType",
           "role",
-          "projectName",
-          "projectPublicKey",
-          "bandwidth_claimed"
+          "claims"
         ]
       },
       "PreloginResponse": {
@@ -521,7 +806,7 @@
             "properties": {
               "message": {
                 "type": "string",
-                "description": "-----\n\tto be signed and sent in '/login' API"
+                "description": "-----\n\tA string to be signed using user's 'privateKey' to create a 'signature'.\n\n\tThe signature can be created using MetaMask/Phantom wallet.\n\n\tThese signatures are generated through certain wallets/APIs.\n    \te.g.\n        \t1. Wallets in browser (Metamask / Phantom)\n\n        \t2. Dart\n            \t\t(https://pub.dev/packages/eth_sig_util)\n\n        \t3. Python\n            \t\t(https://pypi.org/project/eth-account/)\n\n\tin Python it can be created as:\n\n\t# ---------------------------------------\n\n\t\tfrom eth_account.messages import encode_defunct\n\t\tfrom eth_account import Account\n\n\t\tkey=\"<PRIVATE_KEY_TO_SIGN_MESSAGE>\"\n\n\t\tmsg=\"<Message received from the pre-login response>\"\n\t\tmsghash = encode_defunct(text=msg)\n\n\t\tsignature = Account.sign_message(msghash, key)\n\n\t# ---------------------------------------\n\n\tThis 'signature' should be later sent in the '/login' API to login."
               }
             },
             "required": [
@@ -546,7 +831,7 @@
             "required": [
               "message"
             ],
-            "description": "-----\n\ton failure the message contains the reason for failure"
+            "description": "-----\n\tThe 'error.message' contains the reason for the failure."
           }
         },
         "required": [
@@ -556,17 +841,12 @@
       "LoginRequest": {
         "type": "object",
         "properties": {
-          "message": {
-            "type": "string",
-            "description": "-----\n\tthe message received in /pre-login API"
-          },
           "signature": {
             "type": "string",
-            "description": "-----\n\tthe signature afer signing the message with private key"
+            "description": "-----\n\tThe signature afer signing the 'message' with the 'privateKey'.\n\n\tThese signatures are generated through certain wallets/APIs.\n\t\te.g.\n\t\t\t1. Wallets in browser (Metamask / Phantom)\n\n\t\t\t2. Dart\n\t\t\t\t(solana   : https://pub.dev/packages/solana)\n\t\t\t\t(ethereum : https://pub.dev/packages/eth_sig_util)\n\n\t\t\t3. Python\n\t\t\t\t(solana   : https://pypi.org/project/solana)"
           }
         },
         "required": [
-          "message",
           "signature"
         ]
       },
@@ -583,11 +863,31 @@
             "required": [
               "success"
             ],
-            "description": "-----\n\tsuccessful response has some result"
+            "description": "-----\n\tSuccessful response always has a valid 'result'."
           }
         },
         "required": [
           "result"
+        ]
+      },
+      "StakingResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "message": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "message"
+            ],
+            "description": "-----\n\tThe failure due to requirement of 'payment' or 'staking'.\n\n\tThe 'error.message' contains the reason for the failure."
+          }
+        },
+        "required": [
+          "error"
         ]
       },
       "UserInfoResponse": {
@@ -596,14 +896,33 @@
           "result": {
             "type": "object",
             "properties": {
-              "publicKey": {
+              "id": {
                 "type": "string",
-                "nullable": true,
                 "description": "-----\n\n\twill return 'null' if the user has not logged in"
+              },
+              "publicKey": {
+                "type": "string"
+              },
+              "keyType": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "region": {
+                "type": "string"
+              },
+              "country": {
+                "type": "string"
               }
             },
             "required": [
-              "publicKey"
+              "id",
+              "publicKey",
+              "keyType",
+              "city",
+              "region",
+              "country"
             ]
           }
         },
@@ -614,30 +933,74 @@
       "ProverRequest": {
         "type": "object",
         "properties": {
-          "prover": {
-            "type": "string"
+          "id": {
+            "type": "string",
+            "description": "-----\n \tThe 'id' of the prover."
           }
         },
         "required": [
-          "prover"
+          "id"
+        ]
+      },
+      "GeoIP": {
+        "type": "object",
+        "properties": {
+          "range": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          "country": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "eu": {
+            "type": "string",
+            "enum": [
+              "0",
+              "1"
+            ]
+          },
+          "timezone": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "ll": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "float"
+            }
+          },
+          "metro": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "area": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "range",
+          "country",
+          "region",
+          "eu",
+          "timezone",
+          "city",
+          "ll",
+          "metro",
+          "area"
         ]
       },
       "Result": {
-        "type": "object",
-        "properties": {
-          "bandwidth": {
-            "type": "number",
-            "format": "float"
-          },
-          "latency": {
-            "type": "number",
-            "format": "float"
-          }
-        },
-        "required": [
-          "bandwidth",
-          "latency"
-        ]
+        "type": "object"
       },
       "ChallengeResult": {
         "type": "object",
@@ -674,31 +1037,34 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
+            "type": "string",
+            "description": "-----\n\tThe unique 'id' of the prover."
           },
           "geoip": {
-            "type": "string"
+            "$ref": "#/components/schemas/GeoIP"
+          },
+          "claims": {
+            "type": "object",
+            "description": "-----\n\tMap of claims"
           },
           "last_alive": {
             "type": "string",
-            "format": "date-time"
-          },
-          "bandwidth_claimed": {
-            "type": "number",
-            "format": "float"
+            "format": "date-time",
+            "description": "-----\n\tThe latest time when the API server received a handshake from the prover."
           },
           "results": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ChallengeResult"
-            }
+            },
+            "description": "-----\n \tThe history of challenge results the proved has participated in."
           }
         },
         "required": [
           "id",
           "geoip",
+          "claims",
           "last_alive",
-          "bandwidth_claimed",
           "results"
         ]
       },
@@ -713,6 +1079,23 @@
           "result"
         ]
       },
+      "ProversRequest": {
+        "type": "object",
+        "properties": {
+          "skil": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "required": [
+          "skil",
+          "limit"
+        ]
+      },
       "ProversResponse": {
         "type": "object",
         "properties": {
@@ -722,7 +1105,7 @@
               "provers": {
                 "type": "array",
                 "items": {
-                  "type": "string"
+                  "$ref": "#/components/schemas/ProverDetails"
                 }
               }
             },
@@ -739,10 +1122,12 @@
         "type": "object",
         "properties": {
           "prover": {
-            "type": "string"
+            "type": "string",
+            "description": "-----\n \tThe 'id' of the prover."
           },
           "transaction": {
-            "type": "string"
+            "type": "string",
+            "description": "-----\n \tThe transaction that was generated after calling the\n\t'startChallenge' smart contract."
           }
         },
         "required": [
@@ -760,7 +1145,13 @@
                 "type": "string"
               },
               "challenge_status": {
-                "type": "string"
+                "type": "string",
+                "enum": [
+                  "SUBMITTED_TO_CHALLENGE_COORDINATOR",
+                  "ACCEPTED_BY_CHALLENGE_COORDINATOR",
+                  "ERROR_NOT_ENOUGH_CHALLENGERS",
+                  "ENDED_SUCCESSFULLY"
+                ]
               }
             },
             "required": [
@@ -777,7 +1168,8 @@
         "type": "object",
         "properties": {
           "transaction": {
-            "type": "string"
+            "type": "string",
+            "description": "-----\n \tThe transaction that was generated after calling the\n\t'startChallenge' smart contract."
           }
         },
         "required": [
@@ -793,20 +1185,26 @@
               "challenge_id": {
                 "type": "string"
               },
-              "challenge_status": {
-                "type": "string"
-              },
               "start_challenge_transaction": {
                 "type": "string"
               },
               "end_challenge_transaction": {
                 "type": "string"
+              },
+              "challenge_status": {
+                "type": "string",
+                "enum": [
+                  "SUBMITTED_TO_CHALLENGE_COORDINATOR",
+                  "ACCEPTED_BY_CHALLENGE_COORDINATOR",
+                  "ERROR_NOT_ENOUGH_CHALLENGERS",
+                  "ENDED_SUCCESSFULLY"
+                ]
               }
             },
             "required": [
               "challenge_id",
-              "challenge_status",
-              "start_challenge_transaction"
+              "start_challenge_transaction",
+              "challenge_status"
             ]
           }
         },
@@ -817,16 +1215,25 @@
       "ChallengeResultRequest": {
         "type": "object",
         "properties": {
-          "prover": {
-            "type": "string"
+          "message_type": {
+            "type": "string",
+            "enum": [
+              "challenge_result"
+            ]
           },
-          "transaction": {
-            "type": "string"
+          "message": {
+            "type": "string",
+            "description": "-----\n\tThe result of a challenge - a JSON converted to a string.\n\n\te.g. in JavaScript:\n\n\t\tmessage = JSON.stringify ({\n\t\t\tchallenge_id,\n\t\t\tresult,\n\t\t});\n\n\tThe result contains fields that have been measured\n\n\tby the challenger:\n\n\t\tlike \"bandwidth\" and \"latency\"."
+          },
+          "signature": {
+            "type": "string",
+            "description": "-----\n\tThe 'message' string signed using privateKey."
           }
         },
         "required": [
-          "prover",
-          "transaction"
+          "message_type",
+          "message",
+          "signature"
         ]
       },
       "Challenger": {
@@ -974,7 +1381,119 @@
           "message",
           "signature"
         ]
+      },
+      "IPInfoResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "IPv4": {
+                "type": "string",
+                "nullable": true,
+                "description": "-----\n\n\twill return 'null' if the specific IP version is not available"
+              },
+              "IPv6": {
+                "type": "string",
+                "nullable": true
+              }
+            },
+            "required": [
+              "IPv4",
+              "IPv6"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "StatisticsResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "online_provers": {
+                "type": "integer",
+                "format": "int32",
+                "description": "-----\n\t'online_provers' are the number of provers currently online.\n\t'num_provers'    are the total number of provers registered."
+              },
+              "num_provers": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "online_challenges": {
+                "type": "integer",
+                "format": "int32",
+                "description": "-----\n\t'online_challenges' are the number of challengers currently online.\n\t'num_challengers'   are the total number of challengers registered."
+              },
+              "num_challengers": {
+                "type": "integer",
+                "format": "int32"
+              }
+            },
+            "required": [
+              "online_provers",
+              "num_provers",
+              "online_challenges",
+              "num_challengers"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "ReleaseInfoResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "pob_prover_client": {
+                "type": "string",
+                "description": "-----\n\t'_client' is for clients\n\t'_server' is for servers"
+              },
+              "pob_challenger_client": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "pob_prover_client",
+              "pob_challenger_client"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      }
+    },
+    "securitySchemes": {
+      "SecurityHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "Cookie"
       }
     }
-  }
+  },
+  "security": [
+    {
+      "SecurityHeader": []
+    }
+  ],
+  "servers": [
+    {
+      "url": "https://pob.witnesschain.com/{basePath}/{PoX}",
+      "variables": {
+        "basePath": {
+          "default": "api"
+        },
+        "PoX": {
+          "default": "api"
+        }
+      }
+    }
+  ]
 }
