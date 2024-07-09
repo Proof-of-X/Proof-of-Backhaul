@@ -191,7 +191,7 @@
         }
       }
     },
-    "/prover": {
+    "/{proof_type}/prover": {
       "post": {
         "tags": [
           "Prover Information"
@@ -199,6 +199,14 @@
         "description": "-----\n\n\tGet information about a prover.",
         "operationId": "ApiProver",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
