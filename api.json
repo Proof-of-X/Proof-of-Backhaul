@@ -846,7 +846,7 @@
             "properties": {
               "message": {
                 "type": "string",
-                "description": "-----\n\tA string to be signed using user's 'privateKey' to create a 'signature'.\n\n\tThe signature can be created using MetaMask/Phantom wallet.\n\n\tThese signatures are generated through certain wallets/APIs.\n    \te.g.\n        \t1. Wallets in browser (Metamask / Phantom)\n\n        \t2. Dart\n            \t\t(https://pub.dev/packages/eth_sig_util)\n\n        \t3. Python\n            \t\t(https://pypi.org/project/eth-account/)\n\n\tin Python it can be created as:\n\n\t# =======================================\n\n\t\tfrom eth_account.messages import encode_defunct\n\t\tfrom eth_account import Account\n\n\t\tkey=\"<PRIVATE_KEY_TO_SIGN_MESSAGE>\"\n\n\t\tmsg=\"<Message received from the pre-login response>\"\n\t\tmsghash = encode_defunct(text=msg)\n\n\t\tsignature = Account.sign_message(msghash, key)\n\n\t# =======================================\n\n\tThis 'signature' should be later sent in the '/login' API to login."
+                "description": "-----\n\tA string to be signed using user's 'privateKey' to create a 'signature'.\n\n\tThis 'signature' should be later sent in the '/login' API to login."
               }
             },
             "required": [
@@ -883,7 +883,7 @@
         "properties": {
           "signature": {
             "type": "string",
-            "description": "-----\n\tThe signature afer signing the 'message' with the 'privateKey'.\n\n\tThese signatures are generated through certain wallets/APIs.\n\t\te.g.\n\t\t\t1. Wallets in browser (Metamask / Phantom)\n\n\t\t\t2. Dart\n\t\t\t\t(solana   : https://pub.dev/packages/solana)\n\t\t\t\t(ethereum : https://pub.dev/packages/eth_sig_util)\n\n\t\t\t3. Python\n\t\t\t\t(solana   : https://pypi.org/project/solana)"
+            "description": "-----\n\tThe signature afer signing the 'message' with the 'privateKey'.\n\n\tThe signature can be created using MetaMask/Phantom wallet.\n\n\tThese signatures are generated through certain wallets/APIs.\n    \te.g.\n        \t1. Wallets in browser (Metamask / Phantom)\n\n        \t2. Dart\n            \t\t(https://pub.dev/packages/eth_sig_util)\n\n        \t3. Python\n            \t\t(https://pypi.org/project/eth-account/)\n\n\tin Python it can be created as:\n\n\t# =======================================\n\n\t\tfrom eth_account.messages import encode_defunct\n\t\tfrom eth_account import Account\n\n\t\tkey=\"<PRIVATE_KEY_TO_SIGN_MESSAGE>\"\n\n\t\tmsg=\"<Message received from the pre-login response>\"\n\t\tmsghash = encode_defunct(text=msg)\n\n\t\tsignature = Account.sign_message(msghash, key)\n\n\t# ======================================="
           }
         },
         "required": [
