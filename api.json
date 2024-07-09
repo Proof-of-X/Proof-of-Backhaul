@@ -253,7 +253,7 @@
         }
       }
     },
-    "/provers": {
+    "/{proof_type}/provers": {
       "post": {
         "tags": [
           "Prover Information"
@@ -261,6 +261,14 @@
         "description": "-----\n\tGet all provers info.",
         "operationId": "ApiProvers",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
@@ -308,7 +316,7 @@
         }
       }
     },
-    "/challenge-request": {
+    "/{proof_type}/challenge-request": {
       "post": {
         "tags": [
           "PoB Challenge"
@@ -316,6 +324,14 @@
         "description": "-----\n\n\tRequest to create a new challenge.\n\n\tBefore calling this api 'startChallenge()' smart contract must be called.\n\n\tAnd the 'transaction' after calling the 'startChallenge' must be provided.",
         "operationId": "ApiChallengeRequest",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
@@ -370,7 +386,7 @@
         }
       }
     },
-    "/challenge-status": {
+    "/{proof_type}/challenge-status": {
       "post": {
         "tags": [
           "PoB Challenge"
@@ -378,6 +394,14 @@
         "description": "-----\n\tGet the status of a given challenge.",
         "operationId": "ApiChallengeStatus",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
@@ -494,7 +518,7 @@
         }
       }
     },
-    "/claims": {
+    "/{proof_type}/claims": {
       "post": {
         "tags": [
           "Claims"
@@ -502,6 +526,14 @@
         "description": "-----\n\tClaim that the 'user' has certain claims",
         "operationId": "ApiClaimBandwidth",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
