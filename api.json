@@ -827,6 +827,26 @@
           },
           "claims": {
             "type": "object",
+            "properties": {
+              "{claim-parameter}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "{claim-parameter}"
+            ],
             "description": "-----\n\tAll claims.\n\tclaims is dependent on proof_type,\n\n\tExample: for pob it could be:\n\t\t{\t\n\t\t\tbandwidth : Float; // The bandwidth in Mbps the user wants to claim\n\t\t}"
           }
         },
@@ -1085,6 +1105,26 @@
           },
           "claims": {
             "type": "object",
+            "properties": {
+              "{claim-parameter}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "{claim-parameter}"
+            ],
             "description": "-----\n\tMap of claims"
           },
           "last_alive": {
