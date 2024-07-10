@@ -27,21 +27,11 @@ import {CookieParameterObject} from "@airtasker/spot/build/lib/src/generators/op
 class Api
 {
 	@oa3server ({
-		url: "https://pob.witnesschain.com/{basePath}/{PoX}"
+		url: "https://pob.witnesschain.com/api/"
 	})
 
 	productionServer (
 		@oa3serverVariables variables: {
-			/**
-			* @default "api"
-			*/
-			basePath: "api",
-
-
-			/**
-			* @default "api"
-			*/
-			PoX	: "pob",
 		}
 	) {};
 
