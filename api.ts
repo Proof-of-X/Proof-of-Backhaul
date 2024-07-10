@@ -177,6 +177,7 @@ interface PreloginRequest {
 	/**
 	-----
 	The key used for login
+	NOTE: when using 'ethereum' the 'publicKey = Address'
 	**/
 
 	publicKey		: String;

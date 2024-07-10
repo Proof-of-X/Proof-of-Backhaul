@@ -792,7 +792,7 @@
         "properties": {
           "publicKey": {
             "type": "string",
-            "description": "-----\n\tThe key used for login"
+            "description": "-----\n\tThe key used for login\n\tNOTE: when using 'ethereum' the 'publicKey = Address'"
           },
           "proof_type": {
             "type": "string",
