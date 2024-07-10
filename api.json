@@ -1565,12 +1565,9 @@
   ],
   "servers": [
     {
-      "url": "https://pob.witnesschain.com/{basePath}/{PoX}",
+      "url": "https://pob.witnesschain.com/{basePath}",
       "variables": {
         "basePath": {
-          "default": "api"
-        },
-        "PoX": {
           "default": "api"
         }
       }
