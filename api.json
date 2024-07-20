@@ -5,14 +5,23 @@
     "version": "1.0"
   },
   "paths": {
-    "/pre-login": {
+    "/{proof_type}/pre-login": {
       "post": {
         "tags": [
           "Session"
         ],
         "description": "-----\n\n\tThis API is to be called before logging in.\n\n\tIt will return a 'message' that has to be signed and sent to '/login' API.\n\n\tThis will also create a cookie;\n\n\thence the '/login' API must be called in a session.",
         "operationId": "ApiPreLogin",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -56,7 +65,7 @@
         }
       }
     },
-    "/login": {
+    "/{proof_type}/login": {
       "post": {
         "tags": [
           "Session"
@@ -64,6 +73,14 @@
         "description": "-----\n\n\tThis API logs in the user.\n\n\tThe user should send the 'message' that was received during the '/pre-login';\n\n\tand must sign the 'message' using privateKey.\n\n\tAnd send it in the 'signature' field.",
         "operationId": "ApiLogin",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
@@ -137,7 +154,7 @@
         }
       }
     },
-    "/user-info": {
+    "/{proof_type}/user-info": {
       "post": {
         "tags": [
           "General Information"
@@ -145,6 +162,14 @@
         "description": "-----\n\n\tGet logged in user information.",
         "operationId": "ApiUserInfo",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
@@ -169,14 +194,23 @@
         }
       }
     },
-    "/logout": {
+    "/{proof_type}/logout": {
       "post": {
         "tags": [
           "Session"
         ],
         "description": "-----\n\n\tLogs out the user.",
         "operationId": "ApiLogout",
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "200 response",
@@ -464,7 +498,7 @@
         }
       }
     },
-    "/challenge-result": {
+    "/{proof_type}/challenge-result": {
       "post": {
         "tags": [
           "PoB Challenge"
@@ -472,6 +506,14 @@
         "description": "-----\n\tPost the results of a challenge.",
         "operationId": "ApiChallengeResult",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
@@ -596,7 +638,7 @@
         }
       }
     },
-    "/ws": {
+    "/{proof_type}/ws": {
       "get": {
         "tags": [
           "Websocket for Heartbeat and Notifications"
@@ -604,6 +646,14 @@
         "description": "-----\n\tA websocket connection for:\n\n\t\t1. Sending heartbeat (websocket ping).\n\t\t2. Receiving notification regarding challenges.",
         "operationId": "ApiHeartbeat",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
@@ -671,7 +721,7 @@
         }
       }
     },
-    "/ip-info": {
+    "/{proof_type}/ip-info": {
       "post": {
         "tags": [
           "General Information"
@@ -679,6 +729,14 @@
         "description": "-----\n\n\tGet user's IP addresses as seen by the challenge co-ordinator",
         "operationId": "ApiIPInfo",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
@@ -703,7 +761,7 @@
         }
       }
     },
-    "/statistics": {
+    "/{proof_type}/statistics": {
       "post": {
         "tags": [
           "Statistics"
@@ -711,6 +769,14 @@
         "description": "-----\n\n\tGet PoB statistics on 'provers' and 'challengers'.",
         "operationId": "ApiStatistics",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
@@ -735,7 +801,7 @@
         }
       }
     },
-    "/release-info": {
+    "/{proof_type}/release-info": {
       "post": {
         "tags": [
           "General Information"
@@ -743,6 +809,14 @@
         "description": "-----\n\n\tGet the latest released version information on various software",
         "operationId": "ApiReleaseInfo",
         "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
           {
             "name": "Cookie",
             "in": "header",
@@ -1565,7 +1639,7 @@
   ],
   "servers": [
     {
-      "url": "https://pob.witnesschain.com/api/"
+      "url": "https://api.witnesschain.com/"
     }
   ]
 }
