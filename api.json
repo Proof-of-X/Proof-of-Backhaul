@@ -5,7 +5,7 @@
     "version": "1.0"
   },
   "paths": {
-    "/{proof_type}/pre-login": {
+    "/{proof_type}/v1/pre-login": {
       "post": {
         "tags": [
           "Session"
@@ -65,7 +65,7 @@
         }
       }
     },
-    "/{proof_type}/login": {
+    "/{proof_type}/v1/login": {
       "post": {
         "tags": [
           "Session"
@@ -154,7 +154,7 @@
         }
       }
     },
-    "/{proof_type}/user-info": {
+    "/{proof_type}/v1/user-info": {
       "post": {
         "tags": [
           "General Information"
@@ -194,7 +194,7 @@
         }
       }
     },
-    "/{proof_type}/logout": {
+    "/{proof_type}/v1/logout": {
       "post": {
         "tags": [
           "Session"
@@ -225,7 +225,7 @@
         }
       }
     },
-    "/{proof_type}/prover": {
+    "/{proof_type}/v1/prover": {
       "post": {
         "tags": [
           "Prover Information"
@@ -295,7 +295,7 @@
         }
       }
     },
-    "/{proof_type}/provers": {
+    "/{proof_type}/v1/provers": {
       "post": {
         "tags": [
           "Prover Information"
@@ -358,7 +358,7 @@
         }
       }
     },
-    "/{proof_type}/challenge-request": {
+    "/{proof_type}/v1/challenge-request": {
       "post": {
         "tags": [
           "PoB Challenge"
@@ -428,7 +428,7 @@
         }
       }
     },
-    "/{proof_type}/challenge-status": {
+    "/{proof_type}/v1/challenge-status": {
       "post": {
         "tags": [
           "PoB Challenge"
@@ -498,7 +498,7 @@
         }
       }
     },
-    "/{proof_type}/challenge-result": {
+    "/{proof_type}/v1/challenge-result": {
       "post": {
         "tags": [
           "PoB Challenge"
@@ -568,7 +568,7 @@
         }
       }
     },
-    "/{proof_type}/claims": {
+    "/{proof_type}/v1/claims": {
       "post": {
         "tags": [
           "Claims"
@@ -638,7 +638,7 @@
         }
       }
     },
-    "/{proof_type}/ws": {
+    "/{proof_type}/v1/ws": {
       "get": {
         "tags": [
           "Websocket for Heartbeat and Notifications"
@@ -721,7 +721,7 @@
         }
       }
     },
-    "/{proof_type}/ip-info": {
+    "/{proof_type}/v1/ip-info": {
       "post": {
         "tags": [
           "General Information"
@@ -761,7 +761,7 @@
         }
       }
     },
-    "/{proof_type}/statistics": {
+    "/{proof_type}/v1/statistics": {
       "post": {
         "tags": [
           "Statistics"
@@ -801,7 +801,7 @@
         }
       }
     },
-    "/{proof_type}/release-info": {
+    "/{proof_type}/v1/release-info": {
       "post": {
         "tags": [
           "General Information"
