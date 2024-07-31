@@ -27,7 +27,7 @@ import {CookieParameterObject} from "@airtasker/spot/build/lib/src/generators/op
 class Api
 {
 	@oa3server ({
-		url: "https://pob.witnesschain.com/api/"
+		url: "https://api.witnesschain.com/"
 	})
 
 	productionServer (
@@ -139,7 +139,7 @@ interface LoginCookieHeader {
 
 @endpoint({
 	method	: "POST",
-	path	: "/pre-login",
+	path	: "/:proof_type/v1/pre-login",
 	tags	: ["Session"],
 })
 class ApiPreLogin
@@ -147,6 +147,11 @@ class ApiPreLogin
 	@request
 	request(
 		@body body: PreloginRequest,
+
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		},
+
 	) {}
 
 	@response({ status: 200 })
@@ -318,7 +323,7 @@ interface PreloginResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/login",
+	path	: "/:proof_type/v1/login",
 	tags	: ["Session"]
 })
 class ApiLogin
@@ -326,7 +331,10 @@ class ApiLogin
 	@request
 	request(
 		@body		body	: LoginRequest,
-		@headers	headers	: PreLoginCookieHeader
+		@headers	headers	: PreLoginCookieHeader,
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		},
 	) {}
 
 	@response({ status: 200 })
@@ -375,14 +383,17 @@ class ApiLogin
 
 @endpoint({
 	method	: "POST",
-	path	: "/user-info",
+	path	: "/:proof_type/v1/user-info",
 	tags	: ["General Information"]
 })
 class ApiUserInfo
 {
 	@request
 	request(
-		@headers headers : LoginCookieHeader
+		@headers headers : LoginCookieHeader,
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		}
 	) {}
 
 	@response({ status: 200 })
@@ -416,13 +427,16 @@ interface UserInfoResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/logout",
+	path	: "/:proof_type/v1/logout",
 	tags	: ["Session"]
 })
 class ApiLogout
 {
 	@request
 	request(
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		}
 	) {}
 
 	@response({ status: 200 })
@@ -476,7 +490,7 @@ interface LoginRequest {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/prover",
+	path	: "/:proof_type/v1/prover",
 	tags	: ["Prover Information"]
 })
 class ApiProver
@@ -488,7 +502,7 @@ class ApiProver
 
 		@pathParams	pathParams : {
       				proof_type: String;
-    			}
+    		}
 	) {}
 
 	@response({ status: 200 })
@@ -597,7 +611,7 @@ interface ProversRequest {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/provers",
+	path	: "/:proof_type/v1/provers",
 	tags	: ["Prover Information"]
 })
 class ApiProvers
@@ -608,7 +622,7 @@ class ApiProvers
 		@headers	headers : LoginCookieHeader,
 		@pathParams	pathParams : {
       				proof_type: String;
-    			}
+    		}
 	) {}
 
 	@response({ status: 200 })
@@ -672,7 +686,7 @@ interface ChallengeResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/challenge-request",
+	path	: "/:proof_type/v1/challenge-request",
 	tags	: ["PoB Challenge"]
 })
 class ApiChallengeRequest
@@ -683,10 +697,9 @@ class ApiChallengeRequest
 
 		@headers 	headers : LoginCookieHeader,
 
-		@pathParams
-    			pathParams: {
-      				proof_type: String;
-    			},
+		@pathParams	pathParams: {
+      			proof_type: String;
+    		},
 	) {}
 
 	@response({ status: 200 })
@@ -712,7 +725,7 @@ class ApiChallengeRequest
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/challenge-status",
+	path	: "/:proof_type/v1/challenge-status",
 	tags	: ["PoB Challenge"]
 })
 class ApiChallengeStatus
@@ -751,7 +764,7 @@ class ApiChallengeStatus
 
 @endpoint({
 	method	: "POST",
-	path	: "/challenge-result",
+	path	: "/:proof_type/v1/challenge-result",
 	tags	: ["PoB Challenge"]
 })
 class ApiChallengeResult
@@ -759,7 +772,11 @@ class ApiChallengeResult
 	@request
 	request(
 		@body body: ChallengeResultRequest,
-		@headers headers : LoginCookieHeader
+		@headers headers : LoginCookieHeader,
+
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		},
 	) {}
 
 	@response({ status: 200 })
@@ -799,7 +816,15 @@ interface ChallengeResultRequest {  // XXX to be fixed
 		like "bandwidth" and "latency".
 	**/
 
-	message		: String;
+	message		:  {
+		"start_time"		: String;
+		"end_time"		: String;
+		"challenge_succeeded"	: boolean;
+
+		"{result-parameter-1}"	: String;
+		"{result-parameter-2}"	: String;
+		"{result-parameter-n}"	: String;
+	};
 
 	/**
 	-----
@@ -843,7 +868,7 @@ interface ChallengeStatusResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/claims",
+	path	: "/:proof_type/v1/claims",
 	tags	: ["Claims"]
 })
 class ApiClaimBandwidth
@@ -895,14 +920,18 @@ class ApiClaimBandwidth
 
 @endpoint({
 	method	: "GET",
-	path	: "/ws",
+	path	: "/:proof_type/v1/ws",
 	tags	: ["Websocket for Heartbeat and Notifications"]
 })
 class ApiHeartbeat
 {
 	@request
 	request(
-		@headers headers : LoginCookieHeader
+		@headers headers : LoginCookieHeader,
+
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		},
 	) {}
 
 	/**
@@ -1005,14 +1034,17 @@ interface Challenger {
 
 @endpoint({
 	method	: "POST",
-	path	: "/ip-info",
+	path	: "/:proof_type/v1/ip-info",
 	tags	: ["General Information"]
 })
 class ApiIPInfo
 {
 	@request
 	request(
-		@headers headers : LoginCookieHeader
+		@headers headers : LoginCookieHeader,
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		}
 	) {}
 
 	@response({ status: 200 })
@@ -1041,14 +1073,18 @@ interface IPInfoResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/statistics",
+	path	: "/:proof_type/v1/statistics",
 	tags	: ["Statistics"]
 })
 class ApiStatistics
 {
 	@request
 	request(
-		@headers headers : LoginCookieHeader
+		@headers headers : LoginCookieHeader,
+
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		},
 	) {}
 
 	@response({ status: 200 })
@@ -1086,14 +1122,18 @@ interface StatisticsResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/release-info",
+	path	: "/:proof_type/v1/release-info",
 	tags	: ["General Information"]
 })
 class ApiReleaseInfo
 {
 	@request
 	request(
-		@headers headers : LoginCookieHeader
+		@headers headers : LoginCookieHeader,
+
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		},
 	) {}
 
 	@response({ status: 200 })

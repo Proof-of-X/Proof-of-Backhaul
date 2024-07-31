@@ -1376,7 +1376,35 @@
             ]
           },
           "message": {
-            "type": "string",
+            "type": "object",
+            "properties": {
+              "start_time": {
+                "type": "string"
+              },
+              "end_time": {
+                "type": "string"
+              },
+              "challenge_succeeded": {
+                "type": "boolean"
+              },
+              "{result-parameter-1}": {
+                "type": "string"
+              },
+              "{result-parameter-2}": {
+                "type": "string"
+              },
+              "{result-parameter-n}": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "start_time",
+              "end_time",
+              "challenge_succeeded",
+              "{result-parameter-1}",
+              "{result-parameter-2}",
+              "{result-parameter-n}"
+            ],
             "description": "-----\n\tThe result of a challenge - a JSON converted to a string.\n\n\te.g. in JavaScript:\n\n\t\tmessage = JSON.stringify ({\n\t\t\tchallenge_id,\n\t\t\tresult,\n\t\t});\n\n\tThe result contains fields that have been measured\n\n\tby the challenger:\n\n\t\tlike \"bandwidth\" and \"latency\"."
           },
           "signature": {
