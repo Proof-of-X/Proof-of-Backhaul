@@ -102,10 +102,7 @@ interface StakingResponse {
 interface PreLoginCookieHeader {
 
 	/** -----
-	The cookie that was received after calling '/pre-login' API.
-
-	The name of the cookies are:
-		'__Secure-session' and '__Secure-session.sig'
+	The cookies that were received after calling '/pre-login' API.
 	**/
 
 	"Cookie" : String
@@ -114,10 +111,7 @@ interface PreLoginCookieHeader {
 interface LoginCookieHeader {
 
 	/** -----
-	The cookie that was received after calling '/login' API
-
-	The name of the cookies are:
-		'__Secure-session' and '__Secure-session.sig'
+	The cookies that were received after calling '/pre-login' API.
 	**/
 
 	"Cookie" : String
@@ -162,10 +156,7 @@ class ApiPreLogin
 
 		/**
 		-----
-		The cookie that is to be sent to '/login' API
-
-		The name of the cookies are:
-			'__Secure-session' and '__Secure-session.sig'
+		The cookies that are to be sent to '/login' API
 		**/
 
 			"Set-Cookie" : String
@@ -469,12 +460,21 @@ interface LoginRequest {
 		from eth_account.messages import encode_defunct
 		from eth_account import Account
 
-		key="<PRIVATE_KEY_TO_SIGN_MESSAGE>"
-
 		msg="<Message received from the pre-login response>"
-		msghash = encode_defunct(text=msg)
+		signature = sign(msg)
 
-		signature = Account.sign_message(msghash, key)
+		def sign(msg):
+		#
+			# Hexadecimal key (private key)
+			key = "<Your-Private-Key>"
+
+			# Create the message hash
+			msghash = encode_defunct(text=msg)
+
+			# Sign the message
+			signature = Account.sign_message(msghash, key)
+			return "0x" + signature.signature.hex()
+		#
 	**/
 
 	signature	: String;
