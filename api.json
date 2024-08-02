@@ -84,7 +84,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookie that was received after calling '/pre-login' API.\n\n\tThe name of the cookies are:\n\t\t'__Secure-session' and '__Secure-session.sig'",
+            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
             "required": true,
             "schema": {
               "type": "string"
@@ -977,7 +977,7 @@
         "properties": {
           "signature": {
             "type": "string",
-            "description": "-----\n\tThe signature afer signing the 'message' with the 'privateKey'.\n\n\tThe signature can be created using MetaMask/Phantom wallet.\n\n\tThese signatures are generated through certain wallets/APIs.\n    \te.g.\n        \t1. Wallets in browser (Metamask / Phantom)\n\n        \t2. Dart\n            \t\t(https://pub.dev/packages/eth_sig_util)\n\n        \t3. Python\n            \t\t(https://pypi.org/project/eth-account/)\n\n\tin Python it can be created as:\n\n\t\tfrom eth_account.messages import encode_defunct\n\t\tfrom eth_account import Account\n\n\t\tkey=\"<PRIVATE_KEY_TO_SIGN_MESSAGE>\"\n\n\t\tmsg=\"<Message received from the pre-login response>\"\n\t\tmsghash = encode_defunct(text=msg)\n\n\t\tsignature = Account.sign_message(msghash, key)"
+            "description": "-----\n\tThe signature afer signing the 'message' with the 'privateKey'.\n\n\tThe signature can be created using MetaMask/Phantom wallet.\n\n\tThese signatures are generated through certain wallets/APIs.\n    \te.g.\n        \t1. Wallets in browser (Metamask / Phantom)\n\n        \t2. Dart\n            \t\t(https://pub.dev/packages/eth_sig_util)\n\n        \t3. Python\n            \t\t(https://pypi.org/project/eth-account/)\n\n\tin Python it can be created as:\n\n\t\tfrom eth_account.messages import encode_defunct\n\t\tfrom eth_account import Account\n\n\t\tmsg=\"<Message received from the pre-login response>\"\n\t\tsignature = sign(msg)\n\n\t\tdef sign(msg):\n\t\t#\n\t\t\t# Hexadecimal key (private key)\n\t\t\tkey = \"<Your-Private-Key>\"\n\n\t\t\t# Create the message hash\n\t\t\tmsghash = encode_defunct(text=msg)\n\n\t\t\t# Sign the message\n\t\t\tsignature = Account.sign_message(msghash, key)\n\t\t\treturn \"0x\" + signature.signature.hex()\n\t\t#"
           }
         },
         "required": [
