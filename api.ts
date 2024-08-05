@@ -133,7 +133,7 @@ interface LoginCookieHeader {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/pre-login",
+	path	: "/proof/v1/:proof_type/pre-login",
 	tags	: ["Session"],
 })
 class ApiPreLogin
@@ -314,7 +314,7 @@ interface PreloginResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/login",
+	path	: "/proof/v1/:proof_type/login",
 	tags	: ["Session"]
 })
 class ApiLogin
@@ -374,7 +374,7 @@ class ApiLogin
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/user-info",
+	path	: "/proof/v1/:proof_type/user-info",
 	tags	: ["General Information"]
 })
 class ApiUserInfo
@@ -418,7 +418,7 @@ interface UserInfoResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/logout",
+	path	: "/proof/v1/:proof_type/logout",
 	tags	: ["Session"]
 })
 class ApiLogout
@@ -490,7 +490,7 @@ interface LoginRequest {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/prover",
+	path	: "/proof/v1/:proof_type/prover",
 	tags	: ["Prover Information"]
 })
 class ApiProver
@@ -611,7 +611,7 @@ interface ProversRequest {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/provers",
+	path	: "/proof/v1/:proof_type/provers",
 	tags	: ["Prover Information"]
 })
 class ApiProvers
@@ -686,7 +686,7 @@ interface ChallengeResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/challenge-request",
+	path	: "/proof/v1/:proof_type/challenge-request",
 	tags	: ["PoB Challenge"]
 })
 class ApiChallengeRequest
@@ -725,7 +725,7 @@ class ApiChallengeRequest
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/challenge-status",
+	path	: "/proof/v1/:proof_type/challenge-status",
 	tags	: ["PoB Challenge"]
 })
 class ApiChallengeStatus
@@ -764,7 +764,7 @@ class ApiChallengeStatus
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/challenge-result",
+	path	: "/proof/v1/:proof_type/challenge-result",
 	tags	: ["PoB Challenge"]
 })
 class ApiChallengeResult
@@ -868,7 +868,7 @@ interface ChallengeStatusResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/claims",
+	path	: "/proof/v1/:proof_type/claims",
 	tags	: ["Claims"]
 })
 class ApiClaimBandwidth
@@ -920,7 +920,7 @@ class ApiClaimBandwidth
 
 @endpoint({
 	method	: "GET",
-	path	: "/:proof_type/v1/ws",
+	path	: "/proof/v1/:proof_type/ws",
 	tags	: ["Websocket for Heartbeat and Notifications"]
 })
 class ApiHeartbeat
@@ -1034,7 +1034,7 @@ interface Challenger {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/ip-info",
+	path	: "/proof/v1/:proof_type/ip-info",
 	tags	: ["General Information"]
 })
 class ApiIPInfo
@@ -1073,7 +1073,7 @@ interface IPInfoResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/statistics",
+	path	: "/proof/v1/:proof_type/statistics",
 	tags	: ["Statistics"]
 })
 class ApiStatistics
@@ -1122,7 +1122,7 @@ interface StatisticsResponse {
 
 @endpoint({
 	method	: "POST",
-	path	: "/:proof_type/v1/release-info",
+	path	: "/proof/v1/:proof_type/release-info",
 	tags	: ["General Information"]
 })
 class ApiReleaseInfo

@@ -5,7 +5,7 @@
     "version": "1.0"
   },
   "paths": {
-    "/{proof_type}/v1/pre-login": {
+    "/proof/v1/{proof_type}/pre-login": {
       "post": {
         "tags": [
           "Session"
@@ -65,7 +65,7 @@
         }
       }
     },
-    "/{proof_type}/v1/login": {
+    "/proof/v1/{proof_type}/login": {
       "post": {
         "tags": [
           "Session"
@@ -154,7 +154,7 @@
         }
       }
     },
-    "/{proof_type}/v1/user-info": {
+    "/proof/v1/{proof_type}/user-info": {
       "post": {
         "tags": [
           "General Information"
@@ -194,7 +194,7 @@
         }
       }
     },
-    "/{proof_type}/v1/logout": {
+    "/proof/v1/{proof_type}/logout": {
       "post": {
         "tags": [
           "Session"
@@ -225,7 +225,7 @@
         }
       }
     },
-    "/{proof_type}/v1/prover": {
+    "/proof/v1/{proof_type}/prover": {
       "post": {
         "tags": [
           "Prover Information"
@@ -295,7 +295,7 @@
         }
       }
     },
-    "/{proof_type}/v1/provers": {
+    "/proof/v1/{proof_type}/provers": {
       "post": {
         "tags": [
           "Prover Information"
@@ -358,7 +358,7 @@
         }
       }
     },
-    "/{proof_type}/v1/challenge-request": {
+    "/proof/v1/{proof_type}/challenge-request": {
       "post": {
         "tags": [
           "PoB Challenge"
@@ -428,7 +428,7 @@
         }
       }
     },
-    "/{proof_type}/v1/challenge-status": {
+    "/proof/v1/{proof_type}/challenge-status": {
       "post": {
         "tags": [
           "PoB Challenge"
@@ -498,7 +498,7 @@
         }
       }
     },
-    "/{proof_type}/v1/challenge-result": {
+    "/proof/v1/{proof_type}/challenge-result": {
       "post": {
         "tags": [
           "PoB Challenge"
@@ -568,7 +568,7 @@
         }
       }
     },
-    "/{proof_type}/v1/claims": {
+    "/proof/v1/{proof_type}/claims": {
       "post": {
         "tags": [
           "Claims"
@@ -638,7 +638,7 @@
         }
       }
     },
-    "/{proof_type}/v1/ws": {
+    "/proof/v1/{proof_type}/ws": {
       "get": {
         "tags": [
           "Websocket for Heartbeat and Notifications"
@@ -721,7 +721,7 @@
         }
       }
     },
-    "/{proof_type}/v1/ip-info": {
+    "/proof/v1/{proof_type}/ip-info": {
       "post": {
         "tags": [
           "General Information"
@@ -761,7 +761,7 @@
         }
       }
     },
-    "/{proof_type}/v1/statistics": {
+    "/proof/v1/{proof_type}/statistics": {
       "post": {
         "tags": [
           "Statistics"
@@ -801,7 +801,7 @@
         }
       }
     },
-    "/{proof_type}/v1/release-info": {
+    "/proof/v1/{proof_type}/release-info": {
       "post": {
         "tags": [
           "General Information"
