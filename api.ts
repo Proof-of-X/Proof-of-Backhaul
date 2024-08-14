@@ -111,7 +111,7 @@ interface PreLoginCookieHeader {
 interface LoginCookieHeader {
 
 	/** -----
-	The cookies that were received after calling '/pre-login' API.
+	The cookies that were received after calling '/login' API.
 	**/
 
 	"Cookie" : String

@@ -173,7 +173,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
             "required": true,
             "schema": {
               "type": "string"
@@ -244,7 +244,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
             "required": true,
             "schema": {
               "type": "string"
@@ -314,7 +314,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
             "required": true,
             "schema": {
               "type": "string"
@@ -377,7 +377,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
             "required": true,
             "schema": {
               "type": "string"
@@ -447,7 +447,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
             "required": true,
             "schema": {
               "type": "string"
@@ -517,7 +517,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
             "required": true,
             "schema": {
               "type": "string"
@@ -587,7 +587,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
             "required": true,
             "schema": {
               "type": "string"
@@ -657,7 +657,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
             "required": true,
             "schema": {
               "type": "string"
@@ -740,7 +740,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
             "required": true,
             "schema": {
               "type": "string"
@@ -780,7 +780,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
             "required": true,
             "schema": {
               "type": "string"
@@ -820,7 +820,7 @@
           {
             "name": "Cookie",
             "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/pre-login' API.",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
             "required": true,
             "schema": {
               "type": "string"
