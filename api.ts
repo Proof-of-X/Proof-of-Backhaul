@@ -600,7 +600,7 @@ interface Result {
 
 
 interface ProversRequest {
-	skil		: Integer,
+	skip		: Integer,
 	limit		: Integer,
 }
 
