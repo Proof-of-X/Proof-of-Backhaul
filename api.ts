@@ -187,7 +187,7 @@ interface PreloginRequest {
 
 	As of now these are supported wallets:
 		1. solana
-		2. ethereum 
+		2. ethereum
 	**/
 
 	walletPublicKey?	: WalletPublicKey;
@@ -198,7 +198,7 @@ interface PreloginRequest {
 
 	As of now these are supported keyTypes:
 		1. solana
-		2. ethereum 
+		2. ethereum
 	**/
 	keyType			: "ethereum" | "solana";
 
@@ -251,13 +251,15 @@ interface PreloginRequest {
 	claims is dependent on proof_type,
 
 	Example: for pob it could be:
-		{	
+		{
 			bandwidth : Float; // The bandwidth in Mbps the user wants to claim
 		}
 	**/
 
 	claims : {
-		"{claim-parameter}" : String | Integer | Float
+		"{claim-parameter-1}" : String | Integer | Float
+		"{claim-parameter-2}" : String | Integer | Float
+		"{claim-parameter-N}" : String | Integer | Float
 	};
 }
 
@@ -265,13 +267,13 @@ interface WalletPublicKey {
 
 	/**
 	-----
-	The 'solana' wallet public key 
+	The 'solana' wallet public key
 	**/
 	solana	: String;
 
 	/**
 	-----
-	The 'ethereum' wallet public key 
+	The 'ethereum' wallet public key
 	**/
 	ethereum : String;
 }
@@ -349,10 +351,10 @@ class ApiLogin
 	paymentRequiredResponse(
 
 	/** -----
-	The response when a payment OR 'staking' is 
+	The response when a payment OR 'staking' is
 	required before making this call.
 	**/
-		
+
 		@body body: StakingResponse,
 	) {}
 }
@@ -528,10 +530,12 @@ interface ProverDetails {
 
 	/**
 	-----
-	Map of claims	
+	Map of claims
 	**/
 	claims : {
-		"{claim-parameter}" : String | Integer | Float
+		"{claim-parameter-1}" : String | Integer | Float
+		"{claim-parameter-2}" : String | Integer | Float
+		"{claim-parameter-N}" : String | Integer | Float
 	};
 
 	/**
@@ -539,15 +543,38 @@ interface ProverDetails {
 	The latest time when the API server received a handshake from the prover.
 	**/
 	last_alive		: DateTime;
+}
+
+interface ChallengerDetails {
+	/**
+	-----
+	The unique 'id' of the challenger.
+	**/
+	id			: String;
 
 	/**
 	-----
- 	The history of challenge results the proved has participated in.
+	The estimate of geographic information based on IP address, please refer:
+		https://www.npmjs.com/package/fast-geoip
 	**/
+	geoip			: GeoIP;
 
-	results			: ChallengeResult[];
+	/**
+	-----
+	Map of claims
+	**/
+	claims : {
+		"{claim-parameter-1}" : String | Integer | Float
+		"{claim-parameter-2}" : String | Integer | Float
+		"{claim-parameter-N}" : String | Integer | Float
+	};
+
+	/**
+	-----
+	The latest time when the API server received a handshake from the prover.
+	**/
+	last_alive		: DateTime;
 }
-
 
 interface GeoIP {
 	range	: Integer[];	// [ 3479298048, 3479300095 ],
@@ -591,9 +618,40 @@ interface Result {
 
 
 interface ProversRequest {
-	skip		: Integer,
-	limit		: Integer,
+
+	/**
+	-----
+	the number of provers you wish to skip (default 0)
+	**/
+
+	skip		: Integer | null,
+
+	/**
+	-----
+	the MAX number of provers you wish to get (default 50)
+	**/
+
+	limit		: Integer | null,
 }
+
+interface ChallengersRequest {
+
+	/**
+	-----
+	the number of challengers you wish to skip (default 0)
+	**/
+
+	skip		: Integer | null,
+
+	/**
+	-----
+	the MAX number of challengers you wish to get (default 50)
+	**/
+
+	limit		: Integer | null,
+}
+
+
 
 	/**
 	-----
@@ -603,7 +661,7 @@ interface ProversRequest {
 @endpoint({
 	method	: "POST",
 	path	: "/proof/v1/:proof_type/provers",
-	tags	: ["Prover Information"]
+	tags	: ["Provers Information"]
 })
 class ApiProvers
 {
@@ -630,6 +688,45 @@ class ApiProvers
 interface ProversResponse {
 	result : {
 		provers : ProverDetails[];
+	}
+}
+
+
+	/**
+	-----
+	Get all challengers info.
+	**/
+
+@endpoint({
+	method	: "POST",
+	path	: "/proof/v1/:proof_type/challengers",
+	tags	: ["Challengers Information"]
+})
+class ApiChallengers
+{
+	@request
+	request(
+		@body		body	: ChallengersRequest,
+		@headers	headers : LoginCookieHeader,
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		}
+	) {}
+
+	@response({ status: 200 })
+	successfulResponse(
+		@body body : ChallengersResponse[],
+	) {}
+
+	@response({ status: 401 })
+	unauthorizedResponse(
+		@body body : FailureResponse
+	) {}
+}
+
+interface ChallengersResponse {
+	result : {
+		provers : ChallengerDetails[];
 	}
 }
 
@@ -1056,12 +1153,6 @@ interface IPInfoResponse {
 	}
 }
 
-/**
-	-----
-
-	Get PoB statistics on 'provers' and 'challengers'.
-**/
-
 @endpoint({
 	method	: "POST",
 	path	: "/proof/v1/:proof_type/statistics",
@@ -1102,46 +1193,5 @@ interface StatisticsResponse {
 	**/
 		online_challenges	: Integer;
 		num_challengers		: Integer;
-	}
-}
-
-/**
-	-----
-
-	Get the latest released version information on various software
-**/
-
-@endpoint({
-	method	: "POST",
-	path	: "/proof/v1/:proof_type/release-info",
-	tags	: ["General Information"]
-})
-class ApiReleaseInfo
-{
-	@request
-	request(
-		@headers headers : LoginCookieHeader,
-
-		@pathParams	pathParams : {
-      				proof_type: String;
-    		},
-	) {}
-
-	@response({ status: 200 })
-	successfulResponse(
-		@body body: ReleaseInfoResponse
-	) {}
-}
-
-interface ReleaseInfoResponse {
-	result : {
-
-	/**
-	-----
-	'_client' is for clients
-	'_server' is for servers
-	**/
-		pob_prover_client	: String;
-		pob_challenger_client	: String;
 	}
 }

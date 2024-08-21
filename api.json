@@ -298,7 +298,7 @@
     "/proof/v1/{proof_type}/provers": {
       "post": {
         "tags": [
-          "Prover Information"
+          "Provers Information"
         ],
         "description": "-----\n\tGet all provers info.",
         "operationId": "ApiProvers",
@@ -340,6 +340,69 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/ProversResponse"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proof/v1/{proof_type}/challengers": {
+      "post": {
+        "tags": [
+          "Challengers Information"
+        ],
+        "description": "-----\n\tGet all challengers info.",
+        "operationId": "ApiChallengers",
+        "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChallengersRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ChallengersResponse"
                   }
                 }
               }
@@ -766,7 +829,6 @@
         "tags": [
           "Statistics"
         ],
-        "description": "-----\n\n\tGet PoB statistics on 'provers' and 'challengers'.",
         "operationId": "ApiStatistics",
         "parameters": [
           {
@@ -794,46 +856,6 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/StatisticsResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/proof/v1/{proof_type}/release-info": {
-      "post": {
-        "tags": [
-          "General Information"
-        ],
-        "description": "-----\n\n\tGet the latest released version information on various software",
-        "operationId": "ApiReleaseInfo",
-        "parameters": [
-          {
-            "name": "proof_type",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "Cookie",
-            "in": "header",
-            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "200 response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ReleaseInfoResponse"
                 }
               }
             }
@@ -899,7 +921,37 @@
           "claims": {
             "type": "object",
             "properties": {
-              "{claim-parameter}": {
+              "{claim-parameter-1}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              },
+              "{claim-parameter-2}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              },
+              "{claim-parameter-N}": {
                 "oneOf": [
                   {
                     "type": "string"
@@ -916,9 +968,11 @@
               }
             },
             "required": [
-              "{claim-parameter}"
+              "{claim-parameter-1}",
+              "{claim-parameter-2}",
+              "{claim-parameter-N}"
             ],
-            "description": "-----\n\tAll claims.\n\tclaims is dependent on proof_type,\n\n\tExample: for pob it could be:\n\t\t{\t\n\t\t\tbandwidth : Float; // The bandwidth in Mbps the user wants to claim\n\t\t}"
+            "description": "-----\n\tAll claims.\n\tclaims is dependent on proof_type,\n\n\tExample: for pob it could be:\n\t\t{\n\t\t\tbandwidth : Float; // The bandwidth in Mbps the user wants to claim\n\t\t}"
           }
         },
         "required": [
@@ -1129,40 +1183,6 @@
           "area"
         ]
       },
-      "Result": {
-        "type": "object"
-      },
-      "ChallengeResult": {
-        "type": "object",
-        "properties": {
-          "result": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/Result"
-            }
-          },
-          "message": {
-            "type": "string"
-          },
-          "signature": {
-            "type": "string"
-          },
-          "challenger": {
-            "type": "string"
-          },
-          "challenge_start_time": {
-            "type": "string",
-            "format": "date-time"
-          }
-        },
-        "required": [
-          "result",
-          "message",
-          "signature",
-          "challenger",
-          "challenge_start_time"
-        ]
-      },
       "ProverDetails": {
         "type": "object",
         "properties": {
@@ -1176,7 +1196,37 @@
           "claims": {
             "type": "object",
             "properties": {
-              "{claim-parameter}": {
+              "{claim-parameter-1}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              },
+              "{claim-parameter-2}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              },
+              "{claim-parameter-N}": {
                 "oneOf": [
                   {
                     "type": "string"
@@ -1193,7 +1243,9 @@
               }
             },
             "required": [
-              "{claim-parameter}"
+              "{claim-parameter-1}",
+              "{claim-parameter-2}",
+              "{claim-parameter-N}"
             ],
             "description": "-----\n\tMap of claims"
           },
@@ -1201,21 +1253,13 @@
             "type": "string",
             "format": "date-time",
             "description": "-----\n\tThe latest time when the API server received a handshake from the prover."
-          },
-          "results": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ChallengeResult"
-            },
-            "description": "-----\n \tThe history of challenge results the proved has participated in."
           }
         },
         "required": [
           "id",
           "geoip",
           "claims",
-          "last_alive",
-          "results"
+          "last_alive"
         ]
       },
       "ProverResponse": {
@@ -1234,11 +1278,15 @@
         "properties": {
           "skip": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true,
+            "description": "-----\n\tthe number of provers you wish to skip (default 0)"
           },
           "limit": {
             "type": "integer",
-            "format": "int32"
+            "format": "int32",
+            "nullable": true,
+            "description": "-----\n\tthe MAX number of provers you wish to get (default 50)"
           }
         },
         "required": [
@@ -1256,6 +1304,128 @@
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/ProverDetails"
+                }
+              }
+            },
+            "required": [
+              "provers"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "ChallengersRequest": {
+        "type": "object",
+        "properties": {
+          "skip": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "-----\n\tthe number of challengers you wish to skip (default 0)"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true,
+            "description": "-----\n\tthe MAX number of challengers you wish to get (default 50)"
+          }
+        },
+        "required": [
+          "skip",
+          "limit"
+        ]
+      },
+      "ChallengerDetails": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "-----\n\tThe unique 'id' of the challenger."
+          },
+          "geoip": {
+            "$ref": "#/components/schemas/GeoIP"
+          },
+          "claims": {
+            "type": "object",
+            "properties": {
+              "{claim-parameter-1}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              },
+              "{claim-parameter-2}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              },
+              "{claim-parameter-N}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "{claim-parameter-1}",
+              "{claim-parameter-2}",
+              "{claim-parameter-N}"
+            ],
+            "description": "-----\n\tMap of claims"
+          },
+          "last_alive": {
+            "type": "string",
+            "format": "date-time",
+            "description": "-----\n\tThe latest time when the API server received a handshake from the prover."
+          }
+        },
+        "required": [
+          "id",
+          "geoip",
+          "claims",
+          "last_alive"
+        ]
+      },
+      "ChallengersResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "provers": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/ChallengerDetails"
                 }
               }
             },
@@ -1616,30 +1786,6 @@
               "num_provers",
               "online_challenges",
               "num_challengers"
-            ]
-          }
-        },
-        "required": [
-          "result"
-        ]
-      },
-      "ReleaseInfoResponse": {
-        "type": "object",
-        "properties": {
-          "result": {
-            "type": "object",
-            "properties": {
-              "pob_prover_client": {
-                "type": "string",
-                "description": "-----\n\t'_client' is for clients\n\t'_server' is for servers"
-              },
-              "pob_challenger_client": {
-                "type": "string"
-              }
-            },
-            "required": [
-              "pob_prover_client",
-              "pob_challenger_client"
             ]
           }
         },
