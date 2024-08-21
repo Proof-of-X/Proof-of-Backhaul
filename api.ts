@@ -180,15 +180,6 @@ interface PreloginRequest {
 
 	/**
 	-----
-	The kind of proof the user wishes to participate in.
-	Valid values are : "pob" and "pol"
-	**/
-
-	proof_type		: String;
-
-
-	/**
-	-----
 	The wallet where all the rewards go.
 
 	if 'walletPublicKey' is NOT provided, then:
@@ -209,7 +200,7 @@ interface PreloginRequest {
 		1. solana
 		2. ethereum 
 	**/
-	keyType			: "solana";
+	keyType			: "ethereum" | "solana";
 
 	/**
 	-----

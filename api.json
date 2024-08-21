@@ -868,16 +868,13 @@
             "type": "string",
             "description": "-----\n\tThe key used for login\n\tNOTE: when using 'ethereum' the 'publicKey = Address'"
           },
-          "proof_type": {
-            "type": "string",
-            "description": "-----\n\tThe kind of proof the user wishes to participate in.\n\tValid values are : \"pob\" and \"pol\""
-          },
           "walletPublicKey": {
             "$ref": "#/components/schemas/WalletPublicKey"
           },
           "keyType": {
             "type": "string",
             "enum": [
+              "ethereum",
               "solana"
             ],
             "description": "-----\n\tThe key-type of publicKey.\n\n\tAs of now these are supported keyTypes:\n\t\t1. solana\n\t\t2. ethereum"
@@ -926,7 +923,6 @@
         },
         "required": [
           "publicKey",
-          "proof_type",
           "keyType",
           "role",
           "claims"
