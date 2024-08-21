@@ -337,10 +337,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ProversResponse"
-                  }
+                  "$ref": "#/components/schemas/ProversResponse"
                 }
               }
             }
@@ -400,10 +397,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/ChallengersResponse"
-                  }
+                  "$ref": "#/components/schemas/ChallengersResponse"
                 }
               }
             }

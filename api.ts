@@ -676,7 +676,7 @@ class ApiProvers
 
 	@response({ status: 200 })
 	successfulResponse(
-		@body body : ProversResponse[],
+		@body body : ProversResponse,
 	) {}
 
 	@response({ status: 401 })
@@ -715,7 +715,7 @@ class ApiChallengers
 
 	@response({ status: 200 })
 	successfulResponse(
-		@body body : ChallengersResponse[],
+		@body body : ChallengersResponse,
 	) {}
 
 	@response({ status: 401 })
