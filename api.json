@@ -1279,20 +1279,14 @@
           "skip": {
             "type": "integer",
             "format": "int32",
-            "nullable": true,
             "description": "-----\n\tthe number of provers you wish to skip (default 0)"
           },
           "limit": {
             "type": "integer",
             "format": "int32",
-            "nullable": true,
             "description": "-----\n\tthe MAX number of provers you wish to get (default 50)"
           }
-        },
-        "required": [
-          "skip",
-          "limit"
-        ]
+        }
       },
       "ProversResponse": {
         "type": "object",
@@ -1322,20 +1316,14 @@
           "skip": {
             "type": "integer",
             "format": "int32",
-            "nullable": true,
             "description": "-----\n\tthe number of challengers you wish to skip (default 0)"
           },
           "limit": {
             "type": "integer",
             "format": "int32",
-            "nullable": true,
             "description": "-----\n\tthe MAX number of challengers you wish to get (default 50)"
           }
-        },
-        "required": [
-          "skip",
-          "limit"
-        ]
+        }
       },
       "ChallengerDetails": {
         "type": "object",

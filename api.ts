@@ -624,14 +624,14 @@ interface ProversRequest {
 	the number of provers you wish to skip (default 0)
 	**/
 
-	skip		: Integer | null,
+	skip?		: Integer,
 
 	/**
 	-----
 	the MAX number of provers you wish to get (default 50)
 	**/
 
-	limit		: Integer | null,
+	limit?		: Integer,
 }
 
 interface ChallengersRequest {
@@ -641,14 +641,14 @@ interface ChallengersRequest {
 	the number of challengers you wish to skip (default 0)
 	**/
 
-	skip		: Integer | null,
+	skip?		: Integer,
 
 	/**
 	-----
 	the MAX number of challengers you wish to get (default 50)
 	**/
 
-	limit		: Integer | null,
+	limit?		: Integer,
 }
 
 
