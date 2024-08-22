@@ -1134,7 +1134,7 @@ class claim_public_ip
 {
 	@request
 	request(
-		@body		body	: Claims, 
+		@body		body	: ClaimPublicIP, 
 		@headers	headers : LoginCookieHeader,
 
 

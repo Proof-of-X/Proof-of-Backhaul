@@ -855,7 +855,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/Claims"
+                "$ref": "#/components/schemas/ClaimPublicIP"
               }
             }
           },
@@ -1976,6 +1976,22 @@
           "{claim-parameter-1}",
           "{claim-parameter-2}",
           "{claim-parameter-N}"
+        ]
+      },
+      "ClaimPublicIP": {
+        "type": "object",
+        "properties": {
+          "IPv4": {
+            "type": "boolean",
+            "description": "-----\n\tMap of all things a 'user' wants to claim."
+          },
+          "IPv6": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "IPv4",
+          "IPv6"
         ]
       },
       "Challenger": {
