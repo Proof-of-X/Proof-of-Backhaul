@@ -1983,7 +1983,7 @@
         "properties": {
           "IPv4": {
             "type": "boolean",
-            "description": "-----\n\tMap of all things a 'user' wants to claim."
+            "description": "-----\n\tClaim which one of the interfaces have public-IP"
           },
           "IPv6": {
             "type": "boolean"

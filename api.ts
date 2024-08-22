@@ -1067,7 +1067,7 @@ interface Claims {
 interface ClaimPublicIP {
 	/**
 	-----
-	Map of all things a 'user' wants to claim.
+	Claim which one of the interfaces have public-IP 
 	**/
 
 
