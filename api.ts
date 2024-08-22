@@ -1071,8 +1071,8 @@ interface ClaimPublicIP {
 	**/
 
 
-	"IPv4" : boolean, 
-	"IPv6" : boolean 
+	IPv4? : boolean, 
+	IPv6? : boolean 
 }
 
 

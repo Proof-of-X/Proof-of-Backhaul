@@ -1988,11 +1988,7 @@
           "IPv6": {
             "type": "boolean"
           }
-        },
-        "required": [
-          "IPv4",
-          "IPv6"
-        ]
+        }
       },
       "Challenger": {
         "type": "object",
