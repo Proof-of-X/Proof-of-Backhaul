@@ -157,7 +157,7 @@
     "/proof/v1/{proof_type}/user-info": {
       "post": {
         "tags": [
-          "General Information"
+          "User Information"
         ],
         "description": "-----\n\n\tGet logged in user information.",
         "operationId": "user_info",

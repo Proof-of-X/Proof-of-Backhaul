@@ -368,7 +368,7 @@ class login
 @endpoint({
 	method	: "POST",
 	path	: "/proof/v1/:proof_type/user-info",
-	tags	: ["General Information"]
+	tags	: ["User Information"]
 })
 class user_info
 {
