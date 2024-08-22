@@ -789,9 +789,60 @@ interface ChallengersResponse {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+	/**
+	-----
+
+	Request to create a new challenge using DCL contracts.
+
+	Before calling this api 'submitRequest()' smart contract must be called.
+
+	And the 'challenge_id' after calling the 'submitRequest' must be provided.
+	**/
+
+
 @endpoint({
 	method	: "POST",
 	path	: "/proof/v1/:proof_type/challenge-request-dcl",
+	tags	: ["DCL Challenge"]
+})
+class challenge_request_dcl
+{
+	@request
+	request(
+		@body		body	: DCLChallengeRequest,
+
+		@headers 	headers : LoginCookieHeader,
+
+		@pathParams	pathParams: {
+      			proof_type: String;
+    		},
+	) {}
+
+	@response({ status: 200 })
+	successfulResponse(
+		@body body: ChallengeResponse
+	) {}
+
+	@response({ status: 400 })
+	badRequestResponse(
+		@body body: FailureResponse
+	) {}
+
+	@response({ status: 401 })
+	unauthorizedResponse(
+		@body body : FailureResponse
+	) {}
+}
+
+
+	/**
+	-----
+	Get the status of a given DCL challenge.
+	**/
+
+@endpoint({
+	method	: "POST",
+	path	: "/proof/v1/:proof_type/challenge-status-dcl",
 	tags	: ["DCL Challenge"]
 })
 class dcl_challenge_request
@@ -822,6 +873,8 @@ class dcl_challenge_request
 		@body body : FailureResponse
 	) {}
 }
+
+
 
 
 
@@ -920,7 +973,7 @@ class challenge_request
 	path	: "/proof/v1/:proof_type/challenge-status",
 	tags	: ["Challenge"]
 })
-class challenge_status
+class challenge_status_dcl
 {
 	@request
 	request(

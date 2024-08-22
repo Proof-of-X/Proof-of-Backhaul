@@ -490,6 +490,77 @@
         "tags": [
           "DCL Challenge"
         ],
+        "description": "-----\n\n\tRequest to create a new challenge using DCL contracts.\n\n\tBefore calling this api 'submitRequest()' smart contract must be called.\n\n\tAnd the 'challenge_id' after calling the 'submitRequest' must be provided.",
+        "operationId": "challenge_request_dcl",
+        "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DCLChallengeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proof/v1/{proof_type}/challenge-status-dcl": {
+      "post": {
+        "tags": [
+          "DCL Challenge"
+        ],
+        "description": "-----\n\tGet the status of a given DCL challenge.",
         "operationId": "dcl_challenge_request",
         "parameters": [
           {
@@ -630,7 +701,7 @@
           "Challenge"
         ],
         "description": "-----\n\tGet the status of a given challenge.",
-        "operationId": "challenge_status",
+        "operationId": "challenge_status_dcl",
         "parameters": [
           {
             "name": "proof_type",
