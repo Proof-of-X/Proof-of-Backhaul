@@ -1938,7 +1938,8 @@
                 "type": "number",
                 "format": "float"
               }
-            ]
+            ],
+            "description": "-----\n\tMap of all things a 'user' wants to claim."
           },
           "{claim-parameter-2}": {
             "oneOf": [
@@ -1975,20 +1976,19 @@
           "{claim-parameter-1}",
           "{claim-parameter-2}",
           "{claim-parameter-N}"
-        ],
-        "description": "-----\n\tMap of all things a 'user' wants to claim."
+        ]
       },
       "ClaimPublicIP": {
         "type": "object",
         "properties": {
           "IPv4": {
-            "type": "boolean"
+            "type": "boolean",
+            "description": "-----\n\tClaim which one of the interfaces have public-IP"
           },
           "IPv6": {
             "type": "boolean"
           }
-        },
-        "description": "-----\n\tClaim which one of the interfaces have public-IP"
+        }
       },
       "Challenger": {
         "type": "object",

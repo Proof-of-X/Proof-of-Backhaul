@@ -1052,27 +1052,27 @@ interface ChallengeStatusResponse {
 	}
 }
 
+
+interface Claims {
 	/**
 	-----
 	Map of all things a 'user' wants to claim.
 	**/
 
 
-interface Claims {
-
 	"{claim-parameter-1}" : String | Integer | Float;
 	"{claim-parameter-2}" : String | Integer | Float;
 	"{claim-parameter-N}" : String | Integer | Float;
 }
 
+
+
+interface ClaimPublicIP {
 	/**
 	-----
 	Claim which one of the interfaces have public-IP 
 	**/
 
-
-
-interface ClaimPublicIP {
 
 	IPv4? : boolean, 
 	IPv6? : boolean 
