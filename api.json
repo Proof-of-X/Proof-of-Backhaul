@@ -1057,11 +1057,62 @@
         }
       }
     },
+    "/proof/v1/{proof_type}/prover-metrics": {
+      "post": {
+        "tags": [
+          "Statistics"
+        ],
+        "description": "-----\n\tLogin and Ping metrics of a prover",
+        "operationId": "prover_metrics",
+        "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetricsRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/proof/v1/{proof_type}/challenger-metrics": {
       "post": {
         "tags": [
           "Statistics"
         ],
+        "description": "-----\n\tLogin and Ping metrics of a challenger",
         "operationId": "challenger_metrics",
         "parameters": [
           {
@@ -1082,13 +1133,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MetricsRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "200 response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ChallengerMetricsResponse"
+                  "$ref": "#/components/schemas/MetricsResponse"
                 }
               }
             }
@@ -2126,7 +2187,18 @@
           "result"
         ]
       },
-      "ChallengerMetricsResponse": {
+      "MetricsRequest": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "MetricsResponse": {
         "type": "object",
         "properties": {
           "result": {

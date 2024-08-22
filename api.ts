@@ -1362,7 +1362,12 @@ interface StatisticsResponse {
 	}
 }
 
-interface ChallengerMetricsResponse {
+
+interface MetricsRequest {
+	id : String;
+}
+
+interface MetricsResponse {
 	result : {
 
 		number_of_pings : {
@@ -1385,15 +1390,21 @@ interface ChallengerMetricsResponse {
 	}
 }
 
+	/**
+	-----
+	Login and Ping metrics of a prover	
+	**/
+
 @endpoint({
 	method	: "POST",
-	path	: "/proof/v1/:proof_type/challenger-metrics",
+	path	: "/proof/v1/:proof_type/prover-metrics",
 	tags	: ["Statistics"]
 })
-class challenger_metrics 
+class prover_metrics 
 {
 	@request
 	request(
+		@body body	 : MetricsRequest,
 		@headers headers : LoginCookieHeader,
 
 		@pathParams	pathParams : {
@@ -1403,6 +1414,34 @@ class challenger_metrics
 
 	@response({ status: 200 })
 	successfulResponse(
-		@body body: ChallengerMetricsResponse 
+		@body body: MetricsResponse 
+	) {}
+}
+
+	/**
+	-----
+	Login and Ping metrics of a challenger 
+	**/
+
+@endpoint({
+	method	: "POST",
+	path	: "/proof/v1/:proof_type/challenger-metrics",
+	tags	: ["Statistics"]
+})
+class challenger_metrics 
+{
+	@request
+	request(
+		@body body	 : MetricsRequest,
+		@headers headers : LoginCookieHeader,
+
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		},
+	) {}
+
+	@response({ status: 200 })
+	successfulResponse(
+		@body body: MetricsResponse 
 	) {}
 }
