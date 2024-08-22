@@ -136,7 +136,7 @@ interface LoginCookieHeader {
 	path	: "/proof/v1/:proof_type/pre-login",
 	tags	: ["Session"],
 })
-class ApiPreLogin
+class pre_login
 {
 	@request
 	request(
@@ -310,7 +310,7 @@ interface PreloginResponse {
 	path	: "/proof/v1/:proof_type/login",
 	tags	: ["Session"]
 })
-class ApiLogin
+class login
 {
 	@request
 	request(
@@ -370,7 +370,7 @@ class ApiLogin
 	path	: "/proof/v1/:proof_type/user-info",
 	tags	: ["General Information"]
 })
-class ApiUserInfo
+class user_info
 {
 	@request
 	request(
@@ -414,7 +414,7 @@ interface UserInfoResponse {
 	path	: "/proof/v1/:proof_type/logout",
 	tags	: ["Session"]
 })
-class ApiLogout
+class logout
 {
 	@request
 	request(
@@ -486,7 +486,7 @@ interface LoginRequest {
 	path	: "/proof/v1/:proof_type/prover",
 	tags	: ["Prover Information"]
 })
-class ApiProver
+class prover
 {
 	@request
 	request(
@@ -605,6 +605,22 @@ interface ProverResponse {
 	result : ProverDetails
 }
 
+interface ChallengerRequest {
+	/**
+	-----
+ 	The 'id' of the challenger.
+	**/
+	id : String;
+}
+
+interface ChallengerResponse {
+	/**
+	-----
+ 	The details of the prover.
+	**/
+	result : ChallengerDetails
+}
+
 interface ChallengeResult {
 	result			: Result[],
 	message			: String,
@@ -661,9 +677,9 @@ interface ChallengersRequest {
 @endpoint({
 	method	: "POST",
 	path	: "/proof/v1/:proof_type/provers",
-	tags	: ["Provers Information"]
+	tags	: ["Prover Information"]
 })
-class ApiProvers
+class provers
 {
 	@request
 	request(
@@ -691,6 +707,47 @@ interface ProversResponse {
 	}
 }
 
+	/**
+	-----
+
+	Get information about a challenger.
+	**/
+
+@endpoint({
+	method	: "POST",
+	path	: "/proof/v1/:proof_type/challenger",
+	tags	: ["Challenger Information"]
+})
+class challenger 
+{
+	@request
+	request(
+		@body		body	: ChallengerRequest,
+		@headers	headers : LoginCookieHeader,
+
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		}
+	) {}
+
+	@response({ status: 200 })
+	successfulResponse(
+		@body body : ChallengerResponse,
+	) {}
+
+	@response({ status: 400 })
+	badRequestResponse(
+		@body body: FailureResponse
+	) {}
+
+	@response({ status: 401 })
+	unauthorizedResponse(
+		@body body : FailureResponse
+	) {}
+}
+
+
+
 
 	/**
 	-----
@@ -700,9 +757,9 @@ interface ProversResponse {
 @endpoint({
 	method	: "POST",
 	path	: "/proof/v1/:proof_type/challengers",
-	tags	: ["Challengers Information"]
+	tags	: ["Challenger Information"]
 })
-class ApiChallengers
+class challengers
 {
 	@request
 	request(
@@ -777,7 +834,7 @@ interface ChallengeResponse {
 	path	: "/proof/v1/:proof_type/challenge-request",
 	tags	: ["PoB Challenge"]
 })
-class ApiChallengeRequest
+class challenge_request
 {
 	@request
 	request(
@@ -816,7 +873,7 @@ class ApiChallengeRequest
 	path	: "/proof/v1/:proof_type/challenge-status",
 	tags	: ["PoB Challenge"]
 })
-class ApiChallengeStatus
+class challenge_status
 {
 	@request
 	request(
@@ -855,7 +912,7 @@ class ApiChallengeStatus
 	path	: "/proof/v1/:proof_type/challenge-result",
 	tags	: ["PoB Challenge"]
 })
-class ApiChallengeResult
+class challenge_result
 {
 	@request
 	request(
@@ -946,11 +1003,23 @@ interface ChallengeStatusResponse {
 	}
 }
 
+interface Claims {
+	/**
+	-----
+	Map of all things a 'user' wants to claim.
+	**/
+
+
+	"{claim-parameter-1}" : String | Integer | Float
+	"{claim-parameter-2}" : String | Integer | Float
+	"{claim-parameter-N}" : String | Integer | Float
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 	/**
 	-----
-	Claim that the 'user' has certain claims
+	Update a 'user's claims
 	**/
 
 
@@ -959,17 +1028,11 @@ interface ChallengeStatusResponse {
 	path	: "/proof/v1/:proof_type/claims",
 	tags	: ["Claims"]
 })
-class ApiClaimBandwidth
+class claims
 {
 	@request
 	request(
-		@body body : {
-	/**
-	-----
-	Map of all things a prover wants to claim.
-	**/
-
-		},
+		@body		body	: Claims, 
 		@headers	headers : LoginCookieHeader,
 
 
@@ -1011,7 +1074,7 @@ class ApiClaimBandwidth
 	path	: "/proof/v1/:proof_type/ws",
 	tags	: ["Websocket for Heartbeat and Notifications"]
 })
-class ApiHeartbeat
+class heartbeat
 {
 	@request
 	request(
@@ -1125,7 +1188,7 @@ interface Challenger {
 	path	: "/proof/v1/:proof_type/ip-info",
 	tags	: ["General Information"]
 })
-class ApiIPInfo
+class ip_info
 {
 	@request
 	request(
@@ -1158,7 +1221,7 @@ interface IPInfoResponse {
 	path	: "/proof/v1/:proof_type/statistics",
 	tags	: ["Statistics"]
 })
-class ApiStatistics
+class statistics
 {
 	@request
 	request(

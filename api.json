@@ -11,7 +11,7 @@
           "Session"
         ],
         "description": "-----\n\n\tThis API is to be called before logging in.\n\n\tIt will return a 'message' that has to be signed and sent to '/login' API.\n\n\tThis will also create a cookie;\n\n\thence the '/login' API must be called in a session.",
-        "operationId": "ApiPreLogin",
+        "operationId": "pre_login",
         "parameters": [
           {
             "name": "proof_type",
@@ -71,7 +71,7 @@
           "Session"
         ],
         "description": "-----\n\n\tThis API logs in the user.\n\n\tThe user should send the 'message' that was received during the '/pre-login';\n\n\tand must sign the 'message' using privateKey.\n\n\tAnd send it in the 'signature' field.",
-        "operationId": "ApiLogin",
+        "operationId": "login",
         "parameters": [
           {
             "name": "proof_type",
@@ -160,7 +160,7 @@
           "General Information"
         ],
         "description": "-----\n\n\tGet logged in user information.",
-        "operationId": "ApiUserInfo",
+        "operationId": "user_info",
         "parameters": [
           {
             "name": "proof_type",
@@ -200,7 +200,7 @@
           "Session"
         ],
         "description": "-----\n\n\tLogs out the user.",
-        "operationId": "ApiLogout",
+        "operationId": "logout",
         "parameters": [
           {
             "name": "proof_type",
@@ -231,7 +231,7 @@
           "Prover Information"
         ],
         "description": "-----\n\n\tGet information about a prover.",
-        "operationId": "ApiProver",
+        "operationId": "prover",
         "parameters": [
           {
             "name": "proof_type",
@@ -298,10 +298,10 @@
     "/proof/v1/{proof_type}/provers": {
       "post": {
         "tags": [
-          "Provers Information"
+          "Prover Information"
         ],
         "description": "-----\n\tGet all provers info.",
-        "operationId": "ApiProvers",
+        "operationId": "provers",
         "parameters": [
           {
             "name": "proof_type",
@@ -355,13 +355,83 @@
         }
       }
     },
+    "/proof/v1/{proof_type}/challenger": {
+      "post": {
+        "tags": [
+          "Challenger Information"
+        ],
+        "description": "-----\n\n\tGet information about a challenger.",
+        "operationId": "challenger",
+        "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChallengerRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengerResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/proof/v1/{proof_type}/challengers": {
       "post": {
         "tags": [
-          "Challengers Information"
+          "Challenger Information"
         ],
         "description": "-----\n\tGet all challengers info.",
-        "operationId": "ApiChallengers",
+        "operationId": "challengers",
         "parameters": [
           {
             "name": "proof_type",
@@ -421,7 +491,7 @@
           "PoB Challenge"
         ],
         "description": "-----\n\n\tRequest to create a new challenge.\n\n\tBefore calling this api 'startChallenge()' smart contract must be called.\n\n\tAnd the 'transaction' after calling the 'startChallenge' must be provided.",
-        "operationId": "ApiChallengeRequest",
+        "operationId": "challenge_request",
         "parameters": [
           {
             "name": "proof_type",
@@ -491,7 +561,7 @@
           "PoB Challenge"
         ],
         "description": "-----\n\tGet the status of a given challenge.",
-        "operationId": "ApiChallengeStatus",
+        "operationId": "challenge_status",
         "parameters": [
           {
             "name": "proof_type",
@@ -561,7 +631,7 @@
           "PoB Challenge"
         ],
         "description": "-----\n\tPost the results of a challenge.",
-        "operationId": "ApiChallengeResult",
+        "operationId": "challenge_result",
         "parameters": [
           {
             "name": "proof_type",
@@ -630,8 +700,8 @@
         "tags": [
           "Claims"
         ],
-        "description": "-----\n\tClaim that the 'user' has certain claims",
-        "operationId": "ApiClaimBandwidth",
+        "description": "-----\n\tUpdate a 'user's claims",
+        "operationId": "claims",
         "parameters": [
           {
             "name": "proof_type",
@@ -655,7 +725,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "type": "object"
+                "$ref": "#/components/schemas/Claims"
               }
             }
           },
@@ -701,7 +771,7 @@
           "Websocket for Heartbeat and Notifications"
         ],
         "description": "-----\n\tA websocket connection for:\n\n\t\t1. Sending heartbeat (websocket ping).\n\t\t2. Receiving notification regarding challenges.",
-        "operationId": "ApiHeartbeat",
+        "operationId": "heartbeat",
         "parameters": [
           {
             "name": "proof_type",
@@ -784,7 +854,7 @@
           "General Information"
         ],
         "description": "-----\n\n\tGet user's IP addresses as seen by the challenge co-ordinator",
-        "operationId": "ApiIPInfo",
+        "operationId": "ip_info",
         "parameters": [
           {
             "name": "proof_type",
@@ -823,7 +893,7 @@
         "tags": [
           "Statistics"
         ],
-        "operationId": "ApiStatistics",
+        "operationId": "statistics",
         "parameters": [
           {
             "name": "proof_type",
@@ -1304,20 +1374,17 @@
           "result"
         ]
       },
-      "ChallengersRequest": {
+      "ChallengerRequest": {
         "type": "object",
         "properties": {
-          "skip": {
-            "type": "integer",
-            "format": "int32",
-            "description": "-----\n\tthe number of challengers you wish to skip (default 0)"
-          },
-          "limit": {
-            "type": "integer",
-            "format": "int32",
-            "description": "-----\n\tthe MAX number of challengers you wish to get (default 50)"
+          "id": {
+            "type": "string",
+            "description": "-----\n \tThe 'id' of the challenger."
           }
-        }
+        },
+        "required": [
+          "id"
+        ]
       },
       "ChallengerDetails": {
         "type": "object",
@@ -1397,6 +1464,32 @@
           "claims",
           "last_alive"
         ]
+      },
+      "ChallengerResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/ChallengerDetails"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "ChallengersRequest": {
+        "type": "object",
+        "properties": {
+          "skip": {
+            "type": "integer",
+            "format": "int32",
+            "description": "-----\n\tthe number of challengers you wish to skip (default 0)"
+          },
+          "limit": {
+            "type": "integer",
+            "format": "int32",
+            "description": "-----\n\tthe MAX number of challengers you wish to get (default 50)"
+          }
+        }
       },
       "ChallengersResponse": {
         "type": "object",
@@ -1564,6 +1657,62 @@
           "message_type",
           "message",
           "signature"
+        ]
+      },
+      "Claims": {
+        "type": "object",
+        "properties": {
+          "{claim-parameter-1}": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "format": "int32"
+              },
+              {
+                "type": "number",
+                "format": "float"
+              }
+            ],
+            "description": "-----\n\tMap of all things a 'user' wants to claim."
+          },
+          "{claim-parameter-2}": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "format": "int32"
+              },
+              {
+                "type": "number",
+                "format": "float"
+              }
+            ]
+          },
+          "{claim-parameter-N}": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer",
+                "format": "int32"
+              },
+              {
+                "type": "number",
+                "format": "float"
+              }
+            ]
+          }
+        },
+        "required": [
+          "{claim-parameter-1}",
+          "{claim-parameter-2}",
+          "{claim-parameter-N}"
         ]
       },
       "Challenger": {
