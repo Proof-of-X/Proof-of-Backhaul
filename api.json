@@ -1910,6 +1910,8 @@
                   "SUBMITTED_TO_CHALLENGE_COORDINATOR",
                   "ACCEPTED_BY_CHALLENGE_COORDINATOR",
                   "ERROR_NOT_ENOUGH_CHALLENGERS",
+                  "ENDED_WITH_PARTIAL_SUCCESS",
+                  "ERROR_ENDED_WITH_FAILURE",
                   "ENDED_SUCCESSFULLY"
                 ]
               }
