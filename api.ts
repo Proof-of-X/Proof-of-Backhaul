@@ -257,9 +257,9 @@ interface PreloginRequest {
 	**/
 
 	claims : {
-		"{claim-parameter-1}" : String | Integer | Float
-		"{claim-parameter-2}" : String | Integer | Float
-		"{claim-parameter-N}" : String | Integer | Float
+		"{claim-parameter-1}" : String | Integer | Float,
+		"{claim-parameter-2}" : String | Integer | Float,
+		"{claim-parameter-N}" : String | Integer | Float,
 	};
 }
 
@@ -832,7 +832,7 @@ interface ChallengeResponse {
 @endpoint({
 	method	: "POST",
 	path	: "/proof/v1/:proof_type/challenge-request",
-	tags	: ["PoB Challenge"]
+	tags	: ["Challenge"]
 })
 class challenge_request
 {
@@ -871,7 +871,7 @@ class challenge_request
 @endpoint({
 	method	: "POST",
 	path	: "/proof/v1/:proof_type/challenge-status",
-	tags	: ["PoB Challenge"]
+	tags	: ["Challenge"]
 })
 class challenge_status
 {
@@ -910,7 +910,7 @@ class challenge_status
 @endpoint({
 	method	: "POST",
 	path	: "/proof/v1/:proof_type/challenge-result",
-	tags	: ["PoB Challenge"]
+	tags	: ["Challenge"]
 })
 class challenge_result
 {
@@ -979,6 +979,55 @@ interface ChallengeResultRequest {  // XXX to be fixed
 	signature	: String;
 }
 
+
+interface ChallengeHistory {
+	id     			: String;
+	challenge_start_time	: String;
+	challenge_timeout	: String;
+}
+
+interface ChallengesResponse {
+	result : ChallengeHistory [];
+}
+
+	/**
+	-----
+
+	History of challenges of the logged in user	
+	**/
+
+@endpoint({
+	method	: "POST",
+	path	: "/proof/v1/:proof_type/challenges",
+	tags	: ["Challenge"]
+})
+class challenges
+{
+	@request
+	request(
+		@headers 	headers : LoginCookieHeader,
+
+		@pathParams	pathParams: {
+      			proof_type: String;
+    		},
+	) {}
+
+	@response({ status: 200 })
+	successfulResponse(
+		@body body: ChallengesResponse
+	) {}
+
+	@response({ status: 400 })
+	badRequestResponse(
+		@body body: FailureResponse
+	) {}
+
+	@response({ status: 401 })
+	unauthorizedResponse(
+		@body body : FailureResponse
+	) {}
+}
+
 interface ChallengeStatusRequest {
 	/**
 	-----
@@ -1010,16 +1059,29 @@ interface Claims {
 	**/
 
 
-	"{claim-parameter-1}" : String | Integer | Float
-	"{claim-parameter-2}" : String | Integer | Float
-	"{claim-parameter-N}" : String | Integer | Float
+	"{claim-parameter-1}" : String | Integer | Float;
+	"{claim-parameter-2}" : String | Integer | Float;
+	"{claim-parameter-N}" : String | Integer | Float;
 }
+
+interface ClaimPublicIP {
+	/**
+	-----
+	Map of all things a 'user' wants to claim.
+	**/
+
+
+	"IPv4" : boolean, 
+	"IPv6" : boolean 
+}
+
+
 
 ////////////////////////////////////////////////////////////////////////////////
 
 	/**
 	-----
-	Update a 'user's claims
+	Update a 'user's proof-specific claims
 	**/
 
 
@@ -1057,6 +1119,47 @@ class claims
 		@body body : FailureResponse
 	) {}
 };
+
+	/**
+	-----
+	Claim that a prover/challenger has public-IP
+	**/
+
+@endpoint({
+	method	: "POST",
+	path	: "/proof/v1/:proof_type/claim-public-ip",
+	tags	: ["Claims"]
+})
+class claim_public_ip
+{
+	@request
+	request(
+		@body		body	: Claims, 
+		@headers	headers : LoginCookieHeader,
+
+
+		@pathParams
+    			pathParams: {
+      				proof_type: String;
+    			},
+	) {}
+
+	@response({ status: 200 })
+	successfulResponse(
+		@body body : SuccessResponse
+	) {}
+
+	@response({ status: 400 })
+	badRequestResponse(
+		@body body : FailureResponse
+	) {}
+
+	@response({ status: 401 })
+	unauthorizedResponse(
+		@body body : FailureResponse
+	) {}
+};
+
 
 
 ////////////////////////////////////////////////////////////////////////////////

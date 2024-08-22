@@ -488,7 +488,7 @@
     "/proof/v1/{proof_type}/challenge-request": {
       "post": {
         "tags": [
-          "PoB Challenge"
+          "Challenge"
         ],
         "description": "-----\n\n\tRequest to create a new challenge.\n\n\tBefore calling this api 'startChallenge()' smart contract must be called.\n\n\tAnd the 'transaction' after calling the 'startChallenge' must be provided.",
         "operationId": "challenge_request",
@@ -558,7 +558,7 @@
     "/proof/v1/{proof_type}/challenge-status": {
       "post": {
         "tags": [
-          "PoB Challenge"
+          "Challenge"
         ],
         "description": "-----\n\tGet the status of a given challenge.",
         "operationId": "challenge_status",
@@ -628,7 +628,7 @@
     "/proof/v1/{proof_type}/challenge-result": {
       "post": {
         "tags": [
-          "PoB Challenge"
+          "Challenge"
         ],
         "description": "-----\n\tPost the results of a challenge.",
         "operationId": "challenge_result",
@@ -695,13 +695,143 @@
         }
       }
     },
+    "/proof/v1/{proof_type}/challenges": {
+      "post": {
+        "tags": [
+          "Challenge"
+        ],
+        "description": "-----\n\n\tHistory of challenges of the logged in user",
+        "operationId": "challenges",
+        "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengesResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/proof/v1/{proof_type}/claims": {
       "post": {
         "tags": [
           "Claims"
         ],
-        "description": "-----\n\tUpdate a 'user's claims",
+        "description": "-----\n\tUpdate a 'user's proof-specific claims",
         "operationId": "claims",
+        "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Claims"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/proof/v1/{proof_type}/claim-public-ip": {
+      "post": {
+        "tags": [
+          "Claims"
+        ],
+        "description": "-----\n\tClaim that a prover/challenger has public-IP",
+        "operationId": "claim_public_ip",
         "parameters": [
           {
             "name": "proof_type",
@@ -1657,6 +1787,39 @@
           "message_type",
           "message",
           "signature"
+        ]
+      },
+      "ChallengeHistory": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "challenge_start_time": {
+            "type": "string"
+          },
+          "challenge_timeout": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "challenge_start_time",
+          "challenge_timeout"
+        ]
+      },
+      "ChallengesResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ChallengeHistory"
+            }
+          }
+        },
+        "required": [
+          "result"
         ]
       },
       "Claims": {
