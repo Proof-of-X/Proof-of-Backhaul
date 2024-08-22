@@ -981,7 +981,7 @@
     "/proof/v1/{proof_type}/ip-info": {
       "post": {
         "tags": [
-          "General Information"
+          "User Information"
         ],
         "description": "-----\n\n\tGet user's IP addresses as seen by the challenge co-ordinator",
         "operationId": "ip_info",

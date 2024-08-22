@@ -1289,7 +1289,7 @@ interface Challenger {
 @endpoint({
 	method	: "POST",
 	path	: "/proof/v1/:proof_type/ip-info",
-	tags	: ["General Information"]
+	tags	: ["User Information"]
 })
 class ip_info
 {
