@@ -485,6 +485,75 @@
         }
       }
     },
+    "/proof/v1/{proof_type}/challenge-request-dcl": {
+      "post": {
+        "tags": [
+          "DCL Challenge"
+        ],
+        "operationId": "dcl_challenge_request",
+        "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DCLChallengeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "400 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "401 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FailureResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/proof/v1/{proof_type}/challenge-request": {
       "post": {
         "tags": [
@@ -1743,21 +1812,16 @@
           "result"
         ]
       },
-      "ChallengeRequest": {
+      "DCLChallengeRequest": {
         "type": "object",
         "properties": {
-          "prover": {
+          "challenge_id": {
             "type": "string",
-            "description": "-----\n \tThe 'id' of the prover."
-          },
-          "transaction": {
-            "type": "string",
-            "description": "-----\n \tThe transaction that was generated after calling the\n\t'startChallenge' smart contract."
+            "description": "-----\n \tThe challenge_id that was generated after calling the\n\tDCL 'submitRequest' smart contract."
           }
         },
         "required": [
-          "prover",
-          "transaction"
+          "challenge_id"
         ]
       },
       "ChallengeResponse": {
@@ -1787,6 +1851,23 @@
         },
         "required": [
           "result"
+        ]
+      },
+      "ChallengeRequest": {
+        "type": "object",
+        "properties": {
+          "prover": {
+            "type": "string",
+            "description": "-----\n \tThe 'id' of the prover."
+          },
+          "transaction": {
+            "type": "string",
+            "description": "-----\n \tThe transaction that was generated after calling the\n\t'startChallenge' smart contract."
+          }
+        },
+        "required": [
+          "prover",
+          "transaction"
         ]
       },
       "ChallengeStatusRequest": {

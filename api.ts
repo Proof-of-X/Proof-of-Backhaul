@@ -789,6 +789,42 @@ interface ChallengersResponse {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+@endpoint({
+	method	: "POST",
+	path	: "/proof/v1/:proof_type/challenge-request-dcl",
+	tags	: ["DCL Challenge"]
+})
+class dcl_challenge_request
+{
+	@request
+	request(
+		@body		body	: DCLChallengeRequest,
+
+		@headers 	headers : LoginCookieHeader,
+
+		@pathParams	pathParams: {
+      			proof_type: String;
+    		},
+	) {}
+
+	@response({ status: 200 })
+	successfulResponse(
+		@body body: ChallengeResponse
+	) {}
+
+	@response({ status: 400 })
+	badRequestResponse(
+		@body body: FailureResponse
+	) {}
+
+	@response({ status: 401 })
+	unauthorizedResponse(
+		@body body : FailureResponse
+	) {}
+}
+
+
+
 interface ChallengeRequest {
 
 	/**
@@ -804,6 +840,17 @@ interface ChallengeRequest {
 	**/
 
 	transaction	: String;
+}
+
+interface DCLChallengeRequest {
+
+	/**
+	-----
+ 	The challenge_id that was generated after calling the
+	DCL 'submitRequest' smart contract.
+	**/
+
+	challenge_id	: String;
 }
 
 interface ChallengeResponse {
