@@ -1056,6 +1056,45 @@
           }
         }
       }
+    },
+    "/proof/v1/{proof_type}/challenger-metrics": {
+      "post": {
+        "tags": [
+          "Statistics"
+        ],
+        "operationId": "challenger_metrics",
+        "parameters": [
+          {
+            "name": "proof_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Cookie",
+            "in": "header",
+            "description": "-----\n\tThe cookies that were received after calling '/login' API.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "200 response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChallengerMetricsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2080,6 +2119,90 @@
               "num_provers",
               "online_challenges",
               "num_challengers"
+            ]
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "ChallengerMetricsResponse": {
+        "type": "object",
+        "properties": {
+          "result": {
+            "type": "object",
+            "properties": {
+              "number_of_pings": {
+                "type": "object",
+                "properties": {
+                  "{date-1}": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "{date-2}": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "{date-N}": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                },
+                "required": [
+                  "{date-1}",
+                  "{date-2}",
+                  "{date-N}"
+                ]
+              },
+              "number_of_logins": {
+                "type": "object",
+                "properties": {
+                  "{date-1}": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "{date-2}": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "{date-N}": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                },
+                "required": [
+                  "{date-1}",
+                  "{date-2}",
+                  "{date-N}"
+                ]
+              },
+              "number_of_times_ip_changed": {
+                "type": "object",
+                "properties": {
+                  "{date-1}": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "{date-2}": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "{date-N}": {
+                    "type": "integer",
+                    "format": "int32"
+                  }
+                },
+                "required": [
+                  "{date-1}",
+                  "{date-2}",
+                  "{date-N}"
+                ]
+              }
+            },
+            "required": [
+              "number_of_pings",
+              "number_of_logins",
+              "number_of_times_ip_changed"
             ]
           }
         },

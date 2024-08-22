@@ -1361,3 +1361,48 @@ interface StatisticsResponse {
 		num_challengers		: Integer;
 	}
 }
+
+interface ChallengerMetricsResponse {
+	result : {
+
+		number_of_pings : {
+			"{date-1}"	: Integer;
+			"{date-2}"	: Integer;
+			"{date-N}"	: Integer;
+		};
+
+		number_of_logins : {
+			"{date-1}"	: Integer;
+			"{date-2}"	: Integer;
+			"{date-N}"	: Integer;
+		};
+
+		number_of_times_ip_changed : {
+			"{date-1}"	: Integer;
+			"{date-2}"	: Integer;
+			"{date-N}"	: Integer;
+		};
+	}
+}
+
+@endpoint({
+	method	: "POST",
+	path	: "/proof/v1/:proof_type/challenger-metrics",
+	tags	: ["Statistics"]
+})
+class challenger_metrics 
+{
+	@request
+	request(
+		@headers headers : LoginCookieHeader,
+
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		},
+	) {}
+
+	@response({ status: 200 })
+	successfulResponse(
+		@body body: ChallengerMetricsResponse 
+	) {}
+}
