@@ -845,7 +845,7 @@ class challenge_request_dcl
 	path	: "/proof/v1/:proof_type/challenge-status-dcl",
 	tags	: ["DCL Challenge"]
 })
-class dcl_challenge_request
+class challenge_status_dcl
 {
 	@request
 	request(
@@ -905,6 +905,19 @@ interface DCLChallengeRequest {
 
 	challenge_id	: String;
 }
+
+interface DCLChallengeStatusRequest {
+
+	/**
+	-----
+ 	The challenge_id that was generated after calling the
+	DCL 'submitRequest' smart contract.
+	**/
+
+	challenge_id	: String;
+}
+
+
 
 interface ChallengeResponse {
 	result : {
@@ -975,7 +988,7 @@ class challenge_request
 	path	: "/proof/v1/:proof_type/challenge-status",
 	tags	: ["Challenge"]
 })
-class challenge_status_dcl
+class challenge_status
 {
 	@request
 	request(
@@ -1003,6 +1016,7 @@ class challenge_status_dcl
 		@body body : FailureResponse
 	) {}
 }
+
 
 	/**
 	-----
@@ -1149,8 +1163,9 @@ interface ChallengeStatusResponse {
 				"SUBMITTED_TO_CHALLENGE_COORDINATOR"	|
 				"ACCEPTED_BY_CHALLENGE_COORDINATOR"	|
 				"ERROR_NOT_ENOUGH_CHALLENGERS"		|
+				"ENDED_WITH_PARTIAL_SUCCESS"		|
+				"ERROR_ENDED_WITH_FAILURE"		|
 				"ENDED_SUCCESSFULLY";
-
 	}
 }
 

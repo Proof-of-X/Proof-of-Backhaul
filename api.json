@@ -561,7 +561,7 @@
           "DCL Challenge"
         ],
         "description": "-----\n\tGet the status of a given DCL challenge.",
-        "operationId": "dcl_challenge_request",
+        "operationId": "challenge_status_dcl",
         "parameters": [
           {
             "name": "proof_type",
@@ -701,7 +701,7 @@
           "Challenge"
         ],
         "description": "-----\n\tGet the status of a given challenge.",
-        "operationId": "challenge_status_dcl",
+        "operationId": "challenge_status",
         "parameters": [
           {
             "name": "proof_type",
@@ -1976,6 +1976,8 @@
                   "SUBMITTED_TO_CHALLENGE_COORDINATOR",
                   "ACCEPTED_BY_CHALLENGE_COORDINATOR",
                   "ERROR_NOT_ENOUGH_CHALLENGERS",
+                  "ENDED_WITH_PARTIAL_SUCCESS",
+                  "ERROR_ENDED_WITH_FAILURE",
                   "ENDED_SUCCESSFULLY"
                 ]
               }
