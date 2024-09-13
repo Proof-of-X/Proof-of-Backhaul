@@ -1867,7 +1867,7 @@
           "result": {
             "type": "object",
             "properties": {
-              "provers": {
+              "challengers": {
                 "type": "array",
                 "items": {
                   "$ref": "#/components/schemas/ChallengerDetails"
@@ -1875,7 +1875,7 @@
               }
             },
             "required": [
-              "provers"
+              "challengers"
             ]
           }
         },

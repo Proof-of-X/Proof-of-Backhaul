@@ -783,7 +783,7 @@ class challengers
 
 interface ChallengersResponse {
 	result : {
-		provers : ChallengerDetails[];
+		challengers : ChallengerDetails[];
 	}
 }
 
