@@ -1177,9 +1177,12 @@ interface Claims {
 	**/
 
 
-	"{claim-parameter-1}" : String | Integer | Float;
-	"{claim-parameter-2}" : String | Integer | Float;
-	"{claim-parameter-N}" : String | Integer | Float;
+	claims : {
+
+		"{claim-parameter-1}" : String | Integer | Float;
+		"{claim-parameter-2}" : String | Integer | Float;
+		"{claim-parameter-N}" : String | Integer | Float;
+	}
 }
 
 

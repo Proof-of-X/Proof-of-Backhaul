@@ -2081,57 +2081,65 @@
       "Claims": {
         "type": "object",
         "properties": {
-          "{claim-parameter-1}": {
-            "oneOf": [
-              {
-                "type": "string"
+          "claims": {
+            "type": "object",
+            "properties": {
+              "{claim-parameter-1}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
               },
-              {
-                "type": "integer",
-                "format": "int32"
+              "{claim-parameter-2}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
               },
-              {
-                "type": "number",
-                "format": "float"
+              "{claim-parameter-N}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
               }
+            },
+            "required": [
+              "{claim-parameter-1}",
+              "{claim-parameter-2}",
+              "{claim-parameter-N}"
             ],
             "description": "-----\n\tMap of all things a 'user' wants to claim."
-          },
-          "{claim-parameter-2}": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "integer",
-                "format": "int32"
-              },
-              {
-                "type": "number",
-                "format": "float"
-              }
-            ]
-          },
-          "{claim-parameter-N}": {
-            "oneOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "integer",
-                "format": "int32"
-              },
-              {
-                "type": "number",
-                "format": "float"
-              }
-            ]
           }
         },
         "required": [
-          "{claim-parameter-1}",
-          "{claim-parameter-2}",
-          "{claim-parameter-N}"
+          "claims"
         ]
       },
       "ClaimPublicIP": {
