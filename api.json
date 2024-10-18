@@ -527,7 +527,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ChallengeResponse"
+                  "$ref": "#/components/schemas/ChallengeStatusResponse"
                 }
               }
             }
@@ -597,7 +597,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ChallengeResponse"
+                  "$ref": "#/components/schemas/ChallengeStatusResponse"
                 }
               }
             }
@@ -667,7 +667,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ChallengeResponse"
+                  "$ref": "#/components/schemas/ChallengeStatusResponse"
                 }
               }
             }
@@ -737,7 +737,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ChallengeStatusResponse"
+                  "$ref": "#/components/schemas/ResponseChallengeResult"
                 }
               }
             }
@@ -1422,7 +1422,7 @@
               "{claim-parameter-3}",
               "{claim-parameter-N}"
             ],
-            "description": "-----\n\tAll claims.\n\tclaims is dependent on proof_type,\n\n\tExample:\n\t\tFor pob it is:\n\t\t{\n\t\t\tuplink_bandwidth\t: Float; // The upload bandwidth in Mbps\n\t\t\tdownlink_bandwidth\t: Float; // The downlink bandwidth in Mbps\n\t\t}\n\n\t\tfor pol it is:\n\t\t{\n\t\t\tcountry\t\t: String;\t// The 2 letter country code : e.g. US \n\t\t\tcity\t\t: String;\t// e.g. Paris \n\t\t\tregion\t\t: String;\t// e.g. Texas \n\n\t\t\tlatitude\t: Float,\n\t\t\tlongitude\t: Float,\n\t\t\tradius\t\t: Float,\t// in KMs - with latitude, longitude as the center\n\t\t}"
+            "description": "-----\n\tAll claims.\n\tclaims is dependent on proof_type,\n\n\tExample:\n\t\tFor pob it is:\n\t\t{\n\t\t\tuplink_bandwidth\t: Float; // The upload bandwidth in Mbps\n\t\t\tdownlink_bandwidth\t: Float; // The downlink bandwidth in Mbps\n\t\t}\n\n\t\tfor pol it is:\n\t\t{\n\t\t\tcountry\t\t: String;\t// The 2 letter country code : e.g. US\n\t\t\tcity\t\t: String;\t// e.g. Austin \n\t\t\tregion\t\t: String;\t// e.g. Texas\n\n\t\t\tlatitude\t: Float,\n\t\t\tlongitude\t: Float,\n\t\t\tradius\t\t: Float,\t// in KMs - with latitude, longitude as the center\n\t\t}"
           }
         },
         "required": [
@@ -1633,7 +1633,7 @@
           "area"
         ]
       },
-      "ProverChallengeResult": {
+      "ResponseChallengeResult": {
         "type": "object",
         "properties": {
           "id": {
@@ -1727,7 +1727,7 @@
               "{other-challenge-parameter-3}",
               "{other-challenge-parameter-N}"
             ],
-            "description": "-----\n\tThe parameters of this challenge \n\n\tThe other-challenge_parameters depend on proof_type.\n\t\n\tFor pob it is:\n\n\t\trate_of_packets_mbps\t\t: Integer, // rate at which packets will arrive from a challenger\n\t\tmax_packets_per_challenger\t\t: Integer, // max packets that a challenger can send \n\t\ttotal_num_packets_for_challenge\t: Integer  // total packets that a prover should receive"
+            "description": "-----\n\tThe parameters of this challenge\n\n\tThe other-challenge_parameters depend on proof_type.\n\n\tFor pob it is:\n\n\t\trate_of_packets_mbps\t\t: Integer, // rate at which packets will arrive from a challenger\n\t\tmax_packets_per_challenger\t\t: Integer, // max packets that a challenger can send\n\t\ttotal_num_packets_for_challenge\t: Integer  // total packets that a prover should receive"
           },
           "challenge_start_time": {
             "type": "string"
@@ -1817,7 +1817,7 @@
               "{consolidated-result-parameter-3}",
               "{consolidated-result-parameter-N}"
             ],
-            "description": "-----\n\tThe result collected and consolidated from the challengers \n\n\tThe consolidated-result-parameters depend on on proof_type.\n\n\tFor pol it is:\n\n\t KnowLock\t: boolean,\t// (web3) if KnowLock was able to validate the location\n\t\t\"ipapi.co\"\t: boolean,\t// (web2) if ipapi.co api was able to validate the location\n\t\tipregistry\t: boolean,\t// (web2) if ipregistry api was able to validate the location\n\t\tmaxmind\t: boolean \t// (web2) if maxmind api was able to validate the location"
+            "description": "-----\n\tThe result collected and consolidated from the challengers\n\n\tThe consolidated-result-parameters depend on on proof_type.\n\n\tFor pol it is:\n\n\t KnowLock\t: boolean,\t// (web3) if KnowLock was able to validate the location\n\t\t\"ipapi.co\"\t: boolean,\t// (web2) if ipapi.co api was able to validate the location\n\t\tipregistry\t: boolean,\t// (web2) if ipregistry api was able to validate the location\n\t\tmaxmind\t: boolean \t// (web2) if maxmind api was able to validate the location"
           },
           "prover": {
             "type": "object",
@@ -2020,7 +2020,7 @@
           "results": {
             "type": "array",
             "items": {
-              "$ref": "#/components/schemas/ProverChallengeResult"
+              "$ref": "#/components/schemas/ResponseChallengeResult"
             },
             "description": "-----\n\tThe challenge results of the prover"
           }
@@ -2238,7 +2238,7 @@
           "challenge_id"
         ]
       },
-      "ChallengeResponse": {
+      "ChallengeStatusResponse": {
         "type": "object",
         "properties": {
           "result": {
@@ -2296,44 +2296,6 @@
         },
         "required": [
           "transaction"
-        ]
-      },
-      "ChallengeStatusResponse": {
-        "type": "object",
-        "properties": {
-          "result": {
-            "type": "object",
-            "properties": {
-              "challenge_id": {
-                "type": "string"
-              },
-              "start_challenge_transaction": {
-                "type": "string"
-              },
-              "end_challenge_transaction": {
-                "type": "string"
-              },
-              "challenge_status": {
-                "type": "string",
-                "enum": [
-                  "SUBMITTED_TO_CHALLENGE_COORDINATOR",
-                  "ACCEPTED_BY_CHALLENGE_COORDINATOR",
-                  "ERROR_NOT_ENOUGH_CHALLENGERS",
-                  "ENDED_WITH_PARTIAL_SUCCESS",
-                  "ERROR_ENDED_WITH_FAILURE",
-                  "ENDED_SUCCESSFULLY"
-                ]
-              }
-            },
-            "required": [
-              "challenge_id",
-              "start_challenge_transaction",
-              "challenge_status"
-            ]
-          }
-        },
-        "required": [
-          "result"
         ]
       },
       "ChallengeResultRequest": {

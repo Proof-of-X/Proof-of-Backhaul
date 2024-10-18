@@ -259,9 +259,9 @@ interface PreloginRequest {
 
 		for pol it is:
 		{
-			country		: String;	// The 2 letter country code : e.g. US 
-			city		: String;	// e.g. Paris 
-			region		: String;	// e.g. Texas 
+			country		: String;	// The 2 letter country code : e.g. US
+			city		: String;	// e.g. Austin 
+			region		: String;	// e.g. Texas
 
 			latitude	: Float,
 			longitude	: Float,
@@ -537,7 +537,7 @@ interface ProverDetails {
 
 	/**
 	-----
-	The nickname of this prover 
+	The nickname of this prover
 	**/
 	name			: String;
 
@@ -567,7 +567,7 @@ interface ProverDetails {
 
 	/**
 	-----
-	The last time when the prover changed its IP 
+	The last time when the prover changed its IP
 	**/
 	last_ip_changed		: DateTime;
 
@@ -579,12 +579,12 @@ interface ProverDetails {
 
 	/**
 	-----
-	The challenge results of the prover 
+	The challenge results of the prover
 	**/
-	results			: ProverChallengeResult[];
+	results			: ResponseChallengeResult[];
 }
 
-interface ProverChallengeResult
+interface ResponseChallengeResult
 {
 	/**
 	-----
@@ -594,18 +594,18 @@ interface ProverChallengeResult
 
 	/**
 	-----
-	The parameters of this challenge 
+	The parameters of this challenge
 
 	The other-challenge_parameters depend on proof_type.
-	
+
 	For pob it is:
 
 		rate_of_packets_mbps		: Integer, // rate at which packets will arrive from a challenger
-		max_packets_per_challenger		: Integer, // max packets that a challenger can send 
+		max_packets_per_challenger		: Integer, // max packets that a challenger can send
 		total_num_packets_for_challenge	: Integer  // total packets that a prover should receive
 	**/
 	challenge_parameters	: {
-		number_of_challengers		: Integer, 
+		number_of_challengers		: Integer,
 		"{other-challenge-parameter-1}" : String | Integer | Float | boolean
 		"{other-challenge-parameter-2}" : String | Integer | Float | boolean
 		"{other-challenge-parameter-3}" : String | Integer | Float | boolean
@@ -617,7 +617,7 @@ interface ProverChallengeResult
 
 	/**
 	-----
-	The result collected and consolidated from the challengers 
+	The result collected and consolidated from the challengers
 
 	The consolidated-result-parameters depend on on proof_type.
 
@@ -637,7 +637,7 @@ interface ProverChallengeResult
 
 	/**
 	-----
-	Prover details	
+	Prover details
 	**/
 	prover			: {
 		claims		: {
@@ -649,7 +649,7 @@ interface ProverChallengeResult
 
 	/**
 	-----
-	The current state of the challenge 
+	The current state of the challenge
 	**/
 	state : "SUBMITTED_TO_CHALLENGE_COORDINATOR"	|
 		"ACCEPTED_BY_CHALLENGE_COORDINATOR"	|
@@ -832,7 +832,7 @@ interface ProversResponse {
 	path	: "/proof/v1/:proof_type/challenger",
 	tags	: ["Challenger Information"]
 })
-class challenger 
+class challenger
 {
 	@request
 	request(
@@ -934,7 +934,7 @@ class challenge_request_dcl
 
 	@response({ status: 200 })
 	successfulResponse(
-		@body body: ChallengeResponse
+		@body body: ChallengeStatusResponse
 	) {}
 
 	@response({ status: 400 })
@@ -974,7 +974,7 @@ class challenge_status_dcl
 
 	@response({ status: 200 })
 	successfulResponse(
-		@body body: ChallengeResponse
+		@body body: ChallengeStatusResponse
 	) {}
 
 	@response({ status: 400 })
@@ -1033,20 +1033,6 @@ interface DCLChallengeStatusRequest {
 
 
 
-interface ChallengeResponse {
-	result : {
-
-		challenge_id     : String;
-		challenge_status :
-				"SUBMITTED_TO_CHALLENGE_COORDINATOR"	|
-				"ACCEPTED_BY_CHALLENGE_COORDINATOR"	|
-				"ERROR_NOT_ENOUGH_CHALLENGERS"		|
-				"ENDED_WITH_PARTIAL_SUCCESS"		|
-				"ERROR_ENDED_WITH_FAILURE"		|
-				"ENDED_SUCCESSFULLY";
-	}
-}
-
 
 	/**
 	-----
@@ -1078,7 +1064,7 @@ class challenge_request
 
 	@response({ status: 200 })
 	successfulResponse(
-		@body body: ChallengeResponse
+		@body body: ChallengeStatusResponse
 	) {}
 
 	@response({ status: 400 })
@@ -1117,7 +1103,7 @@ class challenge_status
 
 	@response({ status: 200 })
 	successfulResponse(
-		@body body: ChallengeStatusResponse
+		@body body: ResponseChallengeResult
 	) {}
 
 	@response({ status: 400 })
@@ -1224,7 +1210,7 @@ interface ChallengesResponse {
 	/**
 	-----
 
-	History of challenges of the logged in user	
+	History of challenges of the logged in user
 	**/
 
 @endpoint({
@@ -1272,8 +1258,6 @@ interface ChallengeStatusRequest {
 interface ChallengeStatusResponse {
 	result : {
 		 challenge_id			: String;
-		 start_challenge_transaction	: String;
-		 end_challenge_transaction?	: String;
                  challenge_status		:
 				"SUBMITTED_TO_CHALLENGE_COORDINATOR"	|
 				"ACCEPTED_BY_CHALLENGE_COORDINATOR"	|
@@ -1306,12 +1290,12 @@ interface Claims {
 interface ClaimPublicIP {
 	/**
 	-----
-	Claim which one of the interfaces have public-IP 
+	Claim which one of the interfaces have public-IP
 	**/
 
 
-	IPv4? : boolean, 
-	IPv6? : boolean 
+	IPv4? : boolean,
+	IPv6? : boolean
 }
 
 
@@ -1333,7 +1317,7 @@ class claims
 {
 	@request
 	request(
-		@body		body	: Claims, 
+		@body		body	: Claims,
 		@headers	headers : LoginCookieHeader,
 
 
@@ -1373,7 +1357,7 @@ class claim_public_ip
 {
 	@request
 	request(
-		@body		body	: ClaimPublicIP, 
+		@body		body	: ClaimPublicIP,
 		@headers	headers : LoginCookieHeader,
 
 
@@ -1634,7 +1618,7 @@ interface MetricsResponse {
 
 	/**
 	-----
-	Login and Ping metrics of a prover	
+	Login and Ping metrics of a prover
 	**/
 
 @endpoint({
@@ -1642,7 +1626,7 @@ interface MetricsResponse {
 	path	: "/proof/v1/:proof_type/prover-metrics",
 	tags	: ["Statistics"]
 })
-class prover_metrics 
+class prover_metrics
 {
 	@request
 	request(
@@ -1656,13 +1640,13 @@ class prover_metrics
 
 	@response({ status: 200 })
 	successfulResponse(
-		@body body: MetricsResponse 
+		@body body: MetricsResponse
 	) {}
 }
 
 	/**
 	-----
-	Login and Ping metrics of a challenger 
+	Login and Ping metrics of a challenger
 	**/
 
 @endpoint({
@@ -1670,7 +1654,7 @@ class prover_metrics
 	path	: "/proof/v1/:proof_type/challenger-metrics",
 	tags	: ["Statistics"]
 })
-class challenger_metrics 
+class challenger_metrics
 {
 	@request
 	request(
@@ -1684,6 +1668,6 @@ class challenger_metrics
 
 	@response({ status: 200 })
 	successfulResponse(
-		@body body: MetricsResponse 
+		@body body: MetricsResponse
 	) {}
 }
