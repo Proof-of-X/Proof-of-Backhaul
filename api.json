@@ -1385,6 +1385,21 @@
                   }
                 ]
               },
+              "{claim-parameter-3}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              },
               "{claim-parameter-N}": {
                 "oneOf": [
                   {
@@ -1404,6 +1419,7 @@
             "required": [
               "{claim-parameter-1}",
               "{claim-parameter-2}",
+              "{claim-parameter-3}",
               "{claim-parameter-N}"
             ],
             "description": "-----\n\tAll claims.\n\tclaims is dependent on proof_type,\n\n\tExample: for pob it could be:\n\t\t{\n\t\t\tbandwidth : Float; // The bandwidth in Mbps the user wants to claim\n\t\t}"
@@ -1617,12 +1633,285 @@
           "area"
         ]
       },
+      "ProverChallengeResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "-----\n\tThe challenge id"
+          },
+          "challenge_parameters": {
+            "type": "object",
+            "properties": {
+              "number_of_challengers": {
+                "type": "integer",
+                "format": "int32"
+              },
+              "{other-challenge-parameter-1}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "{other-challenge-parameter-2}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "{other-challenge-parameter-3}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "{other-challenge-parameter-N}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "number_of_challengers",
+              "{other-challenge-parameter-1}",
+              "{other-challenge-parameter-2}",
+              "{other-challenge-parameter-3}",
+              "{other-challenge-parameter-N}"
+            ]
+          },
+          "challenge_start_time": {
+            "type": "string"
+          },
+          "challenge_end_time": {
+            "type": "string"
+          },
+          "consolidated_result": {
+            "type": "object",
+            "properties": {
+              "{consolidated-result-parameter-1}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "{consolidated-result-parameter-2}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "{consolidated-result-parameter-3}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "{consolidated-result-parameter-N}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  },
+                  {
+                    "type": "boolean"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "{consolidated-result-parameter-1}",
+              "{consolidated-result-parameter-2}",
+              "{consolidated-result-parameter-3}",
+              "{consolidated-result-parameter-N}"
+            ]
+          },
+          "prover": {
+            "type": "object",
+            "properties": {
+              "claims": {
+                "type": "object",
+                "properties": {
+                  "{claim-parameter-1}": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      {
+                        "type": "number",
+                        "format": "float"
+                      }
+                    ]
+                  },
+                  "{claim-parameter-2}": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      {
+                        "type": "number",
+                        "format": "float"
+                      }
+                    ]
+                  },
+                  "{claim-parameter-N}": {
+                    "oneOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer",
+                        "format": "int32"
+                      },
+                      {
+                        "type": "number",
+                        "format": "float"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "{claim-parameter-1}",
+                  "{claim-parameter-2}",
+                  "{claim-parameter-N}"
+                ]
+              }
+            },
+            "required": [
+              "claims"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "SUBMITTED_TO_CHALLENGE_COORDINATOR",
+              "ACCEPTED_BY_CHALLENGE_COORDINATOR",
+              "ERROR_NOT_ENOUGH_CHALLENGERS",
+              "ENDED_WITH_PARTIAL_SUCCESS",
+              "ERROR_ENDED_WITH_FAILURE",
+              "ENDED_SUCCESSFULLY"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "challenge_parameters",
+          "challenge_start_time",
+          "challenge_end_time",
+          "consolidated_result",
+          "prover",
+          "state"
+        ]
+      },
       "ProverDetails": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
             "description": "-----\n\tThe unique 'id' of the prover."
+          },
+          "name": {
+            "type": "string",
+            "description": "-----\n\tThe nickname of this prover"
           },
           "geoip": {
             "$ref": "#/components/schemas/GeoIP"
@@ -1660,6 +1949,21 @@
                   }
                 ]
               },
+              "{claim-parameter-3}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              },
               "{claim-parameter-N}": {
                 "oneOf": [
                   {
@@ -1679,21 +1983,55 @@
             "required": [
               "{claim-parameter-1}",
               "{claim-parameter-2}",
+              "{claim-parameter-3}",
               "{claim-parameter-N}"
             ],
-            "description": "-----\n\tMap of claims"
+            "description": "-----\n\tMap of current claims"
           },
           "last_alive": {
             "type": "string",
             "format": "date-time",
             "description": "-----\n\tThe latest time when the API server received a handshake from the prover."
+          },
+          "last_ip_changed": {
+            "type": "string",
+            "format": "date-time",
+            "description": "The last time when the prover changed its IP"
+          },
+          "keyType": {
+            "type": "string",
+            "enum": [
+              "ethereum"
+            ]
+          },
+          "publicKey": {
+            "type": "string"
+          },
+          "projectName": {
+            "type": "string"
+          },
+          "projectPublicKey": {
+            "type": "string"
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProverChallengeResult"
+            }
           }
         },
         "required": [
           "id",
+          "name",
           "geoip",
           "claims",
-          "last_alive"
+          "last_alive",
+          "last_ip_changed",
+          "keyType",
+          "publicKey",
+          "projectName",
+          "projectPublicKey",
+          "results"
         ]
       },
       "ProverResponse": {
@@ -2020,7 +2358,10 @@
               "{result-parameter-2}": {
                 "type": "string"
               },
-              "{result-parameter-n}": {
+              "{result-parameter-3}": {
+                "type": "string"
+              },
+              "{result-parameter-N}": {
                 "type": "string"
               }
             },
@@ -2030,7 +2371,8 @@
               "challenge_succeeded",
               "{result-parameter-1}",
               "{result-parameter-2}",
-              "{result-parameter-n}"
+              "{result-parameter-3}",
+              "{result-parameter-N}"
             ],
             "description": "-----\n\tThe result of a challenge - a JSON converted to a string.\n\n\te.g. in JavaScript:\n\n\t\tmessage = JSON.stringify ({\n\t\t\tchallenge_id,\n\t\t\tresult,\n\t\t});\n\n\tThe result contains fields that have been measured\n\n\tby the challenger:\n\n\t\tlike \"bandwidth\" and \"latency\"."
           },
@@ -2114,6 +2456,21 @@
                   }
                 ]
               },
+              "{claim-parameter-3}": {
+                "oneOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  {
+                    "type": "number",
+                    "format": "float"
+                  }
+                ]
+              },
               "{claim-parameter-N}": {
                 "oneOf": [
                   {
@@ -2133,6 +2490,7 @@
             "required": [
               "{claim-parameter-1}",
               "{claim-parameter-2}",
+              "{claim-parameter-3}",
               "{claim-parameter-N}"
             ],
             "description": "-----\n\tMap of all things a 'user' wants to claim."
@@ -2391,6 +2749,10 @@
                     "type": "integer",
                     "format": "int32"
                   },
+                  "{date-3}": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
                   "{date-N}": {
                     "type": "integer",
                     "format": "int32"
@@ -2399,6 +2761,7 @@
                 "required": [
                   "{date-1}",
                   "{date-2}",
+                  "{date-3}",
                   "{date-N}"
                 ]
               },
@@ -2413,6 +2776,10 @@
                     "type": "integer",
                     "format": "int32"
                   },
+                  "{date-3}": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
                   "{date-N}": {
                     "type": "integer",
                     "format": "int32"
@@ -2421,6 +2788,7 @@
                 "required": [
                   "{date-1}",
                   "{date-2}",
+                  "{date-3}",
                   "{date-N}"
                 ]
               },
@@ -2435,6 +2803,10 @@
                     "type": "integer",
                     "format": "int32"
                   },
+                  "{date-3}": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
                   "{date-N}": {
                     "type": "integer",
                     "format": "int32"
@@ -2443,6 +2815,7 @@
                 "required": [
                   "{date-1}",
                   "{date-2}",
+                  "{date-3}",
                   "{date-N}"
                 ]
               }

@@ -259,6 +259,7 @@ interface PreloginRequest {
 	claims : {
 		"{claim-parameter-1}" : String | Integer | Float,
 		"{claim-parameter-2}" : String | Integer | Float,
+		"{claim-parameter-3}" : String | Integer | Float,
 		"{claim-parameter-N}" : String | Integer | Float,
 	};
 }
@@ -523,6 +524,12 @@ interface ProverDetails {
 
 	/**
 	-----
+	The nickname of this prover 
+	**/
+	name			: String;
+
+	/**
+	-----
 	The estimate of geographic information based on IP address, please refer:
 		https://www.npmjs.com/package/fast-geoip
 	**/
@@ -530,11 +537,12 @@ interface ProverDetails {
 
 	/**
 	-----
-	Map of claims
+	Map of current claims
 	**/
 	claims : {
 		"{claim-parameter-1}" : String | Integer | Float
 		"{claim-parameter-2}" : String | Integer | Float
+		"{claim-parameter-3}" : String | Integer | Float
 		"{claim-parameter-N}" : String | Integer | Float
 	};
 
@@ -543,6 +551,61 @@ interface ProverDetails {
 	The latest time when the API server received a handshake from the prover.
 	**/
 	last_alive		: DateTime;
+
+	/**
+	The last time when the prover changed its IP 
+	**/
+	last_ip_changed		: DateTime;
+
+	keyType			: "ethereum";
+	publicKey		: String;
+
+	projectName		: String;
+	projectPublicKey	: String;
+
+	results			: ProverChallengeResult[];
+}
+
+interface ProverChallengeResult
+{
+	/**
+	-----
+	The challenge id
+	**/
+	id			: String;
+
+	challenge_parameters	: {
+		number_of_challengers		: Integer, 
+		"{other-challenge-parameter-1}" : String | Integer | Float | boolean
+		"{other-challenge-parameter-2}" : String | Integer | Float | boolean
+		"{other-challenge-parameter-3}" : String | Integer | Float | boolean
+		"{other-challenge-parameter-N}" : String | Integer | Float | boolean
+	},
+
+	challenge_start_time	: String,
+	challenge_end_time	: String,
+
+	consolidated_result	: {
+		"{consolidated-result-parameter-1}" : String | Integer | Float | boolean
+		"{consolidated-result-parameter-2}" : String | Integer | Float | boolean
+		"{consolidated-result-parameter-3}" : String | Integer | Float | boolean
+		"{consolidated-result-parameter-N}" : String | Integer | Float | boolean
+	},
+
+	prover			: {
+		claims		: {
+			"{claim-parameter-1}" : String | Integer | Float
+			"{claim-parameter-2}" : String | Integer | Float
+			"{claim-parameter-N}" : String | Integer | Float
+		}
+	},
+
+	state : "SUBMITTED_TO_CHALLENGE_COORDINATOR"	|
+		"ACCEPTED_BY_CHALLENGE_COORDINATOR"	|
+		"ERROR_NOT_ENOUGH_CHALLENGERS"		|
+		"ENDED_WITH_PARTIAL_SUCCESS"		|
+		"ERROR_ENDED_WITH_FAILURE"		|
+		"ENDED_SUCCESSFULLY";
 }
 
 interface ChallengerDetails {
@@ -1084,7 +1147,8 @@ interface ChallengeResultRequest {  // XXX to be fixed
 
 		"{result-parameter-1}"	: String;
 		"{result-parameter-2}"	: String;
-		"{result-parameter-n}"	: String;
+		"{result-parameter-3}"	: String;
+		"{result-parameter-N}"	: String;
 	};
 
 	/**
@@ -1181,6 +1245,7 @@ interface Claims {
 
 		"{claim-parameter-1}" : String | Integer | Float;
 		"{claim-parameter-2}" : String | Integer | Float;
+		"{claim-parameter-3}" : String | Integer | Float;
 		"{claim-parameter-N}" : String | Integer | Float;
 	}
 }
@@ -1496,18 +1561,21 @@ interface MetricsResponse {
 		number_of_pings : {
 			"{date-1}"	: Integer;
 			"{date-2}"	: Integer;
+			"{date-3}"	: Integer;
 			"{date-N}"	: Integer;
 		};
 
 		number_of_logins : {
 			"{date-1}"	: Integer;
 			"{date-2}"	: Integer;
+			"{date-3}"	: Integer;
 			"{date-N}"	: Integer;
 		};
 
 		number_of_times_ip_changed : {
 			"{date-1}"	: Integer;
 			"{date-2}"	: Integer;
+			"{date-3}"	: Integer;
 			"{date-N}"	: Integer;
 		};
 	}
