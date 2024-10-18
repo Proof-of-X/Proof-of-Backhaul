@@ -1726,7 +1726,8 @@
               "{other-challenge-parameter-2}",
               "{other-challenge-parameter-3}",
               "{other-challenge-parameter-N}"
-            ]
+            ],
+            "description": "-----\n\tThe parameters of this challenge"
           },
           "challenge_start_time": {
             "type": "string"
@@ -1815,7 +1816,8 @@
               "{consolidated-result-parameter-2}",
               "{consolidated-result-parameter-3}",
               "{consolidated-result-parameter-N}"
-            ]
+            ],
+            "description": "-----\n\tThe result collected and consolidated from the challengers"
           },
           "prover": {
             "type": "object",
@@ -1878,7 +1880,8 @@
             },
             "required": [
               "claims"
-            ]
+            ],
+            "description": "-----\n\tProver details"
           },
           "state": {
             "type": "string",
@@ -1889,7 +1892,8 @@
               "ENDED_WITH_PARTIAL_SUCCESS",
               "ERROR_ENDED_WITH_FAILURE",
               "ENDED_SUCCESSFULLY"
-            ]
+            ],
+            "description": "-----\n\tThe current state of the challenge"
           }
         },
         "required": [
@@ -1996,7 +2000,7 @@
           "last_ip_changed": {
             "type": "string",
             "format": "date-time",
-            "description": "The last time when the prover changed its IP"
+            "description": "-----\n\tThe last time when the prover changed its IP"
           },
           "keyType": {
             "type": "string",
@@ -2017,7 +2021,8 @@
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProverChallengeResult"
-            }
+            },
+            "description": "-----\n\tThe challenge results of the prover"
           }
         },
         "required": [

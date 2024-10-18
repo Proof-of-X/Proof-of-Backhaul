@@ -553,6 +553,7 @@ interface ProverDetails {
 	last_alive		: DateTime;
 
 	/**
+	-----
 	The last time when the prover changed its IP 
 	**/
 	last_ip_changed		: DateTime;
@@ -563,6 +564,10 @@ interface ProverDetails {
 	projectName		: String;
 	projectPublicKey	: String;
 
+	/**
+	-----
+	The challenge results of the prover 
+	**/
 	results			: ProverChallengeResult[];
 }
 
@@ -574,6 +579,10 @@ interface ProverChallengeResult
 	**/
 	id			: String;
 
+	/**
+	-----
+	The parameters of this challenge 
+	**/
 	challenge_parameters	: {
 		number_of_challengers		: Integer, 
 		"{other-challenge-parameter-1}" : String | Integer | Float | boolean
@@ -585,6 +594,10 @@ interface ProverChallengeResult
 	challenge_start_time	: String,
 	challenge_end_time	: String,
 
+	/**
+	-----
+	The result collected and consolidated from the challengers 
+	**/
 	consolidated_result	: {
 		"{consolidated-result-parameter-1}" : String | Integer | Float | boolean
 		"{consolidated-result-parameter-2}" : String | Integer | Float | boolean
@@ -592,6 +605,10 @@ interface ProverChallengeResult
 		"{consolidated-result-parameter-N}" : String | Integer | Float | boolean
 	},
 
+	/**
+	-----
+	Prover details	
+	**/
 	prover			: {
 		claims		: {
 			"{claim-parameter-1}" : String | Integer | Float
@@ -600,6 +617,10 @@ interface ProverChallengeResult
 		}
 	},
 
+	/**
+	-----
+	The current state of the challenge 
+	**/
 	state : "SUBMITTED_TO_CHALLENGE_COORDINATOR"	|
 		"ACCEPTED_BY_CHALLENGE_COORDINATOR"	|
 		"ERROR_NOT_ENOUGH_CHALLENGERS"		|
