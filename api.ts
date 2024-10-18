@@ -974,7 +974,7 @@ class challenge_status_dcl
 
 	@response({ status: 200 })
 	successfulResponse(
-		@body body: ChallengeStatusResponse
+		@body body: ResponseChallengeResult 
 	) {}
 
 	@response({ status: 400 })
