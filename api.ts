@@ -601,7 +601,7 @@ interface ProverChallengeResult
 	For pob it is:
 
 		rate_of_packets_mbps		: Integer, // rate at which packets will arrive from a challenger
-		max_packets_per_challenger	: Integer, // max packets that a challenger can send 
+		max_packets_per_challenger		: Integer, // max packets that a challenger can send 
 		total_num_packets_for_challenge	: Integer  // total packets that a prover should receive
 	**/
 	challenge_parameters	: {
@@ -621,12 +621,12 @@ interface ProverChallengeResult
 
 	The consolidated-result-parameters depend on on proof_type.
 
-	For pob it is:
+	For pol it is:
 
-	 	KnowLock	: boolean,	// (web3) if KnowLock was able to validate the location
+	 KnowLock	: boolean,	// (web3) if KnowLock was able to validate the location
 		"ipapi.co"	: boolean,	// (web2) if ipapi.co api was able to validate the location
 		ipregistry	: boolean,	// (web2) if ipregistry api was able to validate the location
-		maxmind		: boolean 	// (web2) if maxmind api was able to validate the location
+		maxmind	: boolean 	// (web2) if maxmind api was able to validate the location
 	**/
 	consolidated_result	: {
 		"{consolidated-result-parameter-1}" : String | Integer | Float | boolean
