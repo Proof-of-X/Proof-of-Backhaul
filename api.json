@@ -1422,7 +1422,7 @@
               "{claim-parameter-3}",
               "{claim-parameter-N}"
             ],
-            "description": "-----\n\tAll claims.\n\tclaims is dependent on proof_type,\n\n\tExample: for pob it could be:\n\t\t{\n\t\t\tbandwidth : Float; // The bandwidth in Mbps the user wants to claim\n\t\t}"
+            "description": "-----\n\tAll claims.\n\tclaims is dependent on proof_type,\n\n\tExample:\n\t\tFor pob it is:\n\t\t{\n\t\t\tuplink_bandwidth\t: Float; // The upload bandwidth in Mbps\n\t\t\tdownlink_bandwidth\t: Float; // The downlink bandwidth in Mbps\n\t\t}\n\n\t\tfor pol it is:\n\t\t{\n\t\t\tcountry\t\t: String;\t// The 2 letter country code : e.g. US \n\t\t\tcity\t\t: String;\t// e.g. Paris \n\t\t\tregion\t\t: String;\t// e.g. Texas \n\n\t\t\tlatitude\t: Float,\n\t\t\tlongitude\t: Float,\n\t\t\tradius\t\t: Float,\t// in KMs - with latitude, longitude as the center\n\t\t}"
           }
         },
         "required": [
@@ -1727,7 +1727,7 @@
               "{other-challenge-parameter-3}",
               "{other-challenge-parameter-N}"
             ],
-            "description": "-----\n\tThe parameters of this challenge"
+            "description": "-----\n\tThe parameters of this challenge \n\n\tThe other-challenge_parameters depend on proof_type.\n\t\n\tFor pob it is:\n\t\trate_of_packets_mbps\t\t: Integer, // rate at which packets will arrive from a challenger\n\t\tmax_packets_per_challenger\t: Integer, // max packets that a challenger can send \n\t\ttotal_num_packets_for_challenge\t: Integer  // total packets that a prover should receive"
           },
           "challenge_start_time": {
             "type": "string"
@@ -1817,7 +1817,7 @@
               "{consolidated-result-parameter-3}",
               "{consolidated-result-parameter-N}"
             ],
-            "description": "-----\n\tThe result collected and consolidated from the challengers"
+            "description": "-----\n\tThe result collected and consolidated from the challengers \n\n\tThe consolidated-result-parameters depend on on proof_type.\n\n\tFor pob it is:\n\t \tKnowLock\t: boolean,\t// (web3) if KnowLock was able to validate the location\n\t\t\"ipapi.co\"\t: boolean,\t// (web2) if ipapi.co api was able to validate the location\n\t\tipregistry\t: boolean,\t// (web2) if ipregistry api was able to validate the location\n\t\tmaxmind\t\t: boolean \t// (web2) if maxmind api was able to validate the location"
           },
           "prover": {
             "type": "object",

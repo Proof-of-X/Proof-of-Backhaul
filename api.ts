@@ -250,12 +250,25 @@ interface PreloginRequest {
 	All claims.
 	claims is dependent on proof_type,
 
-	Example: for pob it could be:
+	Example:
+		For pob it is:
 		{
-			bandwidth : Float; // The bandwidth in Mbps the user wants to claim
+			uplink_bandwidth	: Float; // The upload bandwidth in Mbps
+			downlink_bandwidth	: Float; // The downlink bandwidth in Mbps
 		}
-	**/
 
+		for pol it is:
+		{
+			country		: String;	// The 2 letter country code : e.g. US 
+			city		: String;	// e.g. Paris 
+			region		: String;	// e.g. Texas 
+
+			latitude	: Float,
+			longitude	: Float,
+			radius		: Float,	// in KMs - with latitude, longitude as the center
+		}
+
+	**/
 	claims : {
 		"{claim-parameter-1}" : String | Integer | Float,
 		"{claim-parameter-2}" : String | Integer | Float,
@@ -582,6 +595,13 @@ interface ProverChallengeResult
 	/**
 	-----
 	The parameters of this challenge 
+
+	The other-challenge_parameters depend on proof_type.
+	
+	For pob it is:
+		rate_of_packets_mbps		: Integer, // rate at which packets will arrive from a challenger
+		max_packets_per_challenger	: Integer, // max packets that a challenger can send 
+		total_num_packets_for_challenge	: Integer  // total packets that a prover should receive
 	**/
 	challenge_parameters	: {
 		number_of_challengers		: Integer, 
@@ -597,6 +617,14 @@ interface ProverChallengeResult
 	/**
 	-----
 	The result collected and consolidated from the challengers 
+
+	The consolidated-result-parameters depend on on proof_type.
+
+	For pob it is:
+	 	KnowLock	: boolean,	// (web3) if KnowLock was able to validate the location
+		"ipapi.co"	: boolean,	// (web2) if ipapi.co api was able to validate the location
+		ipregistry	: boolean,	// (web2) if ipregistry api was able to validate the location
+		maxmind		: boolean 	// (web2) if maxmind api was able to validate the location
 	**/
 	consolidated_result	: {
 		"{consolidated-result-parameter-1}" : String | Integer | Float | boolean
