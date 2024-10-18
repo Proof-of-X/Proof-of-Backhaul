@@ -596,7 +596,7 @@ interface ResponseChallengeResult
 	-----
 	The parameters of this challenge
 
-	The other-challenge_parameters depend on proof_type.
+	The other-challenge_parameters depends on proof_type.
 
 	For pob it is:
 
@@ -619,7 +619,7 @@ interface ResponseChallengeResult
 	-----
 	The result collected and consolidated from the challengers
 
-	The consolidated-result-parameters depend on on proof_type.
+	The consolidated-result-parameters depends on proof_type.
 
 	For pol it is:
 
@@ -951,7 +951,7 @@ class challenge_request_dcl
 
 	/**
 	-----
-	Get the status of a given DCL challenge.
+	Get the status of a given DCL challenge; along with results if any.
 	**/
 
 @endpoint({
@@ -1080,7 +1080,7 @@ class challenge_request
 
 	/**
 	-----
-	Get the status of a given challenge.
+	Get the status of a given challenge; along with results if any.
 	**/
 
 @endpoint({
