@@ -1007,6 +1007,17 @@ interface ChallengeRequest {
 	**/
 
 	transaction	: String;
+
+	/**
+	-----
+	The challenge_type depends on proof_type
+		For example:
+			For PoB it could be:
+				1. uplink
+				2. downlink
+	**/
+
+	challenge_type	: String;
 }
 
 interface DCLChallengeRequest {
@@ -1018,6 +1029,17 @@ interface DCLChallengeRequest {
 	**/
 
 	challenge_id	: String;
+
+	/**
+	-----
+	The challenge_type depends on proof_type
+		For example:
+			For PoB it could be:
+				1. uplink
+				2. downlink
+	**/
+
+	challenge_type	: String;
 }
 
 interface DCLChallengeStatusRequest {

@@ -2232,10 +2232,15 @@
           "challenge_id": {
             "type": "string",
             "description": "-----\n \tThe challenge_id that was generated after calling the\n\tDCL 'submitRequest' smart contract."
+          },
+          "challenge_type": {
+            "type": "string",
+            "description": "-----\n\tThe challenge_type depends on proof_type\n\t\tFor example:\n\t\t\tFor PoB it could be:\n\t\t\t\t1. uplink\n\t\t\t\t2. downlink"
           }
         },
         "required": [
-          "challenge_id"
+          "challenge_id",
+          "challenge_type"
         ]
       },
       "ChallengeStatusResponse": {
@@ -2279,11 +2284,16 @@
           "transaction": {
             "type": "string",
             "description": "-----\n \tThe transaction that was generated after calling the\n\t'startChallenge' smart contract."
+          },
+          "challenge_type": {
+            "type": "string",
+            "description": "-----\n\tThe challenge_type depends on proof_type\n\t\tFor example:\n\t\t\tFor PoB it could be:\n\t\t\t\t1. uplink\n\t\t\t\t2. downlink"
           }
         },
         "required": [
           "prover",
-          "transaction"
+          "transaction",
+          "challenge_type"
         ]
       },
       "ChallengeStatusRequest": {
