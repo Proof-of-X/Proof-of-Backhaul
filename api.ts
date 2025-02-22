@@ -1697,34 +1697,82 @@ class challenger_metrics
 
 interface CreateCampaignRequest {
 
+	/** -----
+	Name of the campaign	
+	**/
 	campaign	: String, 
+
 	description	: String,	
+
+	/** -----
+	Type of campaign
+
+		individual	: a single user participates in a photo campaign 
+		group		: a group of users participates in a photo campaign 
+		task		: a list of tasks to be performed by a single user
+	**/
 	type		: "individual" | "group" | "task",
 
+	/** -----
+	Time in ISO format	
+	**/
 	starts_at	: String, 
 	ends_at		: String, 
 
+	/** -----
+	The maximum submissions that this campaign can accept	
+	**/
 	max_submissions	: Integer,
+
+	/** -----
+	If set to true, this campaign will be available to users	
+	**/
 	is_active	: boolean,
 
+	/** -----
+	What kind of rewards will be given to users	
+	**/
 	currency	: "POINTS",
-	total_rew	: Float,
+
+	/** -----
+	Total rewards and rewards per task	
+	**/
+	total_rewards	: Float,
 	reward_per_task	: Float,
 
+	/** -----
+	Banner and poster for this campaign	
+	**/
 	banner_url	: String, 
 	poster_url	: String, 
 
+	/** -----
+	Location of this campaign if any	
+	the radius is in kms of circle within which the campaign is valid
+	**/
 	latitude?	: Float,
 	longitude?	: Float,
-	radius?		: Float, // the radius of circle within which the campaign is valid
+	radius?		: Float,
 
-	// For group campaigns
+	/** -----
+	For group campaigns, the max distance the group can be from each other
+	**/
 	location_limit_in_meters?	: Integer,
+
+	/** -----
+	For group campaigns, the max time in minutes within which the referal link should be clicked 
+	**/
 	time_limit_in_minutes?		: Integer,
 
+
+	/** -----
+	Whitelist of addresses which can participate in this campaign	
+	**/
 	whitelist?			: String[], 
 
-	// For task campaigns
+	/** -----
+	For task campaigns, a dictionary of tasks	
+	**/
 	tasks? : {
 		task1 : {
 			fuel_required	: Float,
