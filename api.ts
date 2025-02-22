@@ -39,7 +39,7 @@ class Api
 		"Cookie" : String;
 
 /*
-	Not sure how to specify exat cookie name
+	Not sure how to specify exact cookie name
 
 	@securityHeader
 		@CookieParameterObject (
@@ -1691,5 +1691,108 @@ class challenger_metrics
 	@response({ status: 200 })
 	successfulResponse(
 		@body body: MetricsResponse
+	) {}
+}
+
+
+interface CreateCampaignRequest {
+
+	campaign	: String, 
+	description	: String,	
+	type		: "individual" | "group" | "task",
+
+	starts_at	: String, 
+	ends_at		: String, 
+
+	max_submissions	: Integer,
+	is_active	: boolean,
+
+	currency	: "POINTS",
+	total_rew	: Float,
+	reward_per_task	: Float,
+
+	banner_url	: String, 
+	poster_url	: String, 
+
+	latitude?	: Float,
+	longitude?	: Float,
+	radius?		: Float, // the radius of circle within which the campaign is valid
+
+	// For group campaigns
+	location_limit_in_meters?	: Integer,
+	time_limit_in_minutes?		: Integer,
+
+	whitelist?			: String[], 
+
+	// For task campaigns
+	tasks? : {
+		task1 : {
+			fuel_required	: Float,
+			type		: String,
+			reward		: Float,
+		},
+	},
+}
+
+interface CreateCampaignResponse {
+	result : {
+		success : true,
+		action	: String, 
+	}
+}
+
+	/**
+	-----
+	Create a campaign	
+	**/
+
+@endpoint({
+	method	: "POST",
+	path	: "/proof/v1/:proof_type/create-campaign",
+	tags	: ["Campaign"]
+})
+class create_campaign 
+{
+	@request
+	request(
+		@body body	 : CreateCampaignRequest,
+		@headers headers : LoginCookieHeader,
+
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		},
+	) {}
+
+	@response({ status: 200 })
+	successfulResponse(
+		@body body: CreateCampaignResponse 
+	) {}
+}
+
+	/**
+	-----
+	Create a campaign	
+	**/
+
+@endpoint({
+	method	: "POST",
+	path	: "/proof/v1/:proof_type/create-campaign",
+	tags	: ["Campaign"]
+})
+class edit_campaign 
+{
+	@request
+	request(
+		@body body	 : CreateCampaignRequest,
+		@headers headers : LoginCookieHeader,
+
+		@pathParams	pathParams : {
+      				proof_type: String;
+    		},
+	) {}
+
+	@response({ status: 200 })
+	successfulResponse(
+		@body body: CreateCampaignResponse 
 	) {}
 }
